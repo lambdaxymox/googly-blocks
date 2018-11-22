@@ -1,0 +1,6 @@
+[package]
+name = "googley-blocks"
+version = "0.1.0"
+authors = ["Stallmanifold <stallmanifold@gmail.com>"]
+
+[dependencies]
