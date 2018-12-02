@@ -14,11 +14,10 @@ mod gl {
     include!(concat!(env!("OUT_DIR"), "/gl_bindings.rs"));
 }
 
-mod gl_helpers;
-
+mod gl_help;
 
 use glfw::{Action, Context, Key};
-use gl_helpers as glh;
+use gl_help as glh;
 use std::process;
 use log::{info};
 
