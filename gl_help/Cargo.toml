@@ -2,5 +2,14 @@
 name = "gl_help"
 version = "0.1.0"
 authors = ["Stallmanifold <stallmanifold@gmail.com>"]
+build = "build.rs"
 
 [dependencies]
+glfw = "0.25.0"
+log = "0.4.6"
+
+[build-dependencies]
+gl_generator = "0.10.0"
+
+[profile.dev]
+debug = true
