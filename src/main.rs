@@ -20,12 +20,25 @@ mod gl_helpers;
 use glfw::{Action, Context, Key};
 use gl_helpers as glh;
 use std::process;
+use log::{info};
 
 
 struct GooglyBlocks {
     gl: glh::GLState,
 }
 
+///
+/// Initialize the logger.
+///
+fn init_logger(log_file: &str) {
+    file_logger::init(log_file).expect("Failed to initialize logger.");
+    info!("OpenGL application log.");
+    info!("build version: ??? ?? ???? ??:??:??\n\n");
+}
+
+///
+/// Create and OpenGL context.
+///
 fn init_gl(width: u32, height: u32) -> glh::GLState {
     let gl_state = match glh::start_gl(width, height) {
         Ok(val) => val,
@@ -40,6 +53,7 @@ fn init_gl(width: u32, height: u32) -> glh::GLState {
 }
 
 fn init_game() -> GooglyBlocks {
+    init_logger("googly-blocks.log");
     let gl_state = init_gl(720, 480);
     
     GooglyBlocks {
@@ -74,4 +88,6 @@ fn main() {
         // Send the results to the output.
         game.gl.window.swap_buffers();
     }
+
+    info!("END LOG");
 }
