@@ -1,7 +1,12 @@
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
+extern crate glfw;
+extern crate log;
+
+mod gl {
+    include!(concat!(env!("OUT_DIR"), "/gl_bindings.rs"));
 }
+
+
+mod gl_help;
+
+
+pub use gl_help::*;
