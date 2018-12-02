@@ -216,7 +216,7 @@ pub fn start_gl(width: u32, height: u32) -> Result<GLState, String> {
 
     info!("Started GLFW successfully");
     let maybe_glfw_window = glfw.create_window(
-        width, height, &format!("Triforces DEMO @ {:.2} FPS", 0.0), glfw::WindowMode::Windowed
+        width, height, &format!("Googly Blocks @ {:.2} FPS", 0.0), glfw::WindowMode::Windowed
     );
     let (mut window, events) = match maybe_glfw_window {
         Some(tuple) => tuple,
@@ -281,7 +281,7 @@ pub fn update_fps_counter(context: &mut GLState) {
     if elapsed_seconds > 0.5 {
         context.framerate_time_seconds = current_time_seconds;
         let fps = context.frame_count as f64 / elapsed_seconds;
-        context.window.set_title(&format!("Triforces DEMO @ {:.2} FPS", fps));
+        context.window.set_title(&format!("Googly Blocks @ {:.2} FPS", fps));
         context.frame_count = 0;
     }
 
