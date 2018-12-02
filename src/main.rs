@@ -17,6 +17,7 @@ mod gl {
 mod gl_helpers;
 
 
+use glfw::{Action, Context, Key};
 use gl_helpers as glh;
 use std::process;
 
@@ -48,5 +49,29 @@ fn init_game() -> GooglyBlocks {
 
 
 fn main() {
-    let game = init_game();
+    let mut game = init_game();
+
+    unsafe {
+        // Enable depth testing.
+        gl::Enable(gl::DEPTH_TEST);
+        gl::DepthFunc(gl::LESS);
+        gl::Enable(gl::CULL_FACE);
+        gl::CullFace(gl::BACK);
+        gl::FrontFace(gl::CCW);
+        // Gray background.
+        gl::ClearColor(0.2, 0.2, 0.2, 1.0);
+        gl::Viewport(0, 0, game.gl.width as i32, game.gl.height as i32);
+    }
+
+    while !game.gl.window.should_close() {
+        match game.gl.window.get_key(Key::Escape) {
+            Action::Press | Action::Repeat => {
+                game.gl.window.set_should_close(true);
+            }
+            _ => {}
+        }
+
+        // Send the results to the output.
+        game.gl.window.swap_buffers();
+    }
 }
