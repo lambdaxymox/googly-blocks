@@ -32,8 +32,6 @@ struct GooglyBlocks {
 ///
 fn init_logger(log_file: &str) {
     file_logger::init(log_file).expect("Failed to initialize logger.");
-    info!("OpenGL application log.");
-    info!("build version: ??? ?? ???? ??:??:??\n\n");
 }
 
 ///
@@ -64,6 +62,9 @@ fn init_game() -> GooglyBlocks {
 
 fn main() {
     let mut game = init_game();
+
+    info!("BEGIN LOG");
+    info!("build version: ??? ?? ???? ??:??:??\n\n");
 
     unsafe {
         // Enable depth testing.
