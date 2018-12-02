@@ -85,6 +85,14 @@ fn main() {
             _ => {}
         }
 
+        // Render the results.
+        unsafe {
+            // Clear the screen.
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
+            gl::ClearColor(0.2, 0.2, 0.2, 1.0);
+            gl::Viewport(0, 0, game.gl.width as i32, game.gl.height as i32);
+        }
+
         // Send the results to the output.
         game.gl.window.swap_buffers();
     }
