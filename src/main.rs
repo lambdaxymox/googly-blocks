@@ -78,12 +78,19 @@ fn main() {
     }
 
     while !game.gl.window.should_close() {
+        // Check input.
+        let elapsed_seconds = glh::update_timers(&mut game.gl);
+
+        game.gl.glfw.poll_events();
         match game.gl.window.get_key(Key::Escape) {
             Action::Press | Action::Repeat => {
                 game.gl.window.set_should_close(true);
             }
             _ => {}
         }
+
+        // Update the game world.
+        glh::update_fps_counter(&mut game.gl);
 
         // Render the results.
         unsafe {
