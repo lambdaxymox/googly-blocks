@@ -51,6 +51,8 @@ fn init_gl(width: u32, height: u32) -> glh::GLState {
 
 fn init_game() -> GooglyBlocks {
     init_logger("googly-blocks.log");
+    info!("BEGIN LOG");
+    info!("build version: ??? ?? ???? ??:??:??");
     let gl_state = init_gl(720, 480);
     
     GooglyBlocks {
@@ -58,10 +60,7 @@ fn init_game() -> GooglyBlocks {
     }
 }
 
-
 fn main() {
-    info!("BEGIN LOG");
-    info!("build version: ??? ?? ???? ??:??:??\n\n");
     let mut game = init_game();
     unsafe {
         // Enable depth testing.
