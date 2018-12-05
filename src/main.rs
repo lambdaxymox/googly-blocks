@@ -60,11 +60,9 @@ fn init_game() -> GooglyBlocks {
 
 
 fn main() {
-    let mut game = init_game();
-
     info!("BEGIN LOG");
     info!("build version: ??? ?? ???? ??:??:??\n\n");
-
+    let mut game = init_game();
     unsafe {
         // Enable depth testing.
         gl::Enable(gl::DEPTH_TEST);
