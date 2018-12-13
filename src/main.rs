@@ -16,11 +16,21 @@ mod gl {
 
 mod gl_help;
 
-use glfw::{Action, Context, Key};
-use gl_help as glh;
-use std::process;
-use log::{info};
 
+use gl_help as glh;
+use cgmath as math;
+
+use glfw::{Action, Context, Key};
+use gl::types::{GLfloat, GLint, GLuint, GLvoid, GLsizeiptr};
+use log::{info};
+use math::{Matrix4, AsArray};
+
+use std::process;
+use std::path::{Path, PathBuf};
+use std::ptr;
+
+
+const SHADER_PATH: &str = "shaders";
 
 struct GooglyBlocks {
     gl: glh::GLState,
@@ -60,8 +70,131 @@ fn init_game() -> GooglyBlocks {
     }
 }
 
+fn shader_file<P: AsRef<Path>>(file: P) -> PathBuf {
+    let shader_path = Path::new(SHADER_PATH);
+    let path = shader_path.join(file);
+
+    path
+}
+
+fn load_shader(game: &mut GooglyBlocks) -> GLuint {
+    let sp = glh::create_program_from_files(
+        &game.gl,
+        &shader_file("game_board.vert.glsl"),
+        &shader_file("game_board.frag.glsl")
+    ).unwrap();
+    assert!(sp > 0);
+
+    sp
+}
+
+fn load_geometry(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint) {
+    let mesh: [f32; 9] = [
+        0.0, 1.0, 0.0, 1.0, -1.0, 0.0, -1.0, -1.0, 0.0
+    ];
+
+    let v_pos_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+    };
+    assert!(v_pos_loc > -1);
+    let v_pos_loc = v_pos_loc as u32;
+
+    let mut points_vbo = 0;
+    unsafe {
+        gl::GenBuffers(1, &mut points_vbo);
+    }
+    assert!(points_vbo > 0);
+    unsafe {
+        gl::BindBuffer(gl::ARRAY_BUFFER, points_vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            mesh.len() as GLsizeiptr,
+            mesh.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+        );
+    }
+
+    let mut points_vao = 0;
+    unsafe {
+        gl::GenVertexArrays(1, &mut points_vao);
+    }
+    assert!(points_vao > 0);
+    unsafe {
+        gl::BindVertexArray(points_vao);
+        gl::BindBuffer(gl::ARRAY_BUFFER, points_vbo);
+        gl::VertexAttribPointer(v_pos_loc, 3, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(v_pos_loc);
+    }
+
+    (points_vbo, points_vao)
+}
+
+fn load_uniforms2(game: &mut GooglyBlocks, sp: GLuint) {
+    let model_mat = Matrix4::one();
+    let view_mat = Matrix4::one();
+    let proj_mat = Matrix4::one();
+
+    let sp_model_mat_loc = unsafe {
+        gl::GetUniformLocation(sp, glh::gl_str("model_mat").as_ptr())
+    };
+    assert!(sp_model_mat_loc > -1);
+
+    let sp_view_mat_loc = unsafe {
+        gl::GetUniformLocation(sp, glh::gl_str("view_mat").as_ptr())
+    };
+    assert!(sp_view_mat_loc > -1);
+
+    let sp_proj_mat_loc = unsafe {
+        gl::GetUniformLocation(sp, glh::gl_str("proj_mat").as_ptr())
+    };
+    assert!(sp_proj_mat_loc > -1);
+
+    unsafe {
+        gl::UseProgram(sp);
+        gl::UniformMatrix4fv(
+            sp_model_mat_loc, 1, gl::FALSE,
+            model_mat.as_ptr()
+        );
+        gl::UniformMatrix4fv(
+            sp_view_mat_loc, 1, gl::FALSE,
+            view_mat.as_ptr()
+        );
+        gl::UniformMatrix4fv(
+            sp_proj_mat_loc, 1, gl::FALSE,
+            proj_mat.as_ptr()
+        );
+    }
+}
+
+fn load_uniforms(game: &mut GooglyBlocks, sp: GLuint) {
+    unsafe {
+        gl::UseProgram(sp);
+    }
+    let u_frag_color_loc = unsafe {
+        gl::GetUniformLocation(sp, glh::gl_str("u_frag_color").as_ptr())
+    };
+
+    let color: [f32; 3] = [
+        139 as f32 / 255 as f32,
+        193 as f32 / 255 as f32,
+        248 as f32 / 255 as f32
+    ];
+    let u_frag_color = math::vec4((color[0], color[1], color[2], 1.0));
+    unsafe {
+        gl::Uniform4fv(u_frag_color_loc, 1, u_frag_color.as_ptr());
+    }
+}
+
 fn main() {
     let mut game = init_game();
+
+    let sp = load_shader(&mut game);
+    let (
+        points_vbo,
+        points_vao
+    ) = load_geometry(&mut game, sp);
+    load_uniforms(&mut game, sp);
+    load_uniforms2(&mut game, sp);
+
     unsafe {
         // Enable depth testing.
         gl::Enable(gl::DEPTH_TEST);
@@ -95,6 +228,11 @@ fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
             gl::ClearColor(0.2, 0.2, 0.2, 1.0);
             gl::Viewport(0, 0, game.gl.width as i32, game.gl.height as i32);
+
+            // Load the game board.
+            gl::UseProgram(sp);
+            gl::BindVertexArray(points_vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 3);
         }
 
         // Send the results to the output.
