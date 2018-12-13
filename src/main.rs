@@ -169,18 +169,22 @@ fn load_uniforms(game: &mut GooglyBlocks, sp: GLuint) {
     unsafe {
         gl::UseProgram(sp);
     }
-    let u_frag_color_loc = unsafe {
+    let sp_u_frag_color_loc = unsafe {
         gl::GetUniformLocation(sp, glh::gl_str("u_frag_color").as_ptr())
     };
+    assert!(sp_u_frag_color_loc > -1);
 
-    let color: [f32; 3] = [
+    let u_frag_color: [f32; 3] = [
         139 as f32 / 255 as f32,
         193 as f32 / 255 as f32,
         248 as f32 / 255 as f32
     ];
-    let u_frag_color = math::vec4((color[0], color[1], color[2], 1.0));
+
     unsafe {
-        gl::Uniform4fv(u_frag_color_loc, 1, u_frag_color.as_ptr());
+        gl::Uniform4f(
+            sp_u_frag_color_loc,
+            u_frag_color[0], u_frag_color[1], u_frag_color[2], 1.0
+        );
     }
 }
 
@@ -232,7 +236,7 @@ fn main() {
             // Load the game board.
             gl::UseProgram(sp);
             gl::BindVertexArray(points_vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 3);
+            gl::DrawArrays(gl::TRIANGLES, 0, 9);
         }
 
         // Send the results to the output.
