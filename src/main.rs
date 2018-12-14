@@ -15,7 +15,7 @@ mod gl {
 }
 
 mod gl_help;
-
+mod texture;
 
 use gl_help as glh;
 use cgmath as math;
@@ -24,6 +24,7 @@ use glfw::{Action, Context, Key};
 use gl::types::{GLfloat, GLint, GLuint, GLvoid, GLsizeiptr};
 use log::{info};
 use math::{Matrix4, AsArray};
+use texture::TexImage2D;
 
 use std::mem;
 use std::process;
@@ -32,6 +33,11 @@ use std::ptr;
 
 
 const SHADER_PATH: &str = "shaders";
+
+// OpenGL extension constants.
+const GL_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FE;
+const GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FF;
+
 
 struct GooglyBlocks {
     gl: glh::GLState,
@@ -87,6 +93,38 @@ fn load_shader(game: &mut GooglyBlocks) -> GLuint {
     assert!(sp > 0);
 
     sp
+}
+
+///
+/// Load texture image into the GPU.
+///
+fn load_texture(tex_data: &TexImage2D, wrapping_mode: GLuint) -> Result<(), String> {
+    let mut tex = 0;
+    unsafe {
+        gl::GenTextures(1, &mut tex);
+        gl::ActiveTexture(gl::TEXTURE0);
+        gl::BindTexture(gl::TEXTURE_2D, tex);
+        gl::TexImage2D(
+            gl::TEXTURE_2D, 0, gl::RGBA as i32, tex_data.width as i32, tex_data.height as i32, 0,
+            gl::RGBA, gl::UNSIGNED_BYTE,
+            tex_data.as_ptr() as *const GLvoid
+        );
+        gl::GenerateMipmap(gl::TEXTURE_2D);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, wrapping_mode as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, wrapping_mode as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR_MIPMAP_LINEAR as GLint);
+    }
+    assert!(tex > 0);
+
+    let mut max_aniso = 0.0;
+    unsafe {
+        gl::GetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &mut max_aniso);
+        // Set the maximum!
+        gl::TexParameterf(gl::TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, max_aniso);
+    }
+
+    Ok(())
 }
 
 fn load_geometry(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint) {
