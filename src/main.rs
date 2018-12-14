@@ -264,6 +264,8 @@ fn load_uniforms2(game: &mut GooglyBlocks, sp: GLuint) -> (GLint, GLint, GLint) 
 ///
 #[inline]
 fn glfw_framebuffer_size_callback(game: &mut GooglyBlocks, width: u32, height: u32) {
+    game.gl.width = width;
+    game.gl.height = height;
 }
 
 fn main() {
@@ -299,6 +301,13 @@ fn main() {
 
         // Update the game world.
         glh::update_fps_counter(&mut game.gl);
+
+        let (width, height) = game.gl.window.get_framebuffer_size();
+        if (width != game.gl.width as i32) && (height != game.gl.height as i32) {
+            glfw_framebuffer_size_callback(
+                &mut game, width as u32, height as u32
+            );
+        }
 
         // Render the results.
         unsafe {
