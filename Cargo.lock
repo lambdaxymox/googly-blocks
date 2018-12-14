@@ -139,7 +139,7 @@ dependencies = [
 
 [[package]]
 name = "googly-blocks"
-version = "0.1.8"
+version = "0.1.10"
 dependencies = [
  "file_logger 0.2.0 (git+https://github.com/stallmanifold/file-logger)",
  "gl_generator 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",

@@ -33,6 +33,7 @@ use std::ptr;
 
 
 const SHADER_PATH: &str = "shaders";
+const ASSET_PATH: &str = "assets";
 
 // OpenGL extension constants.
 const GL_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FE;
@@ -75,6 +76,13 @@ fn init_game() -> GooglyBlocks {
     GooglyBlocks {
         gl: gl_state,
     }
+}
+
+fn asset_file<P: AsRef<Path>>(file: P) -> PathBuf {
+    let asset_path = Path::new(ASSET_PATH);
+    let path = asset_path.join(file);
+
+    path
 }
 
 fn shader_file<P: AsRef<Path>>(file: P) -> PathBuf {
@@ -179,8 +187,9 @@ fn load_background_mesh(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint)
     (points_vbo, points_vao)
 }
 
-fn load_background_textures() {
-    unimplemented!();
+fn load_background_texture() {
+    let tex_image = texture::load_file(&asset_file("background.png")).unwrap();
+    let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
 }
 
 fn load_uniforms2(game: &mut GooglyBlocks, sp: GLuint) -> (GLint, GLint, GLint) {
