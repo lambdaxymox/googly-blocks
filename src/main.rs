@@ -149,7 +149,7 @@ fn load_background_shaders(game: &mut GooglyBlocks) -> GLuint {
 fn load_background_mesh(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint, GLuint) {
     let mesh: [GLfloat; 18] = [
         1.0, 1.0, 0.0, -1.0, -1.0, 0.0,  1.0, -1.0, 0.0,
-        1.0, 1.0, 0.0, -1.0, -1.0, 0.0, -1.0,  1.0, 0.0,
+        1.0, 1.0, 0.0, -1.0,  1.0, 0.0, -1.0, -1.0, 0.0,
     ];
     let mesh_tex: [GLfloat; 12] = [
         1.0, 0.0, 0.0, 1.0, 1.0, 1.0,
@@ -279,6 +279,16 @@ fn load_uniforms(game: &mut GooglyBlocks, sp: GLuint) -> GLint {
     }
 
     sp_u_frag_color_loc
+}
+
+///
+/// The GLFW frame buffer size callback function. This is normally set using
+/// the GLFW `glfwSetFramebufferSizeCallback` function, but instead we explicitly
+/// handle window resizing in our state updates on the application side. Run this function
+/// whenever the size of the viewport changes.
+///
+#[inline]
+fn glfw_framebuffer_size_callback(game: &mut GooglyBlocks, width: u32, height: u32) {
 }
 
 fn main() {
