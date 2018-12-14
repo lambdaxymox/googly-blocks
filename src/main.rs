@@ -256,31 +256,6 @@ fn load_uniforms2(game: &mut GooglyBlocks, sp: GLuint) -> (GLint, GLint, GLint) 
     (sp_model_mat_loc, sp_view_mat_loc, sp_proj_mat_loc)
 }
 
-fn load_uniforms(game: &mut GooglyBlocks, sp: GLuint) -> GLint {
-    unsafe {
-        gl::UseProgram(sp);
-    }
-    let sp_u_frag_color_loc = unsafe {
-        gl::GetUniformLocation(sp, glh::gl_str("frag_color").as_ptr())
-    };
-    assert!(sp_u_frag_color_loc > -1);
-
-    let u_frag_color: [f32; 3] = [
-        139 as f32 / 255 as f32,
-        193 as f32 / 255 as f32,
-        248 as f32 / 255 as f32
-    ];
-
-    unsafe {
-        gl::Uniform4f(
-            sp_u_frag_color_loc,
-            u_frag_color[0], u_frag_color[1], u_frag_color[2], 1.0
-        );
-    }
-
-    sp_u_frag_color_loc
-}
-
 ///
 /// The GLFW frame buffer size callback function. This is normally set using
 /// the GLFW `glfwSetFramebufferSizeCallback` function, but instead we explicitly
@@ -297,8 +272,6 @@ fn main() {
     let sp = load_background_shaders(&mut game);
     let (v_pos_vbo, v_tex_vbo, vao) = load_background_mesh(&mut game, sp);
     let background_tex = load_background_texture(&mut game);
-    //load_uniforms(&mut game, sp);
-    //load_uniforms2(&mut game, sp);
 
     unsafe {
         // Enable depth testing.
