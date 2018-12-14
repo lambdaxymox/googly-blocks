@@ -81,8 +81,8 @@ fn shader_file<P: AsRef<Path>>(file: P) -> PathBuf {
 fn load_shader(game: &mut GooglyBlocks) -> GLuint {
     let sp = glh::create_program_from_files(
         &game.gl,
-        &shader_file("game_board.vert.glsl"),
-        &shader_file("game_board.frag.glsl")
+        &shader_file("background.vert.glsl"),
+        &shader_file("background.frag.glsl")
     ).unwrap();
     assert!(sp > 0);
 
