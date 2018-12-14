@@ -106,7 +106,7 @@ fn load_shader(game: &mut GooglyBlocks) -> GLuint {
 ///
 /// Load texture image into the GPU.
 ///
-fn load_texture(tex_data: &TexImage2D, wrapping_mode: GLuint) -> Result<(), String> {
+fn load_texture(tex_data: &TexImage2D, wrapping_mode: GLuint) -> Result<GLuint, String> {
     let mut tex = 0;
     unsafe {
         gl::GenTextures(1, &mut tex);
@@ -132,7 +132,7 @@ fn load_texture(tex_data: &TexImage2D, wrapping_mode: GLuint) -> Result<(), Stri
         gl::TexParameterf(gl::TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, max_aniso);
     }
 
-    Ok(())
+    Ok(tex)
 }
 
 fn load_background_shaders(game: &mut GooglyBlocks) -> GLuint {
@@ -146,10 +146,14 @@ fn load_background_shaders(game: &mut GooglyBlocks) -> GLuint {
     sp
 }
 
-fn load_background_mesh(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint) {
+fn load_background_mesh(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint, GLuint) {
     let mesh: [GLfloat; 18] = [
         1.0, 1.0, 0.0, -1.0, -1.0, 0.0,  1.0, -1.0, 0.0,
         1.0, 1.0, 0.0, -1.0, -1.0, 0.0, -1.0,  1.0, 0.0,
+    ];
+    let mesh_tex: [GLfloat; 12] = [
+        1.0, 0.0, 0.0, 1.0, 1.0, 1.0,
+        1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
     ];
 
     let v_pos_loc = unsafe {
@@ -158,13 +162,17 @@ fn load_background_mesh(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint)
     assert!(v_pos_loc > -1);
     let v_pos_loc = v_pos_loc as u32;
 
-    let mut points_vbo = 0;
+    let v_tex_loc = unsafe { gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr()) };
+    assert!(v_tex_loc > -1);
+    let v_tex_loc = v_tex_loc as u32;
+
+    let mut v_pos_vbo = 0;
     unsafe {
-        gl::GenBuffers(1, &mut points_vbo);
+        gl::GenBuffers(1, &mut v_pos_vbo);
     }
-    assert!(points_vbo > 0);
+    assert!(v_pos_vbo > 0);
     unsafe {
-        gl::BindBuffer(gl::ARRAY_BUFFER, points_vbo);
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
         gl::BufferData(
             gl::ARRAY_BUFFER,
             (mem::size_of::<GLfloat>() * mesh.len()) as GLsizeiptr,
@@ -172,24 +180,41 @@ fn load_background_mesh(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint)
         );
     }
 
-    let mut points_vao = 0;
+    let mut v_tex_vbo = 0;
     unsafe {
-        gl::GenVertexArrays(1, &mut points_vao);
+        gl::GenBuffers(1, &mut v_tex_vbo);
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (mem::size_of::<GLfloat>() * mesh.len()) as GLsizeiptr,
+            mesh.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+        )
     }
-    assert!(points_vao > 0);
+    assert!(v_tex_vbo > 0);
+
+    let mut vao = 0;
     unsafe {
-        gl::BindVertexArray(points_vao);
-        gl::BindBuffer(gl::ARRAY_BUFFER, points_vbo);
+        gl::GenVertexArrays(1, &mut vao);
+    }
+    assert!(vao > 0);
+    unsafe {
+        gl::BindVertexArray(vao);
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
         gl::VertexAttribPointer(v_pos_loc, 3, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
+        gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
         gl::EnableVertexAttribArray(v_pos_loc);
+        gl::EnableVertexAttribArray(v_tex_loc);
     }
 
-    (points_vbo, points_vao)
+    (v_pos_vbo, v_tex_vbo, vao)
 }
 
-fn load_background_texture() {
+fn load_background_texture(game: &mut GooglyBlocks) -> GLuint {
     let tex_image = texture::load_file(&asset_file("background.png")).unwrap();
     let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
+
+    tex
 }
 
 fn load_uniforms2(game: &mut GooglyBlocks, sp: GLuint) -> (GLint, GLint, GLint) {
@@ -236,7 +261,7 @@ fn load_uniforms(game: &mut GooglyBlocks, sp: GLuint) -> GLint {
         gl::UseProgram(sp);
     }
     let sp_u_frag_color_loc = unsafe {
-        gl::GetUniformLocation(sp, glh::gl_str("u_frag_color").as_ptr())
+        gl::GetUniformLocation(sp, glh::gl_str("frag_color").as_ptr())
     };
     assert!(sp_u_frag_color_loc > -1);
 
@@ -260,8 +285,9 @@ fn main() {
     let mut game = init_game();
 
     let sp = load_background_shaders(&mut game);
-    let (vbo, vao) = load_background_mesh(&mut game, sp);
-    load_uniforms(&mut game, sp);
+    let (v_pos_vbo, v_tex_vbo, vao) = load_background_mesh(&mut game, sp);
+    let background_tex = load_background_texture(&mut game);
+    //load_uniforms(&mut game, sp);
     //load_uniforms2(&mut game, sp);
 
     unsafe {
@@ -298,10 +324,21 @@ fn main() {
             gl::ClearColor(0.2, 0.2, 0.2, 1.0);
             gl::Viewport(0, 0, game.gl.width as i32, game.gl.height as i32);
 
-            // Load the game board.
+            // Render the background.
             gl::UseProgram(sp);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, background_tex);
             gl::BindVertexArray(vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 3);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6);
+
+            // TODO: Render the game board.
+
+
+            // TODO: Render the blocks instanced.
+
+            // TODO: Render the UI elements.
+
+            // TODO: Render the text.
         }
 
         // Send the results to the output.
