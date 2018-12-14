@@ -92,17 +92,6 @@ fn shader_file<P: AsRef<Path>>(file: P) -> PathBuf {
     path
 }
 
-fn load_shader(game: &mut GooglyBlocks) -> GLuint {
-    let sp = glh::create_program_from_files(
-        &game.gl,
-        &shader_file("background.vert.glsl"),
-        &shader_file("background.frag.glsl")
-    ).unwrap();
-    assert!(sp > 0);
-
-    sp
-}
-
 ///
 /// Load texture image into the GPU.
 ///
