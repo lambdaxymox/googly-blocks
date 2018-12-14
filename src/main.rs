@@ -198,7 +198,7 @@ fn main() {
 
     let sp = load_shader(&mut game);
     let (vbo, vao) = load_geometry(&mut game, sp);
-    //let sp_u_frag_color_loc = load_uniforms(&mut game, sp);
+    let sp_u_frag_color_loc = load_uniforms(&mut game, sp);
     //load_uniforms2(&mut game, sp);
 
     unsafe {
