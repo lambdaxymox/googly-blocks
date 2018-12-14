@@ -1,6 +1,6 @@
 [package]
 name = "googly-blocks"
-version = "0.1.10"
+version = "0.1.11"
 authors = ["Stallmanifold <stallmanifold@gmail.com>"]
 build = "build.rs"
 
