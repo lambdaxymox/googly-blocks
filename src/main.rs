@@ -152,8 +152,8 @@ fn load_background_mesh(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint,
         1.0, 1.0, 0.0, -1.0,  1.0, 0.0, -1.0, -1.0, 0.0,
     ];
     let mesh_tex: [GLfloat; 12] = [
-        1.0, 0.0, 0.0, 1.0, 1.0, 1.0,
-        1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+        1.0, 1.0, 0.0, 0.0, 1.0, 0.0,
+        1.0, 1.0, 0.0, 1.0, 0.0, 0.0,
     ];
 
     let v_pos_loc = unsafe {
@@ -186,8 +186,8 @@ fn load_background_mesh(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint,
         gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
         gl::BufferData(
             gl::ARRAY_BUFFER,
-            (mem::size_of::<GLfloat>() * mesh.len()) as GLsizeiptr,
-            mesh.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+            (mem::size_of::<GLfloat>() * mesh_tex.len()) as GLsizeiptr,
+            mesh_tex.as_ptr() as *const GLvoid, gl::STATIC_DRAW
         )
     }
     assert!(v_tex_vbo > 0);
@@ -342,7 +342,6 @@ fn main() {
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
 
             // TODO: Render the game board.
-
 
             // TODO: Render the blocks instanced.
 
