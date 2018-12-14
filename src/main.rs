@@ -25,6 +25,7 @@ use gl::types::{GLfloat, GLint, GLuint, GLvoid, GLsizeiptr};
 use log::{info};
 use math::{Matrix4, AsArray};
 
+use std::mem;
 use std::process;
 use std::path::{Path, PathBuf};
 use std::ptr;
@@ -89,8 +90,8 @@ fn load_shader(game: &mut GooglyBlocks) -> GLuint {
 }
 
 fn load_geometry(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint) {
-    let mesh: [f32; 9] = [
-        0.0, 1.0, 0.0, 1.0, -1.0, 0.0, -1.0, -1.0, 0.0
+    let mesh: [GLfloat; 9] = [
+        0.0, 0.5, 0.0, -0.5, -0.5, 0.0, 0.5, -0.5, 0.0
     ];
 
     let v_pos_loc = unsafe {
@@ -108,7 +109,7 @@ fn load_geometry(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint) {
         gl::BindBuffer(gl::ARRAY_BUFFER, points_vbo);
         gl::BufferData(
             gl::ARRAY_BUFFER,
-            mesh.len() as GLsizeiptr,
+            (mem::size_of::<GLfloat>() * mesh.len()) as GLsizeiptr,
             mesh.as_ptr() as *const GLvoid, gl::STATIC_DRAW
         );
     }
@@ -128,7 +129,7 @@ fn load_geometry(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint) {
     (points_vbo, points_vao)
 }
 
-fn load_uniforms2(game: &mut GooglyBlocks, sp: GLuint) {
+fn load_uniforms2(game: &mut GooglyBlocks, sp: GLuint) -> (GLint, GLint, GLint) {
     let model_mat = Matrix4::one();
     let view_mat = Matrix4::one();
     let proj_mat = Matrix4::one();
@@ -163,9 +164,11 @@ fn load_uniforms2(game: &mut GooglyBlocks, sp: GLuint) {
             proj_mat.as_ptr()
         );
     }
+
+    (sp_model_mat_loc, sp_view_mat_loc, sp_proj_mat_loc)
 }
 
-fn load_uniforms(game: &mut GooglyBlocks, sp: GLuint) {
+fn load_uniforms(game: &mut GooglyBlocks, sp: GLuint) -> GLint {
     unsafe {
         gl::UseProgram(sp);
     }
@@ -186,18 +189,17 @@ fn load_uniforms(game: &mut GooglyBlocks, sp: GLuint) {
             u_frag_color[0], u_frag_color[1], u_frag_color[2], 1.0
         );
     }
+
+    sp_u_frag_color_loc
 }
 
 fn main() {
     let mut game = init_game();
 
     let sp = load_shader(&mut game);
-    let (
-        points_vbo,
-        points_vao
-    ) = load_geometry(&mut game, sp);
-    load_uniforms(&mut game, sp);
-    load_uniforms2(&mut game, sp);
+    let (vbo, vao) = load_geometry(&mut game, sp);
+    //let sp_u_frag_color_loc = load_uniforms(&mut game, sp);
+    //load_uniforms2(&mut game, sp);
 
     unsafe {
         // Enable depth testing.
@@ -235,8 +237,8 @@ fn main() {
 
             // Load the game board.
             gl::UseProgram(sp);
-            gl::BindVertexArray(points_vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 9);
+            gl::BindVertexArray(vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 3);
         }
 
         // Send the results to the output.
