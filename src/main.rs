@@ -127,6 +127,25 @@ fn load_texture(tex_data: &TexImage2D, wrapping_mode: GLuint) -> Result<(), Stri
     Ok(())
 }
 
+fn load_background_shaders(game: &mut GooglyBlocks) -> GLuint {
+    let sp = glh::create_program_from_files(
+        &game.gl,
+        &shader_file("background.vert.glsl"),
+        &shader_file("background.frag.glsl")
+    ).unwrap();
+    assert!(sp > 0);
+
+    sp
+}
+
+fn load_background_geometry() {
+    unimplemented!();
+}
+
+fn load_background_textures() {
+    unimplemented!();
+}
+
 fn load_geometry(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint) {
     let mesh: [GLfloat; 9] = [
         0.0, 0.5, 0.0, -0.5, -0.5, 0.0, 0.5, -0.5, 0.0
@@ -234,7 +253,7 @@ fn load_uniforms(game: &mut GooglyBlocks, sp: GLuint) -> GLint {
 fn main() {
     let mut game = init_game();
 
-    let sp = load_shader(&mut game);
+    let sp = load_background_shaders(&mut game);
     let (vbo, vao) = load_geometry(&mut game, sp);
     load_uniforms(&mut game, sp);
     //load_uniforms2(&mut game, sp);
