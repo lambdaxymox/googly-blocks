@@ -19,6 +19,9 @@ impl Points {
         self.inner.as_ptr()
     }
 
+    ///
+    /// Get the length of the points buffer in bytes.
+    ///
     #[inline]
     pub fn len_bytes(&self) -> usize {
         3 * mem::size_of::<f32>() * self.inner.len()
@@ -36,6 +39,9 @@ impl TextureCoordinates {
         self.inner.as_ptr()
     }
 
+    ///
+    /// Get the length of the texture coordinates buffer in bytes.
+    ///
     #[inline]
     pub fn len_bytes(&self) -> usize {
         2 * mem::size_of::<f32>() * self.inner.len()
@@ -53,6 +59,9 @@ impl Normals {
         self.inner.as_ptr()
     }
 
+    ///
+    /// Get the length of the normal vector buffer in bytes.
+    ///
     #[inline]
     pub fn len_bytes(&self) -> usize {
         3 * mem::size_of::<f32>() * self.inner.len()
@@ -119,30 +128,6 @@ impl ObjMesh {
     #[inline]
     pub fn len(&self) -> usize {
         self.points.inner.len()
-    }
-
-    ///
-    /// Get the length of the points buffer in bytes.
-    ///
-    #[inline]
-    pub fn points_len_bytes(&self) -> usize {
-        self.points.len_bytes()
-    }
-
-    ///
-    /// Get the length of the texture coordinates buffer in bytes.
-    ///
-    #[inline]
-    pub fn tex_coords_len_bytes(&self) -> usize {
-        self.tex_coords.len_bytes()
-    }
-
-    ///
-    /// Get the length of the normal vector buffer in bytes.
-    ///
-    #[inline]
-    pub fn normals_len_bytes(&self) -> usize {
-        self.normals.len_bytes()
     }
 }
 
