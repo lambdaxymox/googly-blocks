@@ -342,9 +342,15 @@ fn glfw_framebuffer_size_callback(game: &mut GooglyBlocks, width: u32, height: u
 fn main() {
     let mut game = init_game();
 
+    // Load the background.
     let sp = load_background_shaders(&mut game);
     let (v_pos_vbo, v_tex_vbo, vao) = load_background_mesh(&mut game, sp);
     let background_tex = load_background_texture(&mut game);
+
+    // Load the board.
+    let board_sp = load_board_shaders(&mut game);
+    let (board_vpos_vbo, board_v_tex_vbo, board_vao) = load_board_mesh(&mut game, board_sp);
+    let board_tex = load_board_texture(&mut game);
 
     unsafe {
         // Enable depth testing.
