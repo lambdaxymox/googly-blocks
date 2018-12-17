@@ -310,43 +310,66 @@ fn load_board_texture(game: &mut Game) -> GLuint {
     tex
 }
 
-fn load_uniforms2(game: &mut Game, sp: GLuint) -> (GLint, GLint, GLint) {
+fn load_board_uniforms(game: &mut Game, sp: GLuint) {
     let model_mat = Matrix4::one();
     let view_mat = Matrix4::one();
     let proj_mat = Matrix4::one();
 
-    let sp_model_mat_loc = unsafe {
-        gl::GetUniformLocation(sp, glh::gl_str("model_mat").as_ptr())
+    let ubo_index = unsafe {
+        gl::GetUniformBlockIndex(sp, glh::gl_str("Matrices").as_ptr())
     };
-    assert!(sp_model_mat_loc > -1);
+    assert!(ubo_index != gl::INVALID_INDEX);
 
-    let sp_view_mat_loc = unsafe {
-        gl::GetUniformLocation(sp, glh::gl_str("view_mat").as_ptr())
-    };
-    assert!(sp_view_mat_loc > -1);
-
-    let sp_proj_mat_loc = unsafe {
-        gl::GetUniformLocation(sp, glh::gl_str("proj_mat").as_ptr())
-    };
-    assert!(sp_proj_mat_loc > -1);
-
+    let mut ubo_size = 0;
     unsafe {
-        gl::UseProgram(sp);
-        gl::UniformMatrix4fv(
-            sp_model_mat_loc, 1, gl::FALSE,
-            model_mat.as_ptr()
+        gl::GetActiveUniformBlockiv(
+            sp, ubo_index, gl::UNIFORM_BLOCK_DATA_SIZE, &mut ubo_size
+        )
+    };
+    assert!(ubo_size > 0);
+
+    let mut indices = [0; 3];
+    let mut sizes = [0; 3];
+    let mut offsets = [0; 3];
+    let mut types = [0; 3];
+    unsafe {
+        gl::GetActiveUniformBlockiv(
+            sp, ubo_index,
+            gl::UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indices.as_mut_ptr()
         );
-        gl::UniformMatrix4fv(
-            sp_view_mat_loc, 1, gl::FALSE,
-            view_mat.as_ptr()
+        gl::GetActiveUniformsiv(
+            sp, 3, indices.as_ptr() as *const u32,
+            gl::UNIFORM_OFFSET, offsets.as_mut_ptr()
         );
-        gl::UniformMatrix4fv(
-            sp_proj_mat_loc, 1, gl::FALSE,
-            proj_mat.as_ptr()
+        gl::GetActiveUniformsiv(
+            sp, 3, indices.as_ptr() as *const u32,
+            gl::UNIFORM_SIZE, sizes.as_mut_ptr()
+        );
+        gl::GetActiveUniformsiv(
+            sp, 3, indices.as_ptr() as *const u32,
+            gl::UNIFORM_TYPE, types.as_mut_ptr()
         );
     }
 
-    (sp_model_mat_loc, sp_view_mat_loc, sp_proj_mat_loc)
+    // Copy the uniform block data into a buffer to be passed to the GPU.
+    let mut buffer = vec![0 as u8; ubo_size as usize];
+    unsafe {
+        ptr::copy(&proj_mat, mem::transmute(&mut buffer[offsets[0] as usize]), 1);
+        ptr::copy(&view_mat, mem::transmute(&mut buffer[offsets[1] as usize]), 1);
+        ptr::copy(&model_mat, mem::transmute(&mut buffer[offsets[2] as usize]), 1);
+    }
+
+    let mut ubo = 0;
+    unsafe {
+        gl::GenBuffers(1, &mut ubo);
+        gl::BindBuffer(gl::UNIFORM_BUFFER, ubo);
+        gl::BufferData(
+            gl::UNIFORM_BUFFER, ubo_size as GLsizeiptr,
+            buffer.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+        );
+        gl::BindBufferBase(gl::UNIFORM_BUFFER, ubo_index, ubo);
+    }
+    assert!(ubo > 0);
 }
 
 ///
@@ -379,6 +402,7 @@ fn main() {
         board_v_tex_vbo,
         board_vao) = load_board_mesh(&mut game, board_sp);
     let board_tex = load_board_texture(&mut game);
+    load_board_uniforms(&mut game, board_sp);
 
     unsafe {
         // Enable depth testing.
