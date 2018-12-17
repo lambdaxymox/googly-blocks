@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::mem;
 use std::path::Path;
 
 use wavefront::obj;
@@ -67,6 +68,30 @@ impl ObjMesh {
     #[inline]
     pub fn len(&self) -> usize {
         self.points.len()
+    }
+
+    ///
+    /// Get the length of the points buffer in bytes.
+    ///
+    #[inline]
+    pub fn points_len_bytes(&self) -> usize {
+        3 * mem::size_of::<f32>() * self.points.len()
+    }
+
+    ///
+    /// Get the length of the texture coordinates buffer in bytes.
+    ///
+    #[inline]
+    pub fn tex_coords_len_bytes(&self) -> usize {
+        2 * mem::size_of::<f32>() * self.tex_coords.len()
+    }
+
+    ///
+    /// Get the length of the normal vector buffer in bytes.
+    ///
+    #[inline]
+    pub fn normals_len_bytes(&self) -> usize {
+        3 * mem::size_of::<f32>() * self.normals.len()
     }
 }
 
