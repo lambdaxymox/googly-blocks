@@ -15,6 +15,7 @@ mod gl {
 }
 
 mod gl_help;
+mod obj;
 mod texture;
 
 use gl_help as glh;
