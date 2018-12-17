@@ -343,13 +343,19 @@ fn main() {
     let mut game = init_game();
 
     // Load the background.
-    let sp = load_background_shaders(&mut game);
-    let (v_pos_vbo, v_tex_vbo, vao) = load_background_mesh(&mut game, sp);
+    let background_sp = load_background_shaders(&mut game);
+    let (
+        background_v_pos_vbo,
+        background_v_tex_vbo,
+        background_vao) = load_background_mesh(&mut game, background_sp);
     let background_tex = load_background_texture(&mut game);
 
     // Load the board.
     let board_sp = load_board_shaders(&mut game);
-    let (board_vpos_vbo, board_v_tex_vbo, board_vao) = load_board_mesh(&mut game, board_sp);
+    let (
+        board_vpos_vbo,
+        board_v_tex_vbo,
+        board_vao) = load_board_mesh(&mut game, board_sp);
     let board_tex = load_board_texture(&mut game);
 
     unsafe {
@@ -394,10 +400,10 @@ fn main() {
             gl::Viewport(0, 0, game.gl.width as i32, game.gl.height as i32);
 
             // Render the background.
-            gl::UseProgram(sp);
+            gl::UseProgram(background_sp);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, background_tex);
-            gl::BindVertexArray(vao);
+            gl::BindVertexArray(background_vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
 
             // TODO: Render the game board.
