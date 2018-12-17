@@ -277,8 +277,8 @@ mod loader_tests {
             [ 0.0,  0.0,  1.0], [ 0.0,  0.0,  1.0], [ 0.0,  0.0,  1.0],
             [ 0.0,  0.0,  1.0], [ 0.0,  0.0,  1.0], [ 0.0,  0.0,  1.0],
         ];
-
         let obj_mesh = ObjMesh::new(points, tex_coords, normals);
+
         Test {
             obj_file: obj_file,
             obj_mesh: obj_mesh,
