@@ -223,7 +223,7 @@ fn load_board_shaders(game: &mut GooglyBlocks) -> GLuint {
     sp
 }
 
-fn load_board_mesh(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint, GLuint) {
+fn load_board_obj(game: &mut GooglyBlocks) -> ([GLfloat; 18], [GLfloat; 12]) {
     let mesh: [GLfloat; 18] = [
         1.0, 1.0, 0.0, -1.0, -1.0, 0.0,  1.0, -1.0, 0.0,
         1.0, 1.0, 0.0, -1.0,  1.0, 0.0, -1.0, -1.0, 0.0,
@@ -232,6 +232,12 @@ fn load_board_mesh(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint, GLui
         1.0, 1.0, 0.0, 0.0, 1.0, 0.0,
         1.0, 1.0, 0.0, 1.0, 0.0, 0.0,
     ];
+
+    (mesh, mesh_tex)
+}
+
+fn load_board_mesh(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint, GLuint) {
+    let (mesh, mesh_tex) = load_board_obj(game);
 
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
