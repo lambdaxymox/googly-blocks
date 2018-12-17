@@ -41,7 +41,7 @@ const GL_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FE;
 const GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FF;
 
 
-struct GooglyBlocks {
+struct Game {
     gl: glh::GLState,
 }
 
@@ -68,13 +68,13 @@ fn init_gl(width: u32, height: u32) -> glh::GLState {
     gl_state    
 }
 
-fn init_game() -> GooglyBlocks {
+fn init_game() -> Game {
     init_logger("googly-blocks.log");
     info!("BEGIN LOG");
     info!("build version: ??? ?? ???? ??:??:??");
     let gl_state = init_gl(720, 480);
     
-    GooglyBlocks {
+    Game {
         gl: gl_state,
     }
 }
@@ -125,7 +125,7 @@ fn load_texture(tex_data: &TexImage2D, wrapping_mode: GLuint) -> Result<GLuint, 
     Ok(tex)
 }
 
-fn load_background_shaders(game: &mut GooglyBlocks) -> GLuint {
+fn load_background_shaders(game: &mut Game) -> GLuint {
     let sp = glh::create_program_from_files(
         &game.gl,
         &shader_file("background.vert.glsl"),
@@ -136,7 +136,7 @@ fn load_background_shaders(game: &mut GooglyBlocks) -> GLuint {
     sp
 }
 
-fn load_background_obj(game: &mut GooglyBlocks) -> ([GLfloat; 18], [GLfloat; 12]) {
+fn load_background_obj(game: &mut Game) -> ([GLfloat; 18], [GLfloat; 12]) {
     let mesh: [GLfloat; 18] = [
         1.0, 1.0, 0.0, -1.0, -1.0, 0.0,  1.0, -1.0, 0.0,
         1.0, 1.0, 0.0, -1.0,  1.0, 0.0, -1.0, -1.0, 0.0,
@@ -149,7 +149,7 @@ fn load_background_obj(game: &mut GooglyBlocks) -> ([GLfloat; 18], [GLfloat; 12]
     (mesh, mesh_tex)
 }
 
-fn load_background_mesh(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint, GLuint) {
+fn load_background_mesh(game: &mut Game, sp: GLuint) -> (GLuint, GLuint, GLuint) {
     let (mesh, mesh_tex) = load_background_obj(game);
 
     let v_pos_loc = unsafe {
@@ -206,14 +206,14 @@ fn load_background_mesh(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint,
     (v_pos_vbo, v_tex_vbo, vao)
 }
 
-fn load_background_texture(game: &mut GooglyBlocks) -> GLuint {
+fn load_background_texture(game: &mut Game) -> GLuint {
     let tex_image = texture::load_file(&asset_file("background.png")).unwrap();
     let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
 
     tex
 }
 
-fn load_board_shaders(game: &mut GooglyBlocks) -> GLuint {
+fn load_board_shaders(game: &mut Game) -> GLuint {
     let sp = glh::create_program_from_files(
         &game.gl,
         &shader_file("board.vert.glsl"),
@@ -224,7 +224,7 @@ fn load_board_shaders(game: &mut GooglyBlocks) -> GLuint {
     sp
 }
 
-fn load_board_obj(game: &mut GooglyBlocks) -> ([GLfloat; 18], [GLfloat; 12]) {
+fn load_board_obj(game: &mut Game) -> ([GLfloat; 18], [GLfloat; 12]) {
     let mesh: [GLfloat; 18] = [
         1.0, 1.0, 0.0, -1.0, -1.0, 0.0,  1.0, -1.0, 0.0,
         1.0, 1.0, 0.0, -1.0,  1.0, 0.0, -1.0, -1.0, 0.0,
@@ -237,7 +237,7 @@ fn load_board_obj(game: &mut GooglyBlocks) -> ([GLfloat; 18], [GLfloat; 12]) {
     (mesh, mesh_tex)
 }
 
-fn load_board_mesh(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint, GLuint) {
+fn load_board_mesh(game: &mut Game, sp: GLuint) -> (GLuint, GLuint, GLuint) {
     let (mesh, mesh_tex) = load_board_obj(game);
 
     let v_pos_loc = unsafe {
@@ -294,14 +294,14 @@ fn load_board_mesh(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint, GLui
     (v_pos_vbo, v_tex_vbo, vao)
 }
 
-fn load_board_texture(game: &mut GooglyBlocks) -> GLuint {
+fn load_board_texture(game: &mut Game) -> GLuint {
     let tex_image = texture::load_file(&asset_file("board.png")).unwrap();
     let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
 
     tex
 }
 
-fn load_uniforms2(game: &mut GooglyBlocks, sp: GLuint) -> (GLint, GLint, GLint) {
+fn load_uniforms2(game: &mut Game, sp: GLuint) -> (GLint, GLint, GLint) {
     let model_mat = Matrix4::one();
     let view_mat = Matrix4::one();
     let proj_mat = Matrix4::one();
@@ -347,7 +347,7 @@ fn load_uniforms2(game: &mut GooglyBlocks, sp: GLuint) -> (GLint, GLint, GLint) 
 /// whenever the size of the viewport changes.
 ///
 #[inline]
-fn glfw_framebuffer_size_callback(game: &mut GooglyBlocks, width: u32, height: u32) {
+fn glfw_framebuffer_size_callback(game: &mut Game, width: u32, height: u32) {
     game.gl.width = width;
     game.gl.height = height;
 }
