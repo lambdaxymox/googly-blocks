@@ -229,21 +229,25 @@ fn load_board_shaders(game: &mut Game) -> GLuint {
     sp
 }
 
-fn load_board_obj(game: &mut Game) -> ([GLfloat; 18], [GLfloat; 12]) {
-    let mesh: [GLfloat; 18] = [
-        1.0, 1.0, 0.0, -1.0, -1.0, 0.0,  1.0, -1.0, 0.0,
-        1.0, 1.0, 0.0, -1.0,  1.0, 0.0, -1.0, -1.0, 0.0,
+fn load_board_obj(game: &mut Game) -> ObjMesh {
+    let points: Vec<[GLfloat; 3]> = vec![
+        [1.0, 1.0, 0.0], [-1.0, -1.0, 0.0], [ 1.0, -1.0, 0.0],
+        [1.0, 1.0, 0.0], [-1.0,  1.0, 0.0], [-1.0, -1.0, 0.0],
     ];
-    let mesh_tex: [GLfloat; 12] = [
-        1.0, 1.0, 0.0, 0.0, 1.0, 0.0,
-        1.0, 1.0, 0.0, 1.0, 0.0, 0.0,
+    let tex_coords: Vec<[GLfloat; 2]> = vec![
+        [1.0, 1.0], [0.0, 0.0], [1.0, 0.0],
+        [1.0, 1.0], [0.0, 1.0], [0.0, 0.0],
+    ];
+    let normals: Vec<[GLfloat; 3]> = vec![
+        [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
+        [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0]
     ];
 
-    (mesh, mesh_tex)
+    ObjMesh::new(points, tex_coords, normals)
 }
 
 fn load_board_mesh(game: &mut Game, sp: GLuint) -> (GLuint, GLuint, GLuint) {
-    let (mesh, mesh_tex) = load_board_obj(game);
+    let mesh = load_board_obj(game);
 
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
@@ -264,8 +268,8 @@ fn load_board_mesh(game: &mut Game, sp: GLuint) -> (GLuint, GLuint, GLuint) {
         gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
         gl::BufferData(
             gl::ARRAY_BUFFER,
-            (mem::size_of::<GLfloat>() * mesh.len()) as GLsizeiptr,
-            mesh.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+            (3 * mem::size_of::<GLfloat>() * mesh.len()) as GLsizeiptr,
+            mesh.points.as_ptr() as *const GLvoid, gl::STATIC_DRAW
         );
     }
 
@@ -275,8 +279,8 @@ fn load_board_mesh(game: &mut Game, sp: GLuint) -> (GLuint, GLuint, GLuint) {
         gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
         gl::BufferData(
             gl::ARRAY_BUFFER,
-            (mem::size_of::<GLfloat>() * mesh_tex.len()) as GLsizeiptr,
-            mesh_tex.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+            (2 * mem::size_of::<GLfloat>() * mesh.len()) as GLsizeiptr,
+            mesh.tex_coords.as_ptr() as *const GLvoid, gl::STATIC_DRAW
         )
     }
     assert!(v_tex_vbo > 0);
