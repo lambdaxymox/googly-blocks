@@ -418,7 +418,15 @@ fn main() {
             gl::BindVertexArray(background_vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
 
-            // TODO: Render the game board.
+            // Render the game board. We turn off depth testing to do so since this is
+            // a 2D scene using 3D abstractions. Otherwise Z-Buffering would prevent us
+            // from rendering the game board.
+            gl::UseProgram(board_sp);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, board_tex);
+            gl::BindVertexArray(board_vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6);
 
             // TODO: Render the blocks instanced.
 
