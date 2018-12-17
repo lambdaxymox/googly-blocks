@@ -8,6 +8,57 @@ use wavefront::obj;
 use wavefront::obj::{Element, VTNTriple};
 
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct Points {
+    inner: Vec<[f32; 3]>,
+}
+
+impl Points {
+    #[inline]
+    pub fn as_ptr(&self) -> *const [f32; 3] {
+        self.inner.as_ptr()
+    }
+
+    #[inline]
+    pub fn len_bytes(&self) -> usize {
+        3 * mem::size_of::<f32>() * self.inner.len()
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct TextureCoordinates {
+    inner: Vec<[f32; 2]>,
+}
+
+impl TextureCoordinates {
+    #[inline]
+    pub fn as_ptr(&self) -> *const [f32; 2] {
+        self.inner.as_ptr()
+    }
+
+    #[inline]
+    pub fn len_bytes(&self) -> usize {
+        2 * mem::size_of::<f32>() * self.inner.len()
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Normals {
+    inner: Vec<[f32; 3]>,
+}
+
+impl Normals {
+    #[inline]
+    pub fn as_ptr(&self) -> *const [f32; 3] {
+        self.inner.as_ptr()
+    }
+
+    #[inline]
+    pub fn len_bytes(&self) -> usize {
+        3 * mem::size_of::<f32>() * self.inner.len()
+    }
+}
+
 ///
 /// An `ObjMesh` is a model space representation of a 3D geometric figure.
 /// You typically generate one from parsing a Wavefront *.obj file into
@@ -15,9 +66,9 @@ use wavefront::obj::{Element, VTNTriple};
 ///
 #[derive(Clone, Debug, PartialEq)]
 pub struct ObjMesh {
-    pub points: Vec<[f32; 3]>,
-    pub tex_coords: Vec<[f32; 2]>,
-    pub normals: Vec<[f32; 3]>,
+    pub points: Points,
+    pub tex_coords: TextureCoordinates,
+    pub normals: Normals,
 }
 
 impl ObjMesh {
@@ -26,9 +77,9 @@ impl ObjMesh {
     ///
     pub fn new(points: Vec<[f32; 3]>, tex_coords: Vec<[f32; 2]>, normals: Vec<[f32; 3]>) -> ObjMesh {
         ObjMesh {
-            points: points,
-            tex_coords: tex_coords,
-            normals: normals,
+            points: Points { inner: points },
+            tex_coords: TextureCoordinates { inner: tex_coords },
+            normals: Normals { inner: normals },
         }
     }
 
@@ -39,7 +90,7 @@ impl ObjMesh {
     ///
     #[inline]
     pub fn points(&self) -> &[[f32; 3]] {
-        &self.points
+        &self.points.inner
     }
 
     ///
@@ -49,7 +100,7 @@ impl ObjMesh {
     ///
     #[inline]
     pub fn tex_coords(&self) -> &[[f32; 2]] {
-        &self.tex_coords
+        &self.tex_coords.inner
     }
 
     ///
@@ -59,7 +110,7 @@ impl ObjMesh {
     ///
     #[inline]
     pub fn normals(&self) -> &[[f32; 3]] {
-        &self.normals
+        &self.normals.inner
     }
 
     ///
@@ -67,7 +118,7 @@ impl ObjMesh {
     ///
     #[inline]
     pub fn len(&self) -> usize {
-        self.points.len()
+        self.points.inner.len()
     }
 
     ///
@@ -75,7 +126,7 @@ impl ObjMesh {
     ///
     #[inline]
     pub fn points_len_bytes(&self) -> usize {
-        3 * mem::size_of::<f32>() * self.points.len()
+        self.points.len_bytes()
     }
 
     ///
@@ -83,7 +134,7 @@ impl ObjMesh {
     ///
     #[inline]
     pub fn tex_coords_len_bytes(&self) -> usize {
-        2 * mem::size_of::<f32>() * self.tex_coords.len()
+        self.tex_coords.len_bytes()
     }
 
     ///
@@ -91,7 +142,7 @@ impl ObjMesh {
     ///
     #[inline]
     pub fn normals_len_bytes(&self) -> usize {
-        3 * mem::size_of::<f32>() * self.normals.len()
+        self.normals.len_bytes()
     }
 }
 
@@ -242,12 +293,7 @@ mod loader_tests {
             [ 0.0,  0.0,  1.0], [ 0.0,  0.0,  1.0], [ 0.0,  0.0,  1.0],
         ];
 
-        let obj_mesh = ObjMesh {
-            points: points,
-            tex_coords: tex_coords,
-            normals: normals,
-        };
-
+        let obj_mesh = ObjMesh::new(points, tex_coords, normals);
         Test {
             obj_file: obj_file,
             obj_mesh: obj_mesh,
