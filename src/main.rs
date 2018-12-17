@@ -176,7 +176,7 @@ fn load_background_mesh(game: &mut Game, sp: GLuint) -> (GLuint, GLuint, GLuint)
         gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
         gl::BufferData(
             gl::ARRAY_BUFFER,
-            mesh.points_len_bytes() as GLsizeiptr,
+            mesh.points.len_bytes() as GLsizeiptr,
             mesh.points.as_ptr() as *const GLvoid, gl::STATIC_DRAW
         );
     }
@@ -187,7 +187,7 @@ fn load_background_mesh(game: &mut Game, sp: GLuint) -> (GLuint, GLuint, GLuint)
         gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
         gl::BufferData(
             gl::ARRAY_BUFFER,
-            mesh.tex_coords_len_bytes() as GLsizeiptr,
+            mesh.tex_coords.len_bytes() as GLsizeiptr,
             mesh.tex_coords.as_ptr() as *const GLvoid, gl::STATIC_DRAW
         )
     }
@@ -268,7 +268,7 @@ fn load_board_mesh(game: &mut Game, sp: GLuint) -> (GLuint, GLuint, GLuint) {
         gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
         gl::BufferData(
             gl::ARRAY_BUFFER,
-            mesh.points_len_bytes() as GLsizeiptr,
+            mesh.points.len_bytes() as GLsizeiptr,
             mesh.points.as_ptr() as *const GLvoid, gl::STATIC_DRAW
         );
     }
@@ -279,7 +279,7 @@ fn load_board_mesh(game: &mut Game, sp: GLuint) -> (GLuint, GLuint, GLuint) {
         gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
         gl::BufferData(
             gl::ARRAY_BUFFER,
-            mesh.tex_coords_len_bytes() as GLsizeiptr,
+            mesh.tex_coords.len_bytes() as GLsizeiptr,
             mesh.tex_coords.as_ptr() as *const GLvoid, gl::STATIC_DRAW
         )
     }
