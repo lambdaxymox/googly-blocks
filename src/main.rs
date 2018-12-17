@@ -206,6 +206,88 @@ fn load_background_texture(game: &mut GooglyBlocks) -> GLuint {
     tex
 }
 
+fn load_board_shaders(game: &mut GooglyBlocks) -> GLuint {
+    let sp = glh::create_program_from_files(
+        &game.gl,
+        &shader_file("board.vert.glsl"),
+        &shader_file("board.frag.glsl")
+    ).unwrap();
+    assert!(sp > 0);
+
+    sp
+}
+
+fn load_board_mesh(game: &mut GooglyBlocks, sp: GLuint) -> (GLuint, GLuint, GLuint) {
+    let mesh: [GLfloat; 18] = [
+        1.0, 1.0, 0.0, -1.0, -1.0, 0.0,  1.0, -1.0, 0.0,
+        1.0, 1.0, 0.0, -1.0,  1.0, 0.0, -1.0, -1.0, 0.0,
+    ];
+    let mesh_tex: [GLfloat; 12] = [
+        1.0, 1.0, 0.0, 0.0, 1.0, 0.0,
+        1.0, 1.0, 0.0, 1.0, 0.0, 0.0,
+    ];
+
+    let v_pos_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+    };
+    assert!(v_pos_loc > -1);
+    let v_pos_loc = v_pos_loc as u32;
+
+    let v_tex_loc = unsafe { gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr()) };
+    assert!(v_tex_loc > -1);
+    let v_tex_loc = v_tex_loc as u32;
+
+    let mut v_pos_vbo = 0;
+    unsafe {
+        gl::GenBuffers(1, &mut v_pos_vbo);
+    }
+    assert!(v_pos_vbo > 0);
+    unsafe {
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (mem::size_of::<GLfloat>() * mesh.len()) as GLsizeiptr,
+            mesh.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+        );
+    }
+
+    let mut v_tex_vbo = 0;
+    unsafe {
+        gl::GenBuffers(1, &mut v_tex_vbo);
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (mem::size_of::<GLfloat>() * mesh_tex.len()) as GLsizeiptr,
+            mesh_tex.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+        )
+    }
+    assert!(v_tex_vbo > 0);
+
+    let mut vao = 0;
+    unsafe {
+        gl::GenVertexArrays(1, &mut vao);
+    }
+    assert!(vao > 0);
+    unsafe {
+        gl::BindVertexArray(vao);
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
+        gl::VertexAttribPointer(v_pos_loc, 3, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
+        gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(v_pos_loc);
+        gl::EnableVertexAttribArray(v_tex_loc);
+    }
+
+    (v_pos_vbo, v_tex_vbo, vao)
+}
+
+fn load_board_texture(game: &mut GooglyBlocks) -> GLuint {
+    let tex_image = texture::load_file(&asset_file("board.png")).unwrap();
+    let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
+
+    tex
+}
+
 fn load_uniforms2(game: &mut GooglyBlocks, sp: GLuint) -> (GLint, GLint, GLint) {
     let model_mat = Matrix4::one();
     let view_mat = Matrix4::one();
