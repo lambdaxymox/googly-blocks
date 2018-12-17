@@ -8,9 +8,12 @@ uniform Matrices {
 
 in vec3 v_pos;
 in vec2 v_tex;
-out vec2 tex_coord;
+
+out Data {
+    out vec2 tex_coord;
+} DataOut;
 
 void main() {
-    tex_coord = v_tex;
+    DataOut.tex_coord = v_tex;
     gl_Position = m_proj * m_view * m_model * vec4 (v_pos, 1.0);
 }
