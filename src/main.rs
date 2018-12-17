@@ -137,7 +137,7 @@ fn load_background_shaders(game: &mut Game) -> GLuint {
     sp
 }
 
-fn load_background_obj(game: &mut Game) -> ObjMesh {
+fn load_background_obj() -> ObjMesh {
     let points: Vec<[GLfloat; 3]> = vec![
         [1.0, 1.0, 0.0], [-1.0, -1.0, 0.0], [ 1.0, -1.0, 0.0],
         [1.0, 1.0, 0.0], [-1.0,  1.0, 0.0], [-1.0, -1.0, 0.0],
@@ -155,7 +155,7 @@ fn load_background_obj(game: &mut Game) -> ObjMesh {
 }
 
 fn load_background_mesh(game: &mut Game, sp: GLuint) -> (GLuint, GLuint, GLuint) {
-    let mesh = load_background_obj(game);
+    let mesh = load_background_obj();
 
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
@@ -229,7 +229,7 @@ fn load_board_shaders(game: &mut Game) -> GLuint {
     sp
 }
 
-fn load_board_obj(game: &mut Game) -> ObjMesh {
+fn load_board_obj() -> ObjMesh {
     let points: Vec<[GLfloat; 3]> = vec![
         [1.0, 1.0, 0.0], [-1.0, -1.0, 0.0], [ 1.0, -1.0, 0.0],
         [1.0, 1.0, 0.0], [-1.0,  1.0, 0.0], [-1.0, -1.0, 0.0],
@@ -247,7 +247,7 @@ fn load_board_obj(game: &mut Game) -> ObjMesh {
 }
 
 fn load_board_mesh(game: &mut Game, sp: GLuint) -> (GLuint, GLuint, GLuint) {
-    let mesh = load_board_obj(game);
+    let mesh = load_board_obj();
 
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
