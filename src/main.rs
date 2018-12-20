@@ -288,7 +288,7 @@ fn load_camera(width: f32, height: f32) -> Camera {
     let fwd = math::vec4((0.0, 0.0, 1.0, 0.0));
     let rgt = math::vec4((1.0, 0.0, 0.0, 0.0));
     let up  = math::vec4((0.0, 1.0, 0.0, 0.0));
-    let cam_pos = math::vec3((0.0, 0.0, 10.0));
+    let cam_pos = math::vec3((0.0, 0.0, 1.0));
 
     let axis = Quaternion::new(0.0, 0.0, 0.0, -1.0);
 
@@ -298,9 +298,7 @@ fn load_camera(width: f32, height: f32) -> Camera {
 fn load_board_uniforms(game: &mut Game, sp: GLuint) {
     let model_mat = Matrix4::one();
     let view_mat = game.camera.view_mat;
-    // FIXME: Something is wrong with the projection matrix for the board.
     let proj_mat = game.camera.proj_mat;
-    //let proj_mat = Matrix4::one();
 
     let ubo_index = unsafe {
         gl::GetUniformBlockIndex(sp, glh::gl_str("Matrices").as_ptr())
@@ -311,8 +309,8 @@ fn load_board_uniforms(game: &mut Game, sp: GLuint) {
     unsafe {
         gl::GetActiveUniformBlockiv(
             sp, ubo_index, gl::UNIFORM_BLOCK_DATA_SIZE, &mut ubo_size
-        )
-    };
+        );
+    }
     assert!(ubo_size > 0);
 
     let mut indices = [0; 3];
