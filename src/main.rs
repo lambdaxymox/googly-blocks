@@ -310,10 +310,16 @@ fn load_board_texture(game: &mut Game) -> GLuint {
     tex
 }
 
-fn load_board_uniforms(game: &mut Game, sp: GLuint) {
+fn load_camera() -> (Matrix4, Matrix4, Matrix4) {
     let model_mat = Matrix4::one();
     let view_mat = Matrix4::one();
     let proj_mat = Matrix4::one();
+
+    (model_mat, view_mat, proj_mat)
+}
+
+fn load_board_uniforms(game: &mut Game, sp: GLuint) {
+    let (model_mat, view_mat, proj_mat) = load_camera();
 
     let ubo_index = unsafe {
         gl::GetUniformBlockIndex(sp, glh::gl_str("Matrices").as_ptr())
