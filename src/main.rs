@@ -282,7 +282,8 @@ fn load_board_textures(game: &mut Game) -> GLuint {
 fn load_board_uniforms(game: &mut Game, sp: GLuint) {
     let model_mat = Matrix4::one();
     let view_mat = game.camera.view_mat;
-    let proj_mat = game.camera.proj_mat;
+    //let proj_mat = game.camera.proj_mat;
+    let proj_mat = Matrix4::one();
 
     let ubo_index = unsafe {
         gl::GetUniformBlockIndex(sp, glh::gl_str("Matrices").as_ptr())
@@ -451,6 +452,7 @@ fn main() {
         background_vao) = load_background_mesh(&mut game, background_sp);
     let background_tex = load_background_textures(&mut game);
 
+
     // Load the board.
     let board_sp = load_board_shaders(&mut game);
     let (
@@ -459,6 +461,8 @@ fn main() {
         board_vao) = load_board_mesh(&mut game, board_sp);
     let board_tex = load_board_textures(&mut game);
     load_board_uniforms(&mut game, board_sp);
+
+    let board = load_board(&mut game);
 
     unsafe {
         // Enable depth testing.
