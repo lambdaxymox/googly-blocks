@@ -44,11 +44,6 @@ const GL_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FE;
 const GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FF;
 
 
-struct Game {
-    gl: glh::GLState,
-    camera: Camera,
-}
-
 fn asset_file<P: AsRef<Path>>(file: P) -> PathBuf {
     let asset_path = Path::new(ASSET_PATH);
     let path = asset_path.join(file);
@@ -448,6 +443,13 @@ fn init_gl(width: u32, height: u32) -> glh::GLState {
     gl_state
 }
 
+struct Game {
+    gl: glh::GLState,
+    camera: Camera,
+    background: Background,
+    board: Board,
+}
+
 fn init_game() -> Game {
     init_logger("googly-blocks.log");
     info!("BEGIN LOG");
@@ -456,18 +458,19 @@ fn init_game() -> Game {
     let height = 480;
     let gl_state = init_gl(width, height);
     let camera = load_camera(width as f32, height as f32);
+    let background = load_background(&mut game);
+    let board = load_board(&mut game);
 
     Game {
         gl: gl_state,
         camera: camera,
+        background: background,
+        board: board,
     }
 }
 
 fn main() {
     let mut game = init_game();
-
-    let background = load_background(&mut game);
-    let board = load_board(&mut game);
 
     unsafe {
         // Enable depth testing.
@@ -511,6 +514,7 @@ fn main() {
             gl::Viewport(0, 0, game.gl.width as i32, game.gl.height as i32);
 
             // Render the background.
+            let background = &game.background;
             gl::UseProgram(background.sp);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, background.tex);
@@ -520,6 +524,7 @@ fn main() {
             // Render the game board. We turn off depth testing to do so since this is
             // a 2D scene using 3D abstractions. Otherwise Z-Buffering would prevent us
             // from rendering the game board.
+            let board = &game.board;
             gl::UseProgram(board.sp);
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
