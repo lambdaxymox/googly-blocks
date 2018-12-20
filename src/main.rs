@@ -509,14 +509,14 @@ fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
             gl::ClearColor(0.2, 0.2, 0.2, 1.0);
             gl::Viewport(0, 0, game.gl.width as i32, game.gl.height as i32);
-            /*
+
             // Render the background.
-            gl::UseProgram(background_sp);
+            gl::UseProgram(background.sp);
             gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, background_tex);
-            gl::BindVertexArray(background_vao);
+            gl::BindTexture(gl::TEXTURE_2D, background.tex);
+            gl::BindVertexArray(background.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
-            */
+
             // Render the game board. We turn off depth testing to do so since this is
             // a 2D scene using 3D abstractions. Otherwise Z-Buffering would prevent us
             // from rendering the game board.
