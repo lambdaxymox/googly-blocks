@@ -180,7 +180,7 @@ fn load_background_mesh(game: &mut Game, sp: GLuint) -> (GLuint, GLuint, GLuint)
     (v_pos_vbo, v_tex_vbo, vao)
 }
 
-fn load_background_texture(game: &mut Game) -> GLuint {
+fn load_background_textures(game: &mut Game) -> GLuint {
     let tex_image = texture::load_file(&asset_file("background.png")).unwrap();
     let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
 
@@ -272,27 +272,11 @@ fn load_board_mesh(game: &mut Game, sp: GLuint) -> (GLuint, GLuint, GLuint) {
     (v_pos_vbo, v_tex_vbo, vao)
 }
 
-fn load_board_texture(game: &mut Game) -> GLuint {
+fn load_board_textures(game: &mut Game) -> GLuint {
     let tex_image = texture::load_file(&asset_file("board.png")).unwrap();
     let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
 
     tex
-}
-
-fn load_camera(width: f32, height: f32) -> Camera {
-    let near = 0.1;
-    let far = 100.0;
-    let fov = 67.0;
-    let aspect = width / height;
-
-    let fwd = math::vec4((0.0, 0.0, 1.0, 0.0));
-    let rgt = math::vec4((1.0, 0.0, 0.0, 0.0));
-    let up  = math::vec4((0.0, 1.0, 0.0, 0.0));
-    let cam_pos = math::vec3((0.0, 0.0, 1.0));
-
-    let axis = Quaternion::new(0.0, 0.0, 0.0, -1.0);
-
-    Camera::new(near, far, fov, aspect, cam_pos, fwd, rgt, up, axis)
 }
 
 fn load_board_uniforms(game: &mut Game, sp: GLuint) {
@@ -358,6 +342,46 @@ fn load_board_uniforms(game: &mut Game, sp: GLuint) {
         gl::BindBufferBase(gl::UNIFORM_BUFFER, ubo_index, ubo);
     }
 }
+
+struct Board {
+    sp: GLuint,
+    v_pos_vbo: GLuint,
+    v_tex_vbo: GLuint,
+    vao: GLuint,
+    tex: GLuint,
+}
+
+fn load_board(game: &mut Game) -> Board {
+    let sp = load_board_shaders(game);
+    let (v_pos_vbo, v_tex_vbo, vao) = load_board_mesh(game, sp);
+    let tex = load_board_textures(game);
+    load_board_uniforms(game, sp);
+
+    Board {
+        sp: sp,
+        v_pos_vbo: v_pos_vbo,
+        v_tex_vbo: v_tex_vbo,
+        vao: vao,
+        tex: tex,
+    }
+}
+
+fn load_camera(width: f32, height: f32) -> Camera {
+    let near = 0.1;
+    let far = 100.0;
+    let fov = 67.0;
+    let aspect = width / height;
+
+    let fwd = math::vec4((0.0, 0.0, 1.0, 0.0));
+    let rgt = math::vec4((1.0, 0.0, 0.0, 0.0));
+    let up  = math::vec4((0.0, 1.0, 0.0, 0.0));
+    let cam_pos = math::vec3((0.0, 0.0, 1.0));
+
+    let axis = Quaternion::new(0.0, 0.0, 0.0, -1.0);
+
+    Camera::new(near, far, fov, aspect, cam_pos, fwd, rgt, up, axis)
+}
+
 
 ///
 /// The GLFW frame buffer size callback function. This is normally set using
@@ -425,7 +449,7 @@ fn main() {
         background_v_pos_vbo,
         background_v_tex_vbo,
         background_vao) = load_background_mesh(&mut game, background_sp);
-    let background_tex = load_background_texture(&mut game);
+    let background_tex = load_background_textures(&mut game);
 
     // Load the board.
     let board_sp = load_board_shaders(&mut game);
@@ -433,7 +457,7 @@ fn main() {
         board_vpos_vbo,
         board_v_tex_vbo,
         board_vao) = load_board_mesh(&mut game, board_sp);
-    let board_tex = load_board_texture(&mut game);
+    let board_tex = load_board_textures(&mut game);
     load_board_uniforms(&mut game, board_sp);
 
     unsafe {
