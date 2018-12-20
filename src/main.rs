@@ -273,7 +273,7 @@ fn load_board_mesh(game: &mut Game, sp: GLuint) -> (GLuint, GLuint, GLuint) {
 }
 
 fn load_board_texture(game: &mut Game) -> GLuint {
-    let tex_image = texture::load_file(&asset_file("test.png")).unwrap();
+    let tex_image = texture::load_file(&asset_file("board.png")).unwrap();
     let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
 
     tex
