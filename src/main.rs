@@ -273,7 +273,7 @@ fn load_board_mesh(game: &mut Game, sp: GLuint) -> (GLuint, GLuint, GLuint) {
 }
 
 fn load_board_texture(game: &mut Game) -> GLuint {
-    let tex_image = texture::load_file(&asset_file("board.png")).unwrap();
+    let tex_image = texture::load_file(&asset_file("test.png")).unwrap();
     let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
 
     tex
@@ -281,7 +281,7 @@ fn load_board_texture(game: &mut Game) -> GLuint {
 
 fn load_camera(width: f32, height: f32) -> Camera {
     let near = 0.1;
-    let far = 10.0;
+    let far = 100.0;
     let fov = 67.0;
     let aspect = width / height;
 
@@ -298,6 +298,7 @@ fn load_camera(width: f32, height: f32) -> Camera {
 fn load_board_uniforms(game: &mut Game, sp: GLuint) {
     let model_mat = Matrix4::one();
     let view_mat = game.camera.view_mat;
+    // TODO: Something is wrong with the projection matrix for the board.
     //let proj_mat = game.camera.proj_mat;
     let proj_mat = Matrix4::one();
 
