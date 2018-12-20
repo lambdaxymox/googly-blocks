@@ -288,7 +288,7 @@ fn load_camera(width: f32, height: f32) -> Camera {
     let fwd = math::vec4((0.0, 0.0, 1.0, 0.0));
     let rgt = math::vec4((1.0, 0.0, 0.0, 0.0));
     let up  = math::vec4((0.0, 1.0, 0.0, 0.0));
-    let cam_pos = math::vec3((0.0, 0.0, 1.0));
+    let cam_pos = math::vec3((0.0, 0.0, 10.0));
 
     let axis = Quaternion::new(0.0, 0.0, 0.0, -1.0);
 
@@ -298,9 +298,9 @@ fn load_camera(width: f32, height: f32) -> Camera {
 fn load_board_uniforms(game: &mut Game, sp: GLuint) {
     let model_mat = Matrix4::one();
     let view_mat = game.camera.view_mat;
-    // TODO: Something is wrong with the projection matrix for the board.
-    //let proj_mat = game.camera.proj_mat;
-    let proj_mat = Matrix4::one();
+    // FIXME: Something is wrong with the projection matrix for the board.
+    let proj_mat = game.camera.proj_mat;
+    //let proj_mat = Matrix4::one();
 
     let ubo_index = unsafe {
         gl::GetUniformBlockIndex(sp, glh::gl_str("Matrices").as_ptr())
@@ -349,6 +349,9 @@ fn load_board_uniforms(game: &mut Game, sp: GLuint) {
     let mut ubo = 0;
     unsafe {
         gl::GenBuffers(1, &mut ubo);
+    }
+    assert!(ubo > 0);
+    unsafe {
         gl::BindBuffer(gl::UNIFORM_BUFFER, ubo);
         gl::BufferData(
             gl::UNIFORM_BUFFER, ubo_size as GLsizeiptr,
@@ -356,7 +359,6 @@ fn load_board_uniforms(game: &mut Game, sp: GLuint) {
         );
         gl::BindBufferBase(gl::UNIFORM_BUFFER, ubo_index, ubo);
     }
-    assert!(ubo > 0);
 }
 
 ///
@@ -476,14 +478,14 @@ fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
             gl::ClearColor(0.2, 0.2, 0.2, 1.0);
             gl::Viewport(0, 0, game.gl.width as i32, game.gl.height as i32);
-
+            /*
             // Render the background.
             gl::UseProgram(background_sp);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, background_tex);
             gl::BindVertexArray(background_vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
-
+            */
             // Render the game board. We turn off depth testing to do so since this is
             // a 2D scene using 3D abstractions. Otherwise Z-Buffering would prevent us
             // from rendering the game board.
