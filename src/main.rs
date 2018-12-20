@@ -284,9 +284,6 @@ fn load_camera(width: f32, height: f32) -> Camera {
     let fov = 67.0;
     let aspect = width / height;
 
-    let cam_speed: GLfloat = 5.0;
-    let cam_yaw_speed: GLfloat = 50.0;
-
     let fwd = math::vec4((0.0, 0.0, 1.0, 0.0));
     let rgt = math::vec4((1.0, 0.0, 0.0, 0.0));
     let up  = math::vec4((0.0, 1.0, 0.0, 0.0));
@@ -294,7 +291,7 @@ fn load_camera(width: f32, height: f32) -> Camera {
 
     let axis = Quaternion::new(0.0, 0.0, 0.0, -1.0);
 
-    Camera::new(near, far, fov, aspect, cam_speed, cam_yaw_speed, cam_pos, fwd, rgt, up, axis)
+    Camera::new(near, far, fov, aspect, cam_pos, fwd, rgt, up, axis)
 }
 
 fn load_board_uniforms(game: &mut Game, sp: GLuint) {
