@@ -187,6 +187,28 @@ fn load_background_textures(game: &mut Game) -> GLuint {
     tex
 }
 
+struct Background {
+    sp: GLuint,
+    v_pos_vbo: GLuint,
+    v_tex_vbo: GLuint,
+    vao: GLuint,
+    tex: GLuint,
+}
+
+fn load_background(game: &mut Game) -> Background {
+    let sp = load_background_shaders(game);
+    let (v_pos_vbo, v_tex_vbo, vao) = load_background_mesh(game, sp);
+    let tex = load_background_textures(game);
+
+    Background {
+        sp: sp,
+        v_pos_vbo: v_pos_vbo,
+        v_tex_vbo: v_tex_vbo,
+        vao: vao,
+        tex: tex,
+    }
+}
+
 fn load_board_shaders(game: &mut Game) -> GLuint {
     let sp = glh::create_program_from_files(
         &game.gl,
@@ -444,14 +466,7 @@ fn init_game() -> Game {
 fn main() {
     let mut game = init_game();
 
-    // Load the background.
-    let background_sp = load_background_shaders(&mut game);
-    let (
-        background_v_pos_vbo,
-        background_v_tex_vbo,
-        background_vao) = load_background_mesh(&mut game, background_sp);
-    let background_tex = load_background_textures(&mut game);
-
+    let background = load_background(&mut game);
     let board = load_board(&mut game);
 
     unsafe {
