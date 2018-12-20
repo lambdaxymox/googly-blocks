@@ -46,40 +46,6 @@ struct Game {
     gl: glh::GLState,
 }
 
-///
-/// Initialize the logger.
-///
-fn init_logger(log_file: &str) {
-    file_logger::init(log_file).expect("Failed to initialize logger.");
-}
-
-///
-/// Create and OpenGL context.
-///
-fn init_gl(width: u32, height: u32) -> glh::GLState {
-    let gl_state = match glh::start_gl(width, height) {
-        Ok(val) => val,
-        Err(e) => {
-            eprintln!("Failed to Initialize OpenGL context. Got error:");
-            eprintln!("{}", e);
-            process::exit(1);
-        }
-    };
-
-    gl_state    
-}
-
-fn init_game() -> Game {
-    init_logger("googly-blocks.log");
-    info!("BEGIN LOG");
-    info!("build version: ??? ?? ???? ??:??:??");
-    let gl_state = init_gl(720, 480);
-    
-    Game {
-        gl: gl_state,
-    }
-}
-
 fn asset_file<P: AsRef<Path>>(file: P) -> PathBuf {
     let asset_path = Path::new(ASSET_PATH);
     let path = asset_path.join(file);
@@ -388,6 +354,40 @@ fn load_board_uniforms(game: &mut Game, sp: GLuint) {
 fn glfw_framebuffer_size_callback(game: &mut Game, width: u32, height: u32) {
     game.gl.width = width;
     game.gl.height = height;
+}
+
+///
+/// Initialize the logger.
+///
+fn init_logger(log_file: &str) {
+    file_logger::init(log_file).expect("Failed to initialize logger.");
+}
+
+///
+/// Create and OpenGL context.
+///
+fn init_gl(width: u32, height: u32) -> glh::GLState {
+    let gl_state = match glh::start_gl(width, height) {
+        Ok(val) => val,
+        Err(e) => {
+            eprintln!("Failed to Initialize OpenGL context. Got error:");
+            eprintln!("{}", e);
+            process::exit(1);
+        }
+    };
+
+    gl_state
+}
+
+fn init_game() -> Game {
+    init_logger("googly-blocks.log");
+    info!("BEGIN LOG");
+    info!("build version: ??? ?? ???? ??:??:??");
+    let gl_state = init_gl(720, 480);
+
+    Game {
+        gl: gl_state,
+    }
 }
 
 fn main() {
