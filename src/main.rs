@@ -452,7 +452,7 @@ fn main() {
         background_vao) = load_background_mesh(&mut game, background_sp);
     let background_tex = load_background_textures(&mut game);
 
-
+    /*
     // Load the board.
     let board_sp = load_board_shaders(&mut game);
     let (
@@ -461,7 +461,7 @@ fn main() {
         board_vao) = load_board_mesh(&mut game, board_sp);
     let board_tex = load_board_textures(&mut game);
     load_board_uniforms(&mut game, board_sp);
-
+    */
     let board = load_board(&mut game);
 
     unsafe {
@@ -515,11 +515,11 @@ fn main() {
             // Render the game board. We turn off depth testing to do so since this is
             // a 2D scene using 3D abstractions. Otherwise Z-Buffering would prevent us
             // from rendering the game board.
-            gl::UseProgram(board_sp);
+            gl::UseProgram(board.sp);
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, board_tex);
-            gl::BindVertexArray(board_vao);
+            gl::BindTexture(gl::TEXTURE_2D, board.tex);
+            gl::BindVertexArray(board.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
 
             // TODO: Render the blocks instanced.
