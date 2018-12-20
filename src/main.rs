@@ -15,7 +15,7 @@ mod gl {
 }
 
 mod gl_help;
-mod obj;
+mod mesh;
 mod texture;
 
 use gl_help as glh;
@@ -25,7 +25,7 @@ use glfw::{Action, Context, Key};
 use gl::types::{GLfloat, GLint, GLuint, GLvoid, GLsizeiptr};
 use log::{info};
 use math::{Matrix4, AsArray};
-use obj::ObjMesh;
+use mesh::ObjMesh;
 use texture::TexImage2D;
 
 use std::mem;
