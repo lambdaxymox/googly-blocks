@@ -281,14 +281,14 @@ fn load_board_texture(game: &mut Game) -> GLuint {
 
 fn load_camera(width: f32, height: f32) -> Camera {
     let near = 0.1;
-    let far = 100.0;
+    let far = 10.0;
     let fov = 67.0;
     let aspect = width / height;
 
     let fwd = math::vec4((0.0, 0.0, 1.0, 0.0));
     let rgt = math::vec4((1.0, 0.0, 0.0, 0.0));
     let up  = math::vec4((0.0, 1.0, 0.0, 0.0));
-    let cam_pos = math::vec3((0.0, 0.0, 10.0));
+    let cam_pos = math::vec3((0.0, 0.0, 1.0));
 
     let axis = Quaternion::new(0.0, 0.0, 0.0, -1.0);
 
@@ -297,7 +297,8 @@ fn load_camera(width: f32, height: f32) -> Camera {
 
 fn load_board_uniforms(game: &mut Game, sp: GLuint) {
     let model_mat = Matrix4::one();
-    let view_mat = Matrix4::one();
+    let view_mat = game.camera.view_mat;
+    //let proj_mat = game.camera.proj_mat;
     let proj_mat = Matrix4::one();
 
     let ubo_index = unsafe {
@@ -367,6 +368,13 @@ fn load_board_uniforms(game: &mut Game, sp: GLuint) {
 fn glfw_framebuffer_size_callback(game: &mut Game, width: u32, height: u32) {
     game.gl.width = width;
     game.gl.height = height;
+
+    let aspect = game.gl.width as f32 / game.gl.height as f32;
+    let fov = game.camera.fov;
+    let near = game.camera.near;
+    let far = game.camera.far;
+    game.camera.aspect = aspect;
+    game.camera.proj_mat = math::perspective((fov, aspect, near, far));
 }
 
 ///
