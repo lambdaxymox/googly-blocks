@@ -452,16 +452,6 @@ fn main() {
         background_vao) = load_background_mesh(&mut game, background_sp);
     let background_tex = load_background_textures(&mut game);
 
-    /*
-    // Load the board.
-    let board_sp = load_board_shaders(&mut game);
-    let (
-        board_vpos_vbo,
-        board_v_tex_vbo,
-        board_vao) = load_board_mesh(&mut game, board_sp);
-    let board_tex = load_board_textures(&mut game);
-    load_board_uniforms(&mut game, board_sp);
-    */
     let board = load_board(&mut game);
 
     unsafe {
