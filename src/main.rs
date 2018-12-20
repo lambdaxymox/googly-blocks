@@ -46,6 +46,7 @@ const GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FF;
 
 struct Game {
     gl: glh::GLState,
+    camera: Camera,
 }
 
 fn asset_file<P: AsRef<Path>>(file: P) -> PathBuf {
@@ -395,10 +396,14 @@ fn init_game() -> Game {
     init_logger("googly-blocks.log");
     info!("BEGIN LOG");
     info!("build version: ??? ?? ???? ??:??:??");
-    let gl_state = init_gl(720, 480);
+    let width = 720;
+    let height = 480;
+    let gl_state = init_gl(width, height);
+    let camera = load_camera(width as f32, height as f32);
 
     Game {
         gl: gl_state,
+        camera: camera,
     }
 }
 
