@@ -90,9 +90,9 @@ fn load_texture(tex_data: &TexImage2D, wrapping_mode: GLuint) -> Result<GLuint, 
     Ok(tex)
 }
 
-fn load_background_shaders(game: &mut Game) -> GLuint {
+fn load_background_shaders(game: &mut glh::GLState) -> GLuint {
     let sp = glh::create_program_from_files(
-        &game.gl,
+        game,
         &shader_file("background.vert.glsl"),
         &shader_file("background.frag.glsl")
     ).unwrap();
@@ -118,7 +118,7 @@ fn load_background_obj() -> ObjMesh {
     ObjMesh::new(points, tex_coords, normals)
 }
 
-fn load_background_mesh(game: &mut Game, sp: GLuint) -> (GLuint, GLuint, GLuint) {
+fn load_background_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLuint) {
     let mesh = load_background_obj();
 
     let v_pos_loc = unsafe {
@@ -175,7 +175,7 @@ fn load_background_mesh(game: &mut Game, sp: GLuint) -> (GLuint, GLuint, GLuint)
     (v_pos_vbo, v_tex_vbo, vao)
 }
 
-fn load_background_textures(game: &mut Game) -> GLuint {
+fn load_background_textures(game: &mut glh::GLState) -> GLuint {
     let tex_image = texture::load_file(&asset_file("background.png")).unwrap();
     let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
 
@@ -190,7 +190,7 @@ struct Background {
     tex: GLuint,
 }
 
-fn load_background(game: &mut Game) -> Background {
+fn load_background(game: &mut glh::GLState) -> Background {
     let sp = load_background_shaders(game);
     let (v_pos_vbo, v_tex_vbo, vao) = load_background_mesh(game, sp);
     let tex = load_background_textures(game);
@@ -204,9 +204,9 @@ fn load_background(game: &mut Game) -> Background {
     }
 }
 
-fn load_board_shaders(game: &mut Game) -> GLuint {
+fn load_board_shaders(game: &mut glh::GLState) -> GLuint {
     let sp = glh::create_program_from_files(
-        &game.gl,
+        &game,
         &shader_file("board.vert.glsl"),
         &shader_file("board.frag.glsl")
     ).unwrap();
@@ -232,7 +232,7 @@ fn load_board_obj() -> ObjMesh {
     ObjMesh::new(points, tex_coords, normals)
 }
 
-fn load_board_mesh(game: &mut Game, sp: GLuint) -> (GLuint, GLuint, GLuint) {
+fn load_board_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLuint) {
     let mesh = load_board_obj();
 
     let v_pos_loc = unsafe {
@@ -289,17 +289,18 @@ fn load_board_mesh(game: &mut Game, sp: GLuint) -> (GLuint, GLuint, GLuint) {
     (v_pos_vbo, v_tex_vbo, vao)
 }
 
-fn load_board_textures(game: &mut Game) -> GLuint {
+fn load_board_textures(game: &mut glh::GLState) -> GLuint {
     let tex_image = texture::load_file(&asset_file("board.png")).unwrap();
     let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
 
     tex
 }
 
-fn load_board_uniforms(game: &mut Game, sp: GLuint) {
+fn load_board_uniforms(game: &mut glh::GLState, sp: GLuint) {
     let model_mat = Matrix4::one();
-    let view_mat = game.camera.view_mat;
+    //let view_mat = game.camera.view_mat;
     //let proj_mat = game.camera.proj_mat;
+    let view_mat = Matrix4::one();
     let proj_mat = Matrix4::one();
 
     let ubo_index = unsafe {
@@ -369,7 +370,7 @@ struct Board {
     tex: GLuint,
 }
 
-fn load_board(game: &mut Game) -> Board {
+fn load_board(game: &mut glh::GLState) -> Board {
     let sp = load_board_shaders(game);
     let (v_pos_vbo, v_tex_vbo, vao) = load_board_mesh(game, sp);
     let tex = load_board_textures(game);
@@ -456,13 +457,13 @@ fn init_game() -> Game {
     info!("build version: ??? ?? ???? ??:??:??");
     let width = 720;
     let height = 480;
-    let gl_state = init_gl(width, height);
+    let mut gl_context = init_gl(width, height);
     let camera = load_camera(width as f32, height as f32);
-    let background = load_background(&mut game);
-    let board = load_board(&mut game);
+    let background = load_background(&mut gl_context);
+    let board = load_board(&mut gl_context);
 
     Game {
-        gl: gl_state,
+        gl: gl_context,
         camera: camera,
         background: background,
         board: board,
@@ -471,7 +472,6 @@ fn init_game() -> Game {
 
 fn main() {
     let mut game = init_game();
-
     unsafe {
         // Enable depth testing.
         gl::Enable(gl::DEPTH_TEST);
