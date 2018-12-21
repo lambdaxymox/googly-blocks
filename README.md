@@ -1,2 +1,2 @@
 ![Googly Blocks](readme.png)
-# Googley Blocks
+# Googly Blocks
