@@ -176,7 +176,7 @@ fn load_background_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint, GLuint,
 }
 
 fn load_background_textures(game: &mut glh::GLState) -> GLuint {
-    let tex_image = texture::load_file(&asset_file("background.png")).unwrap();
+    let tex_image = texture::load_file(&asset_file("title.png")).unwrap();
     let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
 
     tex
