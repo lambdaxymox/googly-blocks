@@ -11,6 +11,7 @@ stb_image = "0.2.2"
 serde = "1.0.80"
 serde_derive = "1.0.80"
 toml = "0.4.8"
+cgcamera = { git = "https://github.com/stallmanifold/cgcamera" }
 file_logger = { git = "https://github.com/stallmanifold/file-logger" }
 simple_cgmath = { git = "https://github.com/stallmanifold/simple-cgmath" }
 wavefront_obj = { git = "https://github.com/stallmanifold/wavefront-obj" }

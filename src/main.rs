@@ -5,6 +5,7 @@ extern crate wavefront;
 extern crate serde;
 extern crate toml;
 extern crate log;
+extern crate cgcamera;
 extern crate file_logger;
 
 #[macro_use]
@@ -19,14 +20,16 @@ mod gl_help;
 mod mesh;
 mod texture;
 
-use camera::Camera;
+use cgcamera::{
+    FrustumFov, CameraAttitude, PerspectiveFovCamera
+};
 use gl_help as glh;
 use cgmath as math;
 
 use glfw::{Action, Context, Key};
 use gl::types::{GLfloat, GLint, GLuint, GLvoid, GLsizeiptr};
 use log::{info};
-use math::{Matrix4, Quaternion};
+use math::{Matrix4, Vector3};
 use mesh::ObjMesh;
 use texture::TexImage2D;
 
@@ -385,20 +388,21 @@ fn load_board(game: &mut glh::GLState) -> Board {
     }
 }
 
-fn load_camera(width: f32, height: f32) -> Camera {
+fn load_camera(width: f32, height: f32) -> PerspectiveFovCamera {
     let near = 0.1;
     let far = 100.0;
     let fov = 67.0;
     let aspect = width / height;
+    let frustum = FrustumFov::new(near, far, fov, aspect);
 
+    let cam_pos = math::vec3((0.0, 0.0, 1.0));
     let fwd = math::vec4((0.0, 0.0, 1.0, 0.0));
     let rgt = math::vec4((1.0, 0.0, 0.0, 0.0));
     let up  = math::vec4((0.0, 1.0, 0.0, 0.0));
-    let cam_pos = math::vec3((0.0, 0.0, 1.0));
+    let axis = Vector3::new(0.0, 0.0, -1.0);
+    let attitude = CameraAttitude::new(cam_pos, fwd, rgt, up, axis);
 
-    let axis = Quaternion::new(0.0, 0.0, 0.0, -1.0);
-
-    Camera::new(near, far, fov, aspect, cam_pos, fwd, rgt, up, axis)
+    PerspectiveFovCamera::new(frustum, attitude)
 }
 
 
@@ -446,7 +450,7 @@ fn init_gl(width: u32, height: u32) -> glh::GLState {
 
 struct Game {
     gl: glh::GLState,
-    camera: Camera,
+    camera: PerspectiveFovCamera,
     background: Background,
     board: Board,
 }

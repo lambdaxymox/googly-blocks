@@ -32,6 +32,14 @@ version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "cgcamera"
+version = "0.2.3"
+source = "git+https://github.com/stallmanifold/cgcamera#f0e5da2c0a6281ff2a1b064c26bac416924b70df"
+dependencies = [
+ "simple_cgmath 0.4.3 (git+https://github.com/stallmanifold/simple-cgmath)",
+]
+
+[[package]]
 name = "chrono"
 version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -141,13 +149,14 @@ dependencies = [
 name = "googly-blocks"
 version = "0.1.15"
 dependencies = [
+ "cgcamera 0.2.3 (git+https://github.com/stallmanifold/cgcamera)",
  "file_logger 0.2.0 (git+https://github.com/stallmanifold/file-logger)",
  "gl_generator 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "glfw 0.25.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.82 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.82 (registry+https://github.com/rust-lang/crates.io-index)",
- "simple_cgmath 0.4.0 (git+https://github.com/stallmanifold/simple-cgmath)",
+ "simple_cgmath 0.4.3 (git+https://github.com/stallmanifold/simple-cgmath)",
  "stb_image 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.4.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "wavefront_obj 0.3.1 (git+https://github.com/stallmanifold/wavefront-obj)",
@@ -384,8 +393,8 @@ dependencies = [
 
 [[package]]
 name = "simple_cgmath"
-version = "0.4.0"
-source = "git+https://github.com/stallmanifold/simple-cgmath#122dff801b23c979026101fd9ae28bc525247eb3"
+version = "0.4.3"
+source = "git+https://github.com/stallmanifold/simple-cgmath#9b0b9b589680218f31f26ee00a967d65a713c34b"
 
 [[package]]
 name = "stb_image"
@@ -526,6 +535,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum bitflags 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)" = "228047a76f468627ca71776ecdebd732a3423081fcf5125585bcd7c49886ce12"
 "checksum cc 1.0.28 (registry+https://github.com/rust-lang/crates.io-index)" = "bb4a8b715cb4597106ea87c7c84b2f1d452c7492033765df7f32651e66fcf749"
 "checksum cfg-if 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)" = "082bb9b28e00d3c9d39cc03e64ce4cea0f1bb9b3fde493f0cbc008472d22bdf4"
+"checksum cgcamera 0.2.3 (git+https://github.com/stallmanifold/cgcamera)" = "<none>"
 "checksum chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)" = "45912881121cb26fad7c38c17ba7daa18764771836b34fab7d3fbd93ed633878"
 "checksum cloudabi 0.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "ddfc5b9aa5d4507acaf872de71051dfd0e309860e88966e1051e462a077aac4f"
 "checksum cmake 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)" = "6ec65ee4f9c9d16f335091d23693457ed4928657ba4982289d7fafee03bc614a"
@@ -567,7 +577,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum semver 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "2d5b7638a1f03815d94e88cb3b3c08e87f0db4d683ef499d1836aaf70a45623f"
 "checksum serde 1.0.82 (registry+https://github.com/rust-lang/crates.io-index)" = "6fa52f19aee12441d5ad11c9a00459122bd8f98707cadf9778c540674f1935b6"
 "checksum serde_derive 1.0.82 (registry+https://github.com/rust-lang/crates.io-index)" = "96a7f9496ac65a2db5929afa087b54f8fc5008dcfbe48a8874ed20049b0d6154"
-"checksum simple_cgmath 0.4.0 (git+https://github.com/stallmanifold/simple-cgmath)" = "<none>"
+"checksum simple_cgmath 0.4.3 (git+https://github.com/stallmanifold/simple-cgmath)" = "<none>"
 "checksum stb_image 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "fda28e54a600dfee451fbab5eddef5e987e50f7ace7ceced3087dfb043ee7692"
 "checksum syn 0.15.23 (registry+https://github.com/rust-lang/crates.io-index)" = "9545a6a093a3f0bd59adb472700acc08cad3776f860f16a897dfce8c88721cbc"
 "checksum termcolor 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)" = "4096add70612622289f2fdcdbd5086dc81c1e2675e6ae58d6c4f62a16c6d7f2f"
