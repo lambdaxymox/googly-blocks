@@ -15,7 +15,6 @@ mod gl {
     include!(concat!(env!("OUT_DIR"), "/gl_bindings.rs"));
 }
 
-mod camera;
 mod gl_help;
 mod mesh;
 mod texture;
