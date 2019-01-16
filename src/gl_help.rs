@@ -1,6 +1,6 @@
 #![allow(dead_code)]
-use gl;
-use gl::types::{
+use crate::gl;
+use crate::gl::types::{
     GLboolean, GLchar, GLenum, GLfloat, GLint, GLubyte, GLuint
 };
 use glfw;
@@ -216,7 +216,7 @@ pub fn start_gl(width: u32, height: u32) -> Result<GLState, String> {
 
     info!("Started GLFW successfully");
     let maybe_glfw_window = glfw.create_window(
-        width, height, &format!("Googly Blocks @ {:.2} FPS", 0.0), glfw::WindowMode::Windowed
+        width, height, &format!("Googly Blocks"), glfw::WindowMode::Windowed
     );
     let (mut window, events) = match maybe_glfw_window {
         Some(tuple) => tuple,
@@ -281,7 +281,7 @@ pub fn update_fps_counter(context: &mut GLState) {
     if elapsed_seconds > 0.5 {
         context.framerate_time_seconds = current_time_seconds;
         let fps = context.frame_count as f64 / elapsed_seconds;
-        context.window.set_title(&format!("Googly Blocks @ {:.2} FPS", fps));
+        context.window.set_title(&format!("Googly Blocks @ {:.2}", fps));
         context.frame_count = 0;
     }
 
@@ -322,19 +322,10 @@ impl fmt::Display for ShaderCompilationError {
 ///
 /// Load a shader source file.
 ///
-pub fn parse_shader<P: AsRef<Path>>(
-    file_name: P, shader_str: &mut [u8]) -> Result<usize, ShaderCompilationError> {
+pub fn parse_shader<P: AsRef<Path>, R: Read>(
+    reader: &mut R, file_name: P, shader_str: &mut [u8]) -> Result<usize, ShaderCompilationError> {
 
     shader_str[0] = 0;
-    let file = match File::open(&file_name) {
-        Ok(val) => val,
-        Err(_) => {
-            let disp = file_name.as_ref().display().to_string();
-            return Err(ShaderCompilationError::ShaderNotFound(disp));
-        }
-    };
-
-    let mut reader = BufReader::new(file);
     let bytes_read = match reader.read(shader_str) {
         Ok(val) => val,
         Err(_) => {
@@ -390,15 +381,16 @@ pub fn shader_info_log(shader_index: GLuint) -> ShaderLog {
 ///
 /// Create a shader from source files.
 ///
-pub fn create_shader<P: AsRef<Path>>(
+pub fn create_shader<P: AsRef<Path>, R: Read>(
     _context: &GLState,
-    file_name: P, kind: GLenum) -> Result<GLuint, ShaderCompilationError> {
+    reader: &mut R, file_name: P, kind: GLenum) -> Result<GLuint, ShaderCompilationError> {
 
     let disp = file_name.as_ref().display();
     info!("Creating shader from {}.\n", disp);
 
     let mut shader_string = vec![0; MAX_SHADER_LENGTH];
-    let bytes_read = match parse_shader(&file_name, &mut shader_string) {
+
+    let bytes_read = match parse_shader(reader, &file_name, &mut shader_string) {
         Ok(val) => val,
         Err(e) => {
             error!("{}", e);
@@ -547,8 +539,46 @@ pub fn create_program_from_files<P: AsRef<Path>, Q: AsRef<Path>>(
     context: &GLState,
     vert_file_name: P, frag_file_name: Q) -> Result<GLuint, ShaderCompilationError> {
 
-    let vertex_shader = create_shader(context, vert_file_name, gl::VERTEX_SHADER)?;
-    let fragment_shader = create_shader(context, frag_file_name, gl::FRAGMENT_SHADER)?;
+    let mut vert_reader = BufReader::new(match File::open(&vert_file_name) {
+        Ok(val) => val,
+        Err(_) => {
+            let disp = vert_file_name.as_ref().display().to_string();
+            return Err(ShaderCompilationError::ShaderNotFound(disp));
+        }
+    });
+    let mut frag_reader = BufReader::new(match File::open(&frag_file_name) {
+        Ok(val) => val,
+        Err(_) => {
+            let disp = frag_file_name.as_ref().display().to_string();
+            return Err(ShaderCompilationError::ShaderNotFound(disp));
+        }
+    });
+
+    let vertex_shader = create_shader(
+        context, &mut vert_reader, vert_file_name, gl::VERTEX_SHADER
+    )?;
+    let fragment_shader = create_shader(
+        context, &mut frag_reader, frag_file_name, gl::FRAGMENT_SHADER
+    )?;
+    let program = create_program(context, vertex_shader, fragment_shader)?;
+
+    Ok(program)
+}
+
+///
+/// Compile and link a shader program directly from any readable sources.
+///
+pub fn create_program_from_reader<R1: Read, P1: AsRef<Path>, R2: Read, P2: AsRef<Path>>(
+    context: &GLState,
+    vert_reader: &mut R1, vert_file_name: P1,
+    frag_reader: &mut R2, frag_file_name: P2) -> Result<GLuint, ShaderCompilationError> {
+
+    let vertex_shader = create_shader(
+        context, vert_reader, vert_file_name, gl::VERTEX_SHADER
+    )?;
+    let fragment_shader = create_shader(
+        context, frag_reader, frag_file_name, gl::FRAGMENT_SHADER
+    )?;
     let program = create_program(context, vertex_shader, fragment_shader)?;
 
     Ok(program)
