@@ -131,6 +131,11 @@ impl ObjMesh {
     }
 }
 
+pub fn load_from_memory(buffer: &[u8]) -> Result<ObjMesh, String> {
+    let mut reader = BufReader::new(buffer);
+    load(&mut reader)
+}
+
 pub fn load<R: BufRead>(reader: &mut R) -> Result<ObjMesh, String> {
     let object_set = obj::parse(reader).expect("File not found.");
     let object = &object_set[0];
