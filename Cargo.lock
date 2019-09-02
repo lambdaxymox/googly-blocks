@@ -102,8 +102,8 @@ dependencies = [
 
 [[package]]
 name = "file_logger"
-version = "0.4.3"
-source = "git+https://github.com/lambdaxymox/file-logger#946b5bc3714fdd581ab955fc871f13b9d6452c0d"
+version = "0.4.5"
+source = "git+https://github.com/lambdaxymox/file-logger#593bada68149a5dec3dab71a6efe3ea373cb87f2"
 dependencies = [
  "chrono 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -163,10 +163,10 @@ dependencies = [
 
 [[package]]
 name = "googly-blocks"
-version = "0.1.22"
+version = "0.1.23"
 dependencies = [
  "cgcamera 0.2.5 (git+https://github.com/lambdaxymox/cgcamera)",
- "file_logger 0.4.3 (git+https://github.com/lambdaxymox/file-logger)",
+ "file_logger 0.4.5 (git+https://github.com/lambdaxymox/file-logger)",
  "gl_generator 0.13.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "glfw 0.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "lean_cgmath 0.6.3 (git+https://github.com/lambdaxymox/lean-cgmath)",
@@ -650,7 +650,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum cloudabi 0.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "ddfc5b9aa5d4507acaf872de71051dfd0e309860e88966e1051e462a077aac4f"
 "checksum cmake 0.1.42 (registry+https://github.com/rust-lang/crates.io-index)" = "81fb25b677f8bf1eb325017cb6bb8452f87969db0fedb4f757b297bee78a7c62"
 "checksum env_logger 0.5.13 (registry+https://github.com/rust-lang/crates.io-index)" = "15b0a4d2e39f8420210be8b27eeda28029729e2fd4291019455016c348240c38"
-"checksum file_logger 0.4.3 (git+https://github.com/lambdaxymox/file-logger)" = "<none>"
+"checksum file_logger 0.4.5 (git+https://github.com/lambdaxymox/file-logger)" = "<none>"
 "checksum fuchsia-cprng 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "a06f77d526c1a601b7c4cdd98f54b5eaabffc14d5f2f0296febdc7f357c6d3ba"
 "checksum gcc 0.3.55 (registry+https://github.com/rust-lang/crates.io-index)" = "8f5f3913fa0bfe7ee1fd8248b6b9f42a5af4b9d65ec2dd2c3c26132b950ecfc2"
 "checksum getrandom 0.1.11 (registry+https://github.com/rust-lang/crates.io-index)" = "fc344b02d3868feb131e8b5fe2b9b0a1cc42942679af493061fc13b853243872"
