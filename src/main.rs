@@ -1,5 +1,4 @@
 extern crate glfw;
-extern crate stb_image;
 extern crate cgmath;
 extern crate mini_obj;
 extern crate serde;
@@ -7,6 +6,7 @@ extern crate toml;
 extern crate log;
 extern crate cgcamera;
 extern crate file_logger;
+extern crate teximage2d;
 
 #[macro_use]
 extern crate serde_derive;
@@ -16,7 +16,6 @@ mod gl {
 }
 
 mod gl_help;
-mod texture;
 
 use cgcamera::{
     FrustumFov, CameraAttitude, PerspectiveFovCamera
@@ -30,7 +29,7 @@ use gl::types::{GLfloat, GLint, GLuint, GLvoid, GLsizeiptr};
 use log::{info};
 use math::{One, Matrix4, Vector3};
 use mesh::ObjMesh;
-use texture::TexImage2D;
+use teximage2d::TexImage2D;
 
 use std::mem;
 use std::process;
@@ -178,7 +177,7 @@ fn load_background_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint, GLuint,
 }
 
 fn load_background_textures(game: &mut glh::GLState) -> GLuint {
-    let tex_image = texture::load_file(&asset_file("title.png")).unwrap();
+    let tex_image = teximage2d::load_file(&asset_file("title.png")).unwrap();
     let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
 
     tex
@@ -292,7 +291,7 @@ fn load_board_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLui
 }
 
 fn load_board_textures(game: &mut glh::GLState) -> GLuint {
-    let tex_image = texture::load_file(&asset_file("board.png")).unwrap();
+    let tex_image = teximage2d::load_file(&asset_file("board.png")).unwrap();
     let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
 
     tex

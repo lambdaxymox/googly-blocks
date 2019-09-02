@@ -1,13 +1,12 @@
 [package]
 name = "googly-blocks"
-version = "0.1.20"
+version = "0.1.21"
 authors = ["LambdaXymox <lambda.xymox@gmail.com>"]
 build = "build.rs"
 
 [dependencies]
 glfw = "0.25.0"
 log = "0.4.6"
-stb_image = "0.2.2"
 serde = "1.0.80"
 serde_derive = "1.0.80"
 toml = "0.4.8"
@@ -15,6 +14,7 @@ cgcamera = { git = "https://github.com/lambdaxymox/cgcamera" }
 file_logger = { git = "https://github.com/lambdaxymox/file-logger" }
 lean_cgmath = { git = "https://github.com/lambdaxymox/lean-cgmath" }
 mini_obj = { git = "https://github.com/lambdaxymox/mini-obj" }
+teximage2d = { git = "https://github.com/lambdaxymox/teximage2d" }
 
 [build-dependencies]
 gl_generator = "0.10.0"
