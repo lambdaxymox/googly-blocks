@@ -1,14 +1,12 @@
 [package]
 name = "googly-blocks"
-version = "0.1.24"
+version = "0.1.25"
 authors = ["LambdaXymox <lambda.xymox@gmail.com>"]
 build = "build.rs"
 
 [dependencies]
 glfw = "0.32.0"
 log = "0.4.6"
-serde = "1.0.80"
-serde_derive = "1.0.80"
 toml = "0.4.8"
 cgcamera = { git = "https://github.com/lambdaxymox/cgcamera" }
 file_logger = { git = "https://github.com/lambdaxymox/file-logger" }

@@ -1,15 +1,12 @@
 extern crate glfw;
 extern crate cgmath;
 extern crate mini_obj;
-extern crate serde;
 extern crate toml;
 extern crate log;
 extern crate cgcamera;
 extern crate file_logger;
 extern crate teximage2d;
 
-#[macro_use]
-extern crate serde_derive;
 
 mod gl {
     include!(concat!(env!("OUT_DIR"), "/gl_bindings.rs"));
