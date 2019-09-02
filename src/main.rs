@@ -1,7 +1,7 @@
 extern crate glfw;
 extern crate stb_image;
 extern crate cgmath;
-extern crate wavefront;
+extern crate wavefront_obj;
 extern crate serde;
 extern crate toml;
 extern crate log;
@@ -28,7 +28,7 @@ use cgmath as math;
 use glfw::{Action, Context, Key};
 use gl::types::{GLfloat, GLint, GLuint, GLvoid, GLsizeiptr};
 use log::{info};
-use math::{Matrix4, Vector3};
+use math::{One, Matrix4, Vector3};
 use mesh::ObjMesh;
 use texture::TexImage2D;
 

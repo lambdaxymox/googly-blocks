@@ -4,8 +4,8 @@ use std::io::{BufRead, BufReader};
 use std::mem;
 use std::path::Path;
 
-use wavefront::obj;
-use wavefront::obj::{Element, VTNTriple};
+use wavefront_obj as obj;
+use wavefront_obj::{Element, VTNTriple};
 
 
 #[derive(Clone, Debug, PartialEq)]
