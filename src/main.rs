@@ -16,7 +16,6 @@ mod gl {
 }
 
 mod gl_help;
-//mod mesh;
 mod texture;
 
 use cgcamera::{
