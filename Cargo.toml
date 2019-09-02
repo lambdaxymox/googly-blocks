@@ -1,6 +1,6 @@
 [package]
 name = "googly-blocks"
-version = "0.1.18"
+version = "0.1.19"
 authors = ["LambdaXymox <lambda.xymox@gmail.com>"]
 build = "build.rs"
 
@@ -14,7 +14,7 @@ toml = "0.4.8"
 cgcamera = { git = "https://github.com/lambdaxymox/cgcamera" }
 file_logger = { git = "https://github.com/lambdaxymox/file-logger" }
 lean_cgmath = { git = "https://github.com/lambdaxymox/lean-cgmath" }
-wavefront_obj = { git = "https://github.com/lambdaxymox/wavefront-obj" }
+mini_obj = { git = "https://github.com/lambdaxymox/mini-obj" }
 
 [build-dependencies]
 gl_generator = "0.10.0"

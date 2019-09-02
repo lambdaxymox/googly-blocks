@@ -1,7 +1,7 @@
 extern crate glfw;
 extern crate stb_image;
 extern crate cgmath;
-extern crate wavefront_obj;
+extern crate mini_obj;
 extern crate serde;
 extern crate toml;
 extern crate log;
@@ -16,7 +16,7 @@ mod gl {
 }
 
 mod gl_help;
-mod mesh;
+//mod mesh;
 mod texture;
 
 use cgcamera::{
@@ -24,6 +24,7 @@ use cgcamera::{
 };
 use gl_help as glh;
 use cgmath as math;
+use mini_obj as mesh;
 
 use glfw::{Action, Context, Key};
 use gl::types::{GLfloat, GLint, GLuint, GLvoid, GLsizeiptr};
