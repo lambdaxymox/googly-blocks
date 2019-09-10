@@ -1,4 +1,4 @@
-#version 420 core
+#version 460 core
 
 in Data {
     in vec2 tex_coord;

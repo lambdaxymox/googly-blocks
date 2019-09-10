@@ -1,4 +1,4 @@
-#version 420 core
+#version 460 core
 
 uniform Matrices {
     mat4 m_proj;

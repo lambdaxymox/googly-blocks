@@ -536,6 +536,8 @@ fn main() {
             // TODO: Render the UI elements.
 
             // TODO: Render the text.
+
+            // TODO: Render the googly eyes.
         }
 
         // Send the results to the output.

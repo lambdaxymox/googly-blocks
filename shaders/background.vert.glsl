@@ -1,4 +1,4 @@
-#version 420 core
+#version 460 core
 
 in vec3 v_pos;
 in vec2 v_tex;

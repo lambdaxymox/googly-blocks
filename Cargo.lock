@@ -163,7 +163,7 @@ dependencies = [
 
 [[package]]
 name = "googly-blocks"
-version = "0.1.25"
+version = "0.1.26"
 dependencies = [
  "cgcamera 0.2.5 (git+https://github.com/lambdaxymox/cgcamera)",
  "file_logger 0.4.5 (git+https://github.com/lambdaxymox/file-logger)",
