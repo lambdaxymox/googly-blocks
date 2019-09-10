@@ -33,7 +33,6 @@ use teximage2d::TexImage2D;
 
 use std::io;
 use std::mem;
-use std::process;
 use std::ptr;
 
 // OpenGL extension constants.
@@ -553,9 +552,7 @@ fn init_gl(width: u32, height: u32) -> glh::GLState {
     let gl_state = match glh::start_gl(width, height) {
         Ok(val) => val,
         Err(e) => {
-            eprintln!("Failed to Initialize OpenGL context. Got error:");
-            eprintln!("{}", e);
-            process::exit(1);
+            panic!("Failed to Initialize OpenGL context. Got error: {}", e);
         }
     };
 
