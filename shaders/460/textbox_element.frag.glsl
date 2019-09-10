@@ -2,7 +2,7 @@
 
 in vec2 st;
 uniform sampler2D tex;
-uniform vbec4 text_color;
+uniform vec4 text_color;
 out vec4 frag_color;
 
 

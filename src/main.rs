@@ -676,6 +676,7 @@ struct Game {
     camera: PerspectiveFovCamera,
     background: Background,
     board: Board,
+    score_board: TextBox,
     level: usize,
     tetrises: usize,
     lines: usize,
@@ -692,6 +693,7 @@ fn init_game() -> Game {
     let camera = load_camera(width as f32, height as f32);
     let background = load_background(&mut gl_context);
     let board = load_board(&mut gl_context);
+    let score_board = load_textbox(&mut gl_context, "SCORE", 0.5, 0.1);
     let score = 0;
     let lines = 0;
     let tetrises = 0;
@@ -702,6 +704,7 @@ fn init_game() -> Game {
         camera: camera,
         background: background,
         board: board,
+        score_board: score_board,
         score: score,
         lines: lines,
         tetrises: tetrises,
