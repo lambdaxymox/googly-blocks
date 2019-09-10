@@ -509,7 +509,7 @@ fn load_textbox_background_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint,
 }
 
 fn load_textbox_background_textures(game: &mut glh::GLState) -> GLuint {
-    let arr: &'static [u8; 934] = include_asset!("textbox.png");
+    let arr: &'static [u8; 934] = include_asset!("textbox_background.png");
     let asset = to_vec(&arr[0], 934);
     let tex_image = teximage2d::load_from_memory(&asset).unwrap();
     let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
