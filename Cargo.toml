@@ -8,6 +8,7 @@ build = "build.rs"
 glfw = "0.32.0"
 log = "0.4.6"
 toml = "0.4.8"
+bmfa = { git = "https://github.com/lambdaxymox/bmfa" }
 cgcamera = { git = "https://github.com/lambdaxymox/cgcamera" }
 file_logger = { git = "https://github.com/lambdaxymox/file-logger" }
 lean_cgmath = { git = "https://github.com/lambdaxymox/lean-cgmath" }

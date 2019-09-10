@@ -1,4 +1,5 @@
 extern crate glfw;
+extern crate bmfa;
 extern crate cgmath;
 extern crate mini_obj;
 extern crate toml;
@@ -24,6 +25,7 @@ use gl_help as glh;
 use cgmath as math;
 use mini_obj as mesh;
 
+use bmfa::BitmapFontAtlas;
 use glfw::{Action, Context, Key};
 use gl::types::{GLfloat, GLint, GLuint, GLvoid, GLsizeiptr};
 use log::{info};
@@ -636,6 +638,15 @@ fn load_camera(width: f32, height: f32) -> PerspectiveFovCamera {
     PerspectiveFovCamera::new(frustum, attitude)
 }
 
+fn load_font_atlas() -> bmfa::BitmapFontAtlas {
+    let arr: &'static [u8; 115559] = include_asset!("googly_blocks.bmfa");
+    let contents = to_vec(&arr[0], 115559);
+    let mut reader = io::Cursor::new(contents);
+    let atlas = bmfa::from_reader(&mut reader).unwrap();
+
+    atlas
+}
+
 
 /// The GLFW frame buffer size callback function. This is normally set using
 /// the GLFW `glfwSetFramebufferSizeCallback` function, but instead we explicitly
@@ -674,6 +685,7 @@ fn init_gl(width: u32, height: u32) -> glh::GLState {
 struct Game {
     gl: glh::GLState,
     camera: PerspectiveFovCamera,
+    atlas: BitmapFontAtlas,
     background: Background,
     board: Board,
     score_board: TextBox,
@@ -691,6 +703,7 @@ fn init_game() -> Game {
     let height = 480;
     let mut gl_context = init_gl(width, height);
     let camera = load_camera(width as f32, height as f32);
+    let atlas = load_font_atlas();
     let background = load_background(&mut gl_context);
     let board = load_board(&mut gl_context);
     let score_board = load_textbox(&mut gl_context, "SCORE", 0.5, 0.1);
@@ -702,6 +715,7 @@ fn init_game() -> Game {
     Game {
         gl: gl_context,
         camera: camera,
+        atlas: atlas,
         background: background,
         board: board,
         score_board: score_board,
