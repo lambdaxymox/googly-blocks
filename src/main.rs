@@ -381,7 +381,7 @@ fn load_board(game: &mut glh::GLState) -> Board {
         tex: tex,
     }
 }
-
+/* ------------------------------- TEXT BOX RENDERING ---------------------- */
 struct TextBoxBackground {
     sp: GLuint,
     v_pos_vbo: GLuint,
@@ -395,10 +395,23 @@ struct TextBoxElement {
     v_pos_vbo: GLuint,
     v_tex_vbo: GLuint,
     vao: GLuint,
+    location: TextBoxElementPlacement,
+}
+
+struct TextBoxPlacement {
+    pos_x: f32,
+    pos_y: f32,
+}
+
+struct TextBoxElementPlacement {
+    offset_x: f32,
+    offset_y: f32,
+    scale_px: f32,
 }
 
 struct TextBox {
     name: String,
+    location: TextBoxPlacement,
     background: TextBoxBackground,
     label: TextBoxElement,
     content: TextBoxElement,
@@ -575,30 +588,36 @@ fn load_textbox_background(game: &mut glh::GLState) -> TextBoxBackground {
     }       
 }
 
-fn load_textbox_element(game: &mut glh::GLState) -> TextBoxElement {
+fn load_textbox_element(game: &mut glh::GLState, offset_x: f32, offset_y: f32, scale_px: f32) -> TextBoxElement {
     let sp = load_textbox_element_shaders(game);
     let (v_pos_vbo, v_tex_vbo, vao) = load_textbox_element_buffer(game, sp);
+    let location = TextBoxElementPlacement { offset_x, offset_y, scale_px };
+
     TextBoxElement {
         sp: sp,
         v_pos_vbo: v_pos_vbo,
         v_tex_vbo: v_tex_vbo,
         vao: vao,
+        location: location,
     }
 }
 
-fn load_textbox(game: &mut glh::GLState, name: &str) -> TextBox {
+fn load_textbox(game: &mut glh::GLState, name: &str, pos_x: f32, pos_y: f32) -> TextBox {
     let name = String::from(name);
+    let location = TextBoxPlacement { pos_x, pos_y };
     let background = load_textbox_background(game);
-    let label = load_textbox_element(game);
-    let content = load_textbox_element(game);
+    let label = load_textbox_element(game, 0.1, 0.1, 64.0);
+    let content = load_textbox_element(game, 0.1, 0.1, 64.0);
 
     TextBox {
         name: name,
+        location: location,
         background: background,
         label: label,
         content: content,
     }
 }
+/* --------------------------- END TEXT BOX RENDERING ---------------------- */
 
 fn load_camera(width: f32, height: f32) -> PerspectiveFovCamera {
     let near = 0.1;
