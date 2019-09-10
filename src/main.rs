@@ -12,6 +12,9 @@ mod gl {
     include!(concat!(env!("OUT_DIR"), "/gl_bindings.rs"));
 }
 
+#[macro_use]
+mod macros;
+
 mod gl_help;
 
 use cgcamera::{
@@ -28,32 +31,24 @@ use math::{One, Matrix4, Vector3};
 use mesh::ObjMesh;
 use teximage2d::TexImage2D;
 
+use std::io;
 use std::mem;
 use std::process;
 use std::path::{Path, PathBuf};
 use std::ptr;
-
-
-const SHADER_PATH: &str = "shaders";
-const ASSET_PATH: &str = "assets";
 
 // OpenGL extension constants.
 const GL_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FE;
 const GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FF;
 
 
-fn asset_file<P: AsRef<Path>>(file: P) -> PathBuf {
-    let asset_path = Path::new(ASSET_PATH);
-    let path = asset_path.join(file);
+fn to_vec(ptr: *const u8, length: usize) -> Vec<u8> {
+    let mut vec = vec![0 as u8; length];
+    for i in 0..length {
+        vec[i] = unsafe { *((ptr as usize + i) as *const u8) };
+    }
 
-    path
-}
-
-fn shader_file<P: AsRef<Path>>(file: P) -> PathBuf {
-    let shader_path = Path::new(SHADER_PATH);
-    let path = shader_path.join(file);
-
-    path
+    vec
 }
 
 ///
@@ -89,10 +84,12 @@ fn load_texture(tex_data: &TexImage2D, wrapping_mode: GLuint) -> Result<GLuint, 
 }
 
 fn load_background_shaders(game: &mut glh::GLState) -> GLuint {
-    let sp = glh::create_program_from_files(
+    let mut vert_reader = io::Cursor::new(include_shader!("background.vert.glsl"));
+    let mut frag_reader = io::Cursor::new(include_shader!("background.frag.glsl"));
+    let sp = glh::create_program_from_reader(
         game,
-        &shader_file("background.vert.glsl"),
-        &shader_file("background.frag.glsl")
+        &mut vert_reader, "background.vert.glsl",
+        &mut frag_reader, "background.frag.glsl"
     ).unwrap();
     assert!(sp > 0);
 
@@ -174,7 +171,9 @@ fn load_background_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint, GLuint,
 }
 
 fn load_background_textures(game: &mut glh::GLState) -> GLuint {
-    let tex_image = teximage2d::load_file(&asset_file("title.png")).unwrap();
+    let arr: &'static [u8; 27695] = include_asset!("title.png");
+    let asset = to_vec(&arr[0], 27695);
+    let tex_image = teximage2d::load_from_memory(&asset).unwrap();
     let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
 
     tex
@@ -203,10 +202,12 @@ fn load_background(game: &mut glh::GLState) -> Background {
 }
 
 fn load_board_shaders(game: &mut glh::GLState) -> GLuint {
-    let sp = glh::create_program_from_files(
-        &game,
-        &shader_file("board.vert.glsl"),
-        &shader_file("board.frag.glsl")
+    let mut vert_reader = io::Cursor::new(include_shader!("board.vert.glsl"));
+    let mut frag_reader = io::Cursor::new(include_shader!("board.frag.glsl"));
+    let sp = glh::create_program_from_reader(
+        game,
+        &mut vert_reader, "board.vert.glsl",
+        &mut frag_reader, "board.frag.glsl"
     ).unwrap();
     assert!(sp > 0);
 
@@ -288,7 +289,9 @@ fn load_board_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLui
 }
 
 fn load_board_textures(game: &mut glh::GLState) -> GLuint {
-    let tex_image = teximage2d::load_file(&asset_file("board.png")).unwrap();
+    let arr: &'static [u8; 4826] = include_asset!("board.png");
+    let asset = to_vec(&arr[0], 4826);
+    let tex_image = teximage2d::load_from_memory(&asset).unwrap();
     let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
 
     tex
