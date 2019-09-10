@@ -777,7 +777,6 @@ fn main() {
             // TODO: Render the blocks instanced.
 
             // TODO: Render the UI elements.
-            
 
             // TODO: Render the text.
 
