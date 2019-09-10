@@ -34,7 +34,6 @@ use teximage2d::TexImage2D;
 use std::io;
 use std::mem;
 use std::process;
-use std::path::{Path, PathBuf};
 use std::ptr;
 
 // OpenGL extension constants.

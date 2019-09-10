@@ -45,9 +45,3 @@ macro_rules! include_shader {
         include_str!(shader_file!($shader))
     }
 }
-
-macro_rules! include_code {
-    ($code_fragment:expr) => {
-        include!(concat!(concat_path!("..", ".code_fragments"), $code_fragment))
-    }
-}
