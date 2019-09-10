@@ -382,8 +382,7 @@ fn load_board(game: &mut glh::GLState) -> Board {
     }
 }
 
-struct TextBox {
-    name: String,
+struct TextBoxBackground {
     sp: GLuint,
     v_pos_vbo: GLuint,
     v_tex_vbo: GLuint,
@@ -391,13 +390,40 @@ struct TextBox {
     tex: GLuint,
 }
 
-fn load_textbox_shaders(game: &mut glh::GLState) -> GLuint {
-    let mut vert_reader = io::Cursor::new(include_shader!("textbox.vert.glsl"));
-    let mut frag_reader = io::Cursor::new(include_shader!("textbox.frag.glsl"));
+struct TextBoxElement {
+    sp: GLuint,
+    v_pos_vbo: GLuint,
+    v_tex_vbo: GLuint,
+    vao: GLuint,
+}
+
+struct TextBox {
+    name: String,
+    background: TextBoxBackground,
+    label: TextBoxElement,
+    content: TextBoxElement,
+}
+
+fn load_textbox_background_shaders(game: &mut glh::GLState) -> GLuint {
+    let mut vert_reader = io::Cursor::new(include_shader!("textbox_background.vert.glsl"));
+    let mut frag_reader = io::Cursor::new(include_shader!("textbox_background.frag.glsl"));
     let sp = glh::create_program_from_reader(
         game,
-        &mut vert_reader, "textbox.vert.glsl",
-        &mut frag_reader, "textbox.frag.glsl"
+        &mut vert_reader, "textbox_background.vert.glsl",
+        &mut frag_reader, "textbox_background.frag.glsl"
+    ).unwrap();
+    assert!(sp > 0);
+
+    sp
+}
+
+fn load_textbox_element_shaders(game: &mut glh::GLState) -> GLuint {
+    let mut vert_reader = io::Cursor::new(include_shader!("textbox_element.vert.glsl"));
+    let mut frag_reader = io::Cursor::new(include_shader!("textbox_element.frag.glsl"));
+    let sp = glh::create_program_from_reader(
+        game,
+        &mut vert_reader, "textbox_element.vert.glsl",
+        &mut frag_reader, "textbox_element.frag.glsl"
     ).unwrap();
     assert!(sp > 0);
 
@@ -421,7 +447,7 @@ fn load_textbox_obj() -> ObjMesh {
     ObjMesh::new(points, tex_coords, normals)
 }
 
-fn load_textbox_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLuint) {
+fn load_textbox_background_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLuint) {
     let mesh = load_textbox_obj();
 
     let v_pos_loc = unsafe {
@@ -482,7 +508,7 @@ fn load_textbox_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint, GLuint, GL
     (v_pos_vbo, v_tex_vbo, vao)
 }
 
-fn load_textbox_textures(game: &mut glh::GLState) -> GLuint {
+fn load_textbox_background_textures(game: &mut glh::GLState) -> GLuint {
     let arr: &'static [u8; 934] = include_asset!("textbox.png");
     let asset = to_vec(&arr[0], 934);
     let tex_image = teximage2d::load_from_memory(&asset).unwrap();
@@ -491,19 +517,86 @@ fn load_textbox_textures(game: &mut glh::GLState) -> GLuint {
     tex
 }
 
-fn load_textbox(game: &mut glh::GLState, name: &str) -> TextBox {
-    let name = String::from(name);
-    let sp = load_textbox_shaders(game);
-    let (v_pos_vbo, v_tex_vbo, vao) = load_textbox_mesh(game, sp);
-    let tex = load_textbox_textures(game);
+/// Set up the geometry for rendering title screen text.
+fn load_textbox_element_buffer(context: &glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLuint) {
+    let v_pos_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+    };
+    assert!(v_pos_loc > -1);
+    let v_pos_loc = v_pos_loc as u32;
+
+    let v_tex_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+    };
+    assert!(v_tex_loc > -1);
+    let v_tex_loc = v_tex_loc as u32;
     
-    TextBox {
-        name: name,
+    let mut v_pos_vbo = 0;
+    unsafe {
+        gl::GenBuffers(1, &mut v_pos_vbo);
+    }
+    assert!(v_pos_vbo > 0);
+
+    let mut v_tex_vbo = 0;
+    unsafe {
+        gl::GenBuffers(1, &mut v_tex_vbo);
+    }
+    assert!(v_tex_vbo > 0);
+
+    let mut vao = 0;
+    unsafe {
+        gl::GenVertexArrays(1, &mut vao);
+    }
+    assert!(vao > 0);
+    unsafe {
+        gl::BindVertexArray(vao);
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
+        gl::VertexAttribPointer(v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(v_pos_loc);
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
+        gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(v_tex_loc);
+    }
+
+    (v_pos_vbo, v_tex_vbo, vao)
+}
+
+fn load_textbox_background(game: &mut glh::GLState) -> TextBoxBackground {
+    let background_sp = load_textbox_background_shaders(game);
+    let (v_pos_vbo, v_tex_vbo, vao) = load_textbox_background_mesh(game, background_sp);
+    let background_tex = load_textbox_background_textures(game);
+    
+    TextBoxBackground {
+        sp: background_sp,
+        v_pos_vbo: v_pos_vbo,
+        v_tex_vbo: v_tex_vbo,
+        vao: vao,
+        tex: background_tex,
+    }       
+}
+
+fn load_textbox_element(game: &mut glh::GLState) -> TextBoxElement {
+    let sp = load_textbox_element_shaders(game);
+    let (v_pos_vbo, v_tex_vbo, vao) = load_textbox_element_buffer(game, sp);
+    TextBoxElement {
         sp: sp,
         v_pos_vbo: v_pos_vbo,
         v_tex_vbo: v_tex_vbo,
         vao: vao,
-        tex: tex,
+    }
+}
+
+fn load_textbox(game: &mut glh::GLState, name: &str) -> TextBox {
+    let name = String::from(name);
+    let background = load_textbox_background(game);
+    let label = load_textbox_element(game);
+    let content = load_textbox_element(game);
+
+    TextBox {
+        name: name,
+        background: background,
+        label: label,
+        content: content,
     }
 }
 
@@ -662,6 +755,7 @@ fn main() {
             // TODO: Render the blocks instanced.
 
             // TODO: Render the UI elements.
+            
 
             // TODO: Render the text.
 
