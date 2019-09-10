@@ -50,9 +50,7 @@ fn to_vec(ptr: *const u8, length: usize) -> Vec<u8> {
     vec
 }
 
-///
 /// Load texture image into the GPU.
-///
 fn load_texture(tex_data: &TexImage2D, wrapping_mode: GLuint) -> Result<GLuint, String> {
     let mut tex = 0;
     unsafe {
@@ -385,6 +383,131 @@ fn load_board(game: &mut glh::GLState) -> Board {
     }
 }
 
+struct TextBox {
+    name: String,
+    sp: GLuint,
+    v_pos_vbo: GLuint,
+    v_tex_vbo: GLuint,
+    vao: GLuint,
+    tex: GLuint,
+}
+
+fn load_textbox_shaders(game: &mut glh::GLState) -> GLuint {
+    let mut vert_reader = io::Cursor::new(include_shader!("textbox.vert.glsl"));
+    let mut frag_reader = io::Cursor::new(include_shader!("textbox.frag.glsl"));
+    let sp = glh::create_program_from_reader(
+        game,
+        &mut vert_reader, "textbox.vert.glsl",
+        &mut frag_reader, "textbox.frag.glsl"
+    ).unwrap();
+    assert!(sp > 0);
+
+    sp
+}
+
+fn load_textbox_obj() -> ObjMesh {
+    let points: Vec<[GLfloat; 3]> = vec![
+        [1.0, 0.5, 0.0], [-1.0,  0.5, 0.0], [-1.0, -0.5, 0.0],
+        [1.0, 0.5, 0.0], [-1.0, -0.5, 0.0], [ 1.0, -0.5, 0.0]
+    ];
+    let tex_coords: Vec<[GLfloat; 2]> = vec![
+        [1.0, 1.0], [0.0, 1.0], [0.0, 0.0],
+        [1.0, 1.0], [0.0, 0.0], [1.0, 0.0]
+    ];
+    let normals: Vec<[GLfloat; 3]> = vec![
+        [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
+        [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0]
+    ];
+
+    ObjMesh::new(points, tex_coords, normals)
+}
+
+fn load_textbox_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLuint) {
+    let mesh = load_textbox_obj();
+
+    let v_pos_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+    };
+    assert!(v_pos_loc > -1);
+    let v_pos_loc = v_pos_loc as u32;
+
+    let v_tex_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+    };
+    assert!(v_tex_loc > -1);
+    let v_tex_loc = v_tex_loc as u32;
+
+    let mut v_pos_vbo = 0;
+    unsafe {
+        gl::GenBuffers(1, &mut v_pos_vbo);
+    }
+    assert!(v_pos_vbo > 0);
+    unsafe {
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            mesh.points.len_bytes() as GLsizeiptr,
+            mesh.points.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+        );
+    }
+
+    let mut v_tex_vbo = 0;
+    unsafe {
+        gl::GenBuffers(1, &mut v_tex_vbo);
+    }
+    assert!(v_tex_vbo > 0);
+    unsafe {
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            mesh.tex_coords.len_bytes() as GLsizeiptr,
+            mesh.tex_coords.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+        );
+    }
+
+    let mut vao = 0;
+    unsafe {
+        gl::GenVertexArrays(1, &mut vao);
+    }
+    assert!(vao > 0);
+    unsafe {
+        gl::BindVertexArray(vao);
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
+        gl::VertexAttribPointer(v_pos_loc, 3, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
+        gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(v_pos_loc);
+        gl::EnableVertexAttribArray(v_tex_loc);
+    }
+
+    (v_pos_vbo, v_tex_vbo, vao)
+}
+
+fn load_textbox_textures(game: &mut glh::GLState) -> GLuint {
+    let arr: &'static [u8; 934] = include_asset!("textbox.png");
+    let asset = to_vec(&arr[0], 934);
+    let tex_image = teximage2d::load_from_memory(&asset).unwrap();
+    let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
+
+    tex
+}
+
+fn load_textbox(game: &mut glh::GLState, name: &str) -> TextBox {
+    let name = String::from(name);
+    let sp = load_textbox_shaders(game);
+    let (v_pos_vbo, v_tex_vbo, vao) = load_textbox_mesh(game, sp);
+    let tex = load_textbox_textures(game);
+    
+    TextBox {
+        name: name,
+        sp: sp,
+        v_pos_vbo: v_pos_vbo,
+        v_tex_vbo: v_tex_vbo,
+        vao: vao,
+        tex: tex,
+    }
+}
+
 fn load_camera(width: f32, height: f32) -> PerspectiveFovCamera {
     let near = 0.1;
     let far = 100.0;
@@ -403,12 +526,10 @@ fn load_camera(width: f32, height: f32) -> PerspectiveFovCamera {
 }
 
 
-///
 /// The GLFW frame buffer size callback function. This is normally set using
 /// the GLFW `glfwSetFramebufferSizeCallback` function, but instead we explicitly
 /// handle window resizing in our state updates on the application side. Run this function
 /// whenever the size of the viewport changes.
-///
 #[inline]
 fn glfw_framebuffer_size_callback(game: &mut Game, width: u32, height: u32) {
     game.gl.width = width;
@@ -422,16 +543,12 @@ fn glfw_framebuffer_size_callback(game: &mut Game, width: u32, height: u32) {
     game.camera.proj_mat = math::perspective((fov, aspect, near, far));
 }
 
-///
 /// Initialize the logger.
-///
 fn init_logger(log_file: &str) {
     file_logger::init(log_file).expect("Failed to initialize logger.");
 }
 
-///
 /// Create and OpenGL context.
-///
 fn init_gl(width: u32, height: u32) -> glh::GLState {
     let gl_state = match glh::start_gl(width, height) {
         Ok(val) => val,
@@ -450,6 +567,10 @@ struct Game {
     camera: PerspectiveFovCamera,
     background: Background,
     board: Board,
+    level: usize,
+    tetrises: usize,
+    lines: usize,
+    score: usize,
 }
 
 fn init_game() -> Game {
@@ -462,12 +583,20 @@ fn init_game() -> Game {
     let camera = load_camera(width as f32, height as f32);
     let background = load_background(&mut gl_context);
     let board = load_board(&mut gl_context);
+    let score = 0;
+    let lines = 0;
+    let tetrises = 0;
+    let level = 0;
 
     Game {
         gl: gl_context,
         camera: camera,
         background: background,
         board: board,
+        score: score,
+        lines: lines,
+        tetrises: tetrises,
+        level: level,
     }
 }
 
