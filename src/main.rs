@@ -54,7 +54,7 @@ fn to_vec(ptr: *const u8, length: usize) -> Vec<u8> {
 }
 
 /// Load texture image into the GPU.
-fn load_texture(tex_data: &TexImage2D, wrapping_mode: GLuint) -> Result<GLuint, String> {
+fn send_to_gpu_texture(tex_data: &TexImage2D, wrapping_mode: GLuint) -> Result<GLuint, String> {
     let mut tex = 0;
     unsafe {
         gl::GenTextures(1, &mut tex);
@@ -174,7 +174,7 @@ fn load_background_textures(game: &mut glh::GLState) -> GLuint {
     let arr: &'static [u8; 27695] = include_asset!("title.png");
     let asset = to_vec(&arr[0], 27695);
     let tex_image = teximage2d::load_from_memory(&asset).unwrap();
-    let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
+    let tex = send_to_gpu_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
 
     tex
 }
@@ -292,7 +292,7 @@ fn load_board_textures(game: &mut glh::GLState) -> GLuint {
     let arr: &'static [u8; 4826] = include_asset!("board.png");
     let asset = to_vec(&arr[0], 4826);
     let tex_image = teximage2d::load_from_memory(&asset).unwrap();
-    let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
+    let tex = send_to_gpu_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
 
     tex
 }
@@ -453,7 +453,7 @@ struct TextBox {
     content: TextBoxElement,
 }
 
-fn load_textbox_background_shaders(game: &mut glh::GLState) -> GLuint {
+fn create_shaders_textbox_background(game: &mut glh::GLState) -> GLuint {
     let mut vert_reader = io::Cursor::new(include_shader!("textbox_background.vert.glsl"));
     let mut frag_reader = io::Cursor::new(include_shader!("textbox_background.frag.glsl"));
     let sp = glh::create_program_from_reader(
@@ -466,7 +466,7 @@ fn load_textbox_background_shaders(game: &mut glh::GLState) -> GLuint {
     sp
 }
 
-fn load_textbox_element_shaders(game: &mut glh::GLState) -> GLuint {
+fn create_shaders_textbox_element(game: &mut glh::GLState) -> GLuint {
     let mut vert_reader = io::Cursor::new(include_shader!("textbox_element.vert.glsl"));
     let mut frag_reader = io::Cursor::new(include_shader!("textbox_element.frag.glsl"));
     let sp = glh::create_program_from_reader(
@@ -496,7 +496,7 @@ fn load_textbox_obj() -> ObjMesh {
     ObjMesh::new(points, tex_coords, normals)
 }
 
-fn load_textbox_background_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLuint) {
+fn send_to_gpu_background_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLuint) {
     let mesh = load_textbox_obj();
 
     let v_pos_loc = unsafe {
@@ -557,17 +557,18 @@ fn load_textbox_background_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint,
     (v_pos_vbo, v_tex_vbo, vao)
 }
 
-fn load_textbox_background_textures(game: &mut glh::GLState) -> GLuint {
+
+fn send_to_gpu_textbox_background(game: &mut glh::GLState) -> GLuint {
     let arr: &'static [u8; 934] = include_asset!("textbox_background.png");
     let asset = to_vec(&arr[0], 934);
     let tex_image = teximage2d::load_from_memory(&asset).unwrap();
-    let tex = load_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
+    let tex = send_to_gpu_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
 
     tex
 }
 
 /// Set up the geometry for rendering title screen text.
-fn load_textbox_element_buffer(game: &glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLuint) {
+fn create_buffers_textbox_element(game: &glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLuint) {
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
     };
@@ -610,10 +611,10 @@ fn load_textbox_element_buffer(game: &glh::GLState, sp: GLuint) -> (GLuint, GLui
     (v_pos_vbo, v_tex_vbo, vao)
 }
 
-fn load_textbox_background(game: &mut glh::GLState) -> TextBoxBackground {
-    let background_sp = load_textbox_background_shaders(game);
-    let (v_pos_vbo, v_tex_vbo, vao) = load_textbox_background_mesh(game, background_sp);
-    let background_tex = load_textbox_background_textures(game);
+fn create_textbox_background(game: &mut glh::GLState) -> TextBoxBackground {
+    let background_sp = create_shaders_textbox_background(game);
+    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_background_mesh(game, background_sp);
+    let background_tex = send_to_gpu_textbox_background(game);
     
     TextBoxBackground {
         sp: background_sp,
@@ -624,12 +625,12 @@ fn load_textbox_background(game: &mut glh::GLState) -> TextBoxBackground {
     }       
 }
 
-fn load_textbox_element(
+fn create_textbox_element(
     game: &mut glh::GLState, font_tex: GLuint, 
     offset_x: f32, offset_y: f32, scale_px: f32) -> TextBoxElement {
     
-    let sp = load_textbox_element_shaders(game);
-    let (v_pos_vbo, v_tex_vbo, vao) = load_textbox_element_buffer(game, sp);
+    let sp = create_shaders_textbox_element(game);
+    let (v_pos_vbo, v_tex_vbo, vao) = create_buffers_textbox_element(game, sp);
     let placement = RelativePlacement { offset_x, offset_y };
 
     TextBoxElement {
@@ -646,9 +647,9 @@ fn load_textbox_element(
 fn load_textbox(game: &mut glh::GLState, name: &str, font_tex: GLuint, pos_x: f32, pos_y: f32) -> TextBox {
     let name = String::from(name);
     let placement = AbsolutePlacement { pos_x, pos_y };
-    let background = load_textbox_background(game);
-    let label = load_textbox_element(game, font_tex, 0.1, 0.01, 64.0);
-    let content = load_textbox_element(game, font_tex, 0.1, 0.1, 64.0);
+    let background = create_textbox_background(game);
+    let label = create_textbox_element(game, font_tex, 0.1, 0.01, 64.0);
+    let content = create_textbox_element(game, font_tex, 0.1, 0.1, 64.0);
 
     TextBox {
         name: name,
