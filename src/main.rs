@@ -401,7 +401,7 @@ struct TextBoxBackground {
 struct TextBoxElement {
     sp: GLuint,
     tex: GLuint,
-    placement: TextBoxElementPlacement,
+    placement: RelativePlacement,
     writer: TextBoxElementWriter,
 }
 
@@ -442,13 +442,13 @@ impl TextBoxElementWriter {
 }
 
 #[derive(Copy, Clone, Debug)]
-struct TextBoxPlacement {
+struct AbsolutePlacement {
     pos_x: f32,
     pos_y: f32,
 }
 
 #[derive(Copy, Clone, Debug)]
-struct TextBoxElementPlacement {
+struct RelativePlacement {
     offset_x: f32,
     offset_y: f32,
     scale_px: f32,
@@ -457,7 +457,7 @@ struct TextBoxElementPlacement {
 #[derive(Clone, Debug)]
 struct TextBox {
     name: String,
-    placement: TextBoxPlacement,
+    placement: AbsolutePlacement,
     background: TextBoxBackground,
     label: TextBoxElement,
     content: TextBoxElement,
@@ -640,7 +640,7 @@ fn load_textbox_element(
     
     let sp = load_textbox_element_shaders(game);
     let (v_pos_vbo, v_tex_vbo, vao) = load_textbox_element_buffer(game, sp);
-    let placement = TextBoxElementPlacement { offset_x, offset_y, scale_px };
+    let placement = RelativePlacement { offset_x, offset_y, scale_px };
     let writer = TextBoxElementWriter::new(vao, v_pos_vbo, v_tex_vbo);
 
     TextBoxElement {
@@ -653,7 +653,7 @@ fn load_textbox_element(
 
 fn load_textbox(game: &mut glh::GLState, name: &str, font_tex: GLuint, pos_x: f32, pos_y: f32) -> TextBox {
     let name = String::from(name);
-    let placement = TextBoxPlacement { pos_x, pos_y };
+    let placement = AbsolutePlacement { pos_x, pos_y };
     let background = load_textbox_background(game);
     let label = load_textbox_element(game, font_tex, 0.1, 0.01, 64.0);
     let content = load_textbox_element(game, font_tex, 0.1, 0.1, 64.0);
@@ -702,7 +702,7 @@ fn load_font_texture(atlas: &BitmapFontAtlas, wrapping_mode: GLuint) -> Result<G
 
 fn text_to_vbo(
     app: &mut Game, atlas: &BitmapFontAtlas, 
-    placement: TextBoxPlacement, tb: &mut TextBoxElement, st: &str) -> io::Result<(usize, usize)> {
+    placement: AbsolutePlacement, tb: &mut TextBoxElement, st: &str) -> io::Result<(usize, usize)> {
     
     let scale_px = tb.placement.scale_px;
     let height = app.gl.height;
