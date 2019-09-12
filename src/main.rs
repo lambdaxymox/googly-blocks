@@ -644,7 +644,7 @@ fn create_textbox_element(
     }
 }
 
-fn load_textbox(game: &mut glh::GLState, name: &str, font_tex: GLuint, pos_x: f32, pos_y: f32) -> TextBox {
+fn create_textbox(game: &mut glh::GLState, name: &str, font_tex: GLuint, pos_x: f32, pos_y: f32) -> TextBox {
     let name = String::from(name);
     let placement = AbsolutePlacement { pos_x, pos_y };
     let background = create_textbox_background(game);
@@ -851,7 +851,7 @@ fn init_game() -> Game {
     let atlas_tex = load_font_texture(&atlas, gl::CLAMP_TO_EDGE).unwrap();
     let background = load_background(&mut gl_context);
     let board = load_board(&mut gl_context);
-    let score_board = load_textbox(&mut gl_context, "SCORE", atlas_tex, 0.2, 0.1);
+    let score_board = create_textbox(&mut gl_context, "SCORE", atlas_tex, 0.2, 0.1);
     let score = 0;
     let lines = 0;
     let tetrises = 0;
