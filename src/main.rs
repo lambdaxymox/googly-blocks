@@ -402,6 +402,7 @@ struct TextBoxElement {
     sp: GLuint,
     tex: GLuint,
     placement: RelativePlacement,
+    scale_px: f32,
     writer: TextBoxElementWriter,
 }
 
@@ -451,7 +452,6 @@ struct AbsolutePlacement {
 struct RelativePlacement {
     offset_x: f32,
     offset_y: f32,
-    scale_px: f32,
 }
 
 #[derive(Clone, Debug)]
@@ -640,13 +640,14 @@ fn load_textbox_element(
     
     let sp = load_textbox_element_shaders(game);
     let (v_pos_vbo, v_tex_vbo, vao) = load_textbox_element_buffer(game, sp);
-    let placement = RelativePlacement { offset_x, offset_y, scale_px };
+    let placement = RelativePlacement { offset_x, offset_y };
     let writer = TextBoxElementWriter::new(vao, v_pos_vbo, v_tex_vbo);
 
     TextBoxElement {
         sp: sp,
         tex: font_tex,
         placement: placement,
+        scale_px: scale_px,
         writer: writer,
     }
 }
@@ -704,7 +705,7 @@ fn text_to_vbo(
     app: &mut Game, atlas: &BitmapFontAtlas, 
     placement: AbsolutePlacement, tb: &mut TextBoxElement, st: &str) -> io::Result<(usize, usize)> {
     
-    let scale_px = tb.placement.scale_px;
+    let scale_px = tb.scale_px;
     let height = app.gl.height;
     let width = app.gl.width;
     //let line_spacing = 0.05;
