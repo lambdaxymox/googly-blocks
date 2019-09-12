@@ -384,6 +384,7 @@ fn load_board(game: &mut glh::GLState) -> Board {
     }
 }
 /* ------------------------------- TEXT BOX RENDERING ---------------------- */
+#[derive(Copy, Clone, Debug)]
 struct TextBoxBackground {
     sp: GLuint,
     v_pos_vbo: GLuint,
@@ -392,28 +393,69 @@ struct TextBoxBackground {
     tex: GLuint,
 }
 
+// TODO: Place the texture image handle into the textbox element data structure
+// for when we actually render the text.
+#[derive(Copy, Clone, Debug)]
 struct TextBoxElement {
     sp: GLuint,
-    v_pos_vbo: GLuint,
-    v_tex_vbo: GLuint,
-    vao: GLuint,
-    location: TextBoxElementPlacement,
+    tex: GLuint,
+    placement: TextBoxElementPlacement,
+    writer: TextBoxElementWriter,
 }
 
+#[derive(Copy, Clone, Debug)]
+struct TextBoxElementWriter {
+    vao: GLuint,
+    v_pos_vbo: GLuint,
+    v_tex_vbo: GLuint,
+}
+
+impl TextBoxElementWriter {
+    fn new(vao: GLuint, v_pos_vbo: GLuint, v_tex_vbo: GLuint) -> TextBoxElementWriter {
+        TextBoxElementWriter {
+            vao: vao,
+            v_pos_vbo: v_pos_vbo,
+            v_tex_vbo: v_tex_vbo,
+        }
+    }
+
+    fn write(&mut self, points: &[GLfloat], texcoords: &[GLfloat]) -> io::Result<usize> {
+        unsafe {
+            gl::BindBuffer(gl::ARRAY_BUFFER, self.v_pos_vbo);
+            gl::BufferData(
+                gl::ARRAY_BUFFER, (mem::size_of::<GLfloat>() * points.len()) as GLsizeiptr,
+                points.as_ptr() as *const GLvoid, gl::DYNAMIC_DRAW
+            );
+            gl::BindBuffer(gl::ARRAY_BUFFER, self.v_tex_vbo);
+            gl::BufferData(
+                gl::ARRAY_BUFFER, (mem::size_of::<GLfloat>() * texcoords.len()) as GLsizeiptr,
+                texcoords.as_ptr() as *const GLvoid, gl::DYNAMIC_DRAW
+            );
+        }
+
+        let bytes_written = mem::size_of::<GLfloat>() * (points.len() + texcoords.len());
+
+        Ok(bytes_written)
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
 struct TextBoxPlacement {
     pos_x: f32,
     pos_y: f32,
 }
 
+#[derive(Copy, Clone, Debug)]
 struct TextBoxElementPlacement {
     offset_x: f32,
     offset_y: f32,
     scale_px: f32,
 }
 
+#[derive(Clone, Debug)]
 struct TextBox {
     name: String,
-    location: TextBoxPlacement,
+    placement: TextBoxPlacement,
     background: TextBoxBackground,
     label: TextBoxElement,
     content: TextBoxElement,
@@ -590,35 +632,141 @@ fn load_textbox_background(game: &mut glh::GLState) -> TextBoxBackground {
     }       
 }
 
-fn load_textbox_element(game: &mut glh::GLState, offset_x: f32, offset_y: f32, scale_px: f32) -> TextBoxElement {
+fn load_textbox_element(
+    game: &mut glh::GLState, font_tex: GLuint, 
+    offset_x: f32, offset_y: f32, scale_px: f32) -> TextBoxElement {
+    
     let sp = load_textbox_element_shaders(game);
     let (v_pos_vbo, v_tex_vbo, vao) = load_textbox_element_buffer(game, sp);
-    let location = TextBoxElementPlacement { offset_x, offset_y, scale_px };
+    let placement = TextBoxElementPlacement { offset_x, offset_y, scale_px };
+    let writer = TextBoxElementWriter::new(vao, v_pos_vbo, v_tex_vbo);
 
     TextBoxElement {
         sp: sp,
-        v_pos_vbo: v_pos_vbo,
-        v_tex_vbo: v_tex_vbo,
-        vao: vao,
-        location: location,
+        tex: font_tex,
+        placement: placement,
+        writer: writer,
     }
 }
 
-fn load_textbox(game: &mut glh::GLState, name: &str, pos_x: f32, pos_y: f32) -> TextBox {
+fn load_textbox(game: &mut glh::GLState, name: &str, font_tex: GLuint, pos_x: f32, pos_y: f32) -> TextBox {
     let name = String::from(name);
-    let location = TextBoxPlacement { pos_x, pos_y };
+    let placement = TextBoxPlacement { pos_x, pos_y };
     let background = load_textbox_background(game);
-    let label = load_textbox_element(game, 0.1, 0.1, 64.0);
-    let content = load_textbox_element(game, 0.1, 0.1, 64.0);
+    let label = load_textbox_element(game, font_tex, 0.1, 0.1, 64.0);
+    let content = load_textbox_element(game, font_tex, 0.1, 0.1, 64.0);
 
     TextBox {
         name: name,
-        location: location,
+        placement: placement,
         background: background,
         label: label,
         content: content,
     }
 }
+
+/// Load texture image into the GPU.
+fn load_font_texture(atlas: &BitmapFontAtlas, wrapping_mode: GLuint) -> Result<GLuint, String> {
+    let mut tex = 0;
+    unsafe {
+        gl::GenTextures(1, &mut tex);
+    }
+    assert!(tex > 0);
+
+    unsafe {
+        gl::ActiveTexture(gl::TEXTURE0);
+        gl::BindTexture(gl::TEXTURE_2D, tex);
+        gl::TexImage2D(
+            gl::TEXTURE_2D, 0, gl::RGBA as i32, atlas.width as i32, atlas.height as i32, 0,
+            gl::RGBA, gl::UNSIGNED_BYTE,
+            atlas.image.as_ptr() as *const GLvoid
+        );
+        gl::GenerateMipmap(gl::TEXTURE_2D);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, wrapping_mode as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, wrapping_mode as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR_MIPMAP_LINEAR as GLint);
+    }
+
+    let mut max_aniso = 0.0;
+    unsafe {
+        gl::GetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &mut max_aniso);
+        // Set the maximum!
+        gl::TexParameterf(gl::TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, max_aniso);
+    }
+
+    Ok(tex)
+}
+
+fn text_to_vbo(
+    app: &mut Game, atlas: &BitmapFontAtlas, 
+    placement: TextBoxPlacement, tb: &mut TextBoxElement, st: &str) -> io::Result<(usize, usize)> {
+    
+    let scale_px = tb.placement.scale_px;
+    let height = app.gl.height;
+    let width = app.gl.width;
+    //let line_spacing = 0.05;
+
+    let mut points = vec![0.0; 12 * st.len()];
+    let mut texcoords = vec![0.0; 12 * st.len()];
+    let mut at_x = placement.pos_x + tb.placement.offset_x;
+    //let end_at_x = 0.95;
+    let mut at_y = placement.pos_y + tb.placement.offset_y;
+
+    for (i, ch_i) in st.chars().enumerate() {
+        let metadata_i = atlas.glyph_metadata[&(ch_i as usize)];
+        let atlas_col = metadata_i.column;
+        let atlas_row = metadata_i.row;
+
+        let s = (atlas_col as f32) * (1.0 / (atlas.columns as f32));
+        let t = ((atlas_row + 1) as f32) * (1.0 / (atlas.rows as f32));
+
+        let x_pos = at_x;
+        let y_pos = at_y - (scale_px / (height as f32)) * metadata_i.y_offset;
+
+        at_x += metadata_i.width * (scale_px / width as f32);
+        /*
+        if at_x >= end_at_x {
+            at_x = placement.start_at_x;
+            at_y -= line_spacing + metadata_i.height * (scale_px / height as f32);
+        }
+        */
+
+        points[12 * i]     = x_pos;
+        points[12 * i + 1] = y_pos;
+        points[12 * i + 2] = x_pos;
+        points[12 * i + 3] = y_pos - scale_px / (height as f32);
+        points[12 * i + 4] = x_pos + scale_px / (width as f32);
+        points[12 * i + 5] = y_pos - scale_px / (height as f32);
+
+        points[12 * i + 6]  = x_pos + scale_px / (width as f32);
+        points[12 * i + 7]  = y_pos - scale_px / (height as f32);
+        points[12 * i + 8]  = x_pos + scale_px / (width as f32);
+        points[12 * i + 9]  = y_pos;
+        points[12 * i + 10] = x_pos;
+        points[12 * i + 11] = y_pos;
+
+        texcoords[12 * i]     = s;
+        texcoords[12 * i + 1] = 1.0 - t + 1.0 / (atlas.rows as f32);
+        texcoords[12 * i + 2] = s;
+        texcoords[12 * i + 3] = 1.0 - t;
+        texcoords[12 * i + 4] = s + 1.0 / (atlas.columns as f32);
+        texcoords[12 * i + 5] = 1.0 - t;
+
+        texcoords[12 * i + 6]  = s + 1.0 / (atlas.columns as f32);
+        texcoords[12 * i + 7]  = 1.0 - t;
+        texcoords[12 * i + 8]  = s + 1.0 / (atlas.columns as f32);
+        texcoords[12 * i + 9]  = 1.0 - t + 1.0 / (atlas.rows as f32);
+        texcoords[12 * i + 10] = s;
+        texcoords[12 * i + 11] = 1.0 - t + 1.0 / (atlas.rows as f32);
+    }
+
+    let point_count = 6 * st.len();
+    tb.writer.write(&points, &texcoords)?;
+
+    Ok((st.len(), point_count))
+}
+
 /* --------------------------- END TEXT BOX RENDERING ---------------------- */
 
 fn load_camera(width: f32, height: f32) -> PerspectiveFovCamera {
@@ -704,9 +852,10 @@ fn init_game() -> Game {
     let mut gl_context = init_gl(width, height);
     let camera = load_camera(width as f32, height as f32);
     let atlas = load_font_atlas();
+    let atlas_tex = load_font_texture(&atlas, gl::CLAMP_TO_EDGE).unwrap();
     let background = load_background(&mut gl_context);
     let board = load_board(&mut gl_context);
-    let score_board = load_textbox(&mut gl_context, "SCORE", 0.5, 0.1);
+    let score_board = load_textbox(&mut gl_context, "SCORE", atlas_tex, 0.5, 0.1);
     let score = 0;
     let lines = 0;
     let tetrises = 0;
@@ -739,6 +888,8 @@ fn main() {
         gl::ClearColor(0.2, 0.2, 0.2, 1.0);
         gl::Viewport(0, 0, game.gl.width as i32, game.gl.height as i32);
     }
+
+    let atlas = load_font_atlas();
 
     while !game.gl.window.should_close() {
         // Check input.
@@ -793,6 +944,14 @@ fn main() {
             // TODO: Render the UI elements.
 
             // TODO: Render the text.
+            let tb =  game.score_board.clone();
+            let name = &tb.name;
+            let placement = &tb.placement;
+            let mut label = tb.label.clone();
+            let mut content = tb.content.clone();
+            text_to_vbo(&mut game, &atlas, *placement, &mut label, name);
+            text_to_vbo(&mut game, &atlas, *placement, &mut content, "0xDEADBEEF");
+            
 
             // TODO: Render the googly eyes.
         }
