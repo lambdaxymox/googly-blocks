@@ -661,7 +661,7 @@ fn create_textbox(game: &mut glh::GLState, name: &str, font_tex: GLuint, pos_x: 
 }
 
 /// Load texture image into the GPU.
-fn load_font_texture(atlas: &BitmapFontAtlas, wrapping_mode: GLuint) -> Result<GLuint, String> {
+fn send_to_gpu_font_texture(atlas: &BitmapFontAtlas, wrapping_mode: GLuint) -> Result<GLuint, String> {
     let mut tex = 0;
     unsafe {
         gl::GenTextures(1, &mut tex);
@@ -848,7 +848,7 @@ fn init_game() -> Game {
     let mut gl_context = init_gl(width, height);
     let camera = load_camera(width as f32, height as f32);
     let atlas = load_font_atlas();
-    let atlas_tex = load_font_texture(&atlas, gl::CLAMP_TO_EDGE).unwrap();
+    let atlas_tex = send_to_gpu_font_texture(&atlas, gl::CLAMP_TO_EDGE).unwrap();
     let background = load_background(&mut gl_context);
     let board = load_board(&mut gl_context);
     let score_board = create_textbox(&mut gl_context, "SCORE", atlas_tex, 0.2, 0.1);
