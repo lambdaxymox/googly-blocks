@@ -416,27 +416,14 @@ struct RelativePlacement {
 struct TextBoxElement {
     sp: GLuint,
     tex: GLuint,
-    placement: RelativePlacement,
-    scale_px: f32,
-    writer: TextBoxElementWriter,
-}
-
-#[derive(Copy, Clone, Debug)]
-struct TextBoxElementWriter {
     vao: GLuint,
     v_pos_vbo: GLuint,
     v_tex_vbo: GLuint,
+    placement: RelativePlacement,
+    scale_px: f32,
 }
 
-impl TextBoxElementWriter {
-    fn new(vao: GLuint, v_pos_vbo: GLuint, v_tex_vbo: GLuint) -> TextBoxElementWriter {
-        TextBoxElementWriter {
-            vao: vao,
-            v_pos_vbo: v_pos_vbo,
-            v_tex_vbo: v_tex_vbo,
-        }
-    }
-
+impl TextBoxElement {
     fn write(&mut self, points: &[GLfloat], texcoords: &[GLfloat]) -> io::Result<usize> {
         unsafe {
             gl::BindBuffer(gl::ARRAY_BUFFER, self.v_pos_vbo);
@@ -644,14 +631,15 @@ fn load_textbox_element(
     let sp = load_textbox_element_shaders(game);
     let (v_pos_vbo, v_tex_vbo, vao) = load_textbox_element_buffer(game, sp);
     let placement = RelativePlacement { offset_x, offset_y };
-    let writer = TextBoxElementWriter::new(vao, v_pos_vbo, v_tex_vbo);
 
     TextBoxElement {
         sp: sp,
         tex: font_tex,
+        vao: vao,
+        v_pos_vbo: v_pos_vbo,
+        v_tex_vbo: v_tex_vbo,
         placement: placement,
         scale_px: scale_px,
-        writer: writer,
     }
 }
 
@@ -768,7 +756,7 @@ fn text_to_vbo(
     }
 
     let point_count = 6 * st.len();
-    tb.writer.write(&points, &texcoords)?;
+    tb.write(&points, &texcoords)?;
 
     Ok((st.len(), point_count))
 }
@@ -977,7 +965,7 @@ fn main() {
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, label.tex);
-            gl::BindVertexArray(label.writer.vao);
+            gl::BindVertexArray(label.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6 * 5);
             
             gl::UseProgram(content.sp);
@@ -990,7 +978,7 @@ fn main() {
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, content.tex);
-            gl::BindVertexArray(content.writer.vao);
+            gl::BindVertexArray(content.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6 * 10);
 
             /* ------------------------------------------------------------------ */
