@@ -41,6 +41,8 @@ use std::ptr;
 const GL_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FE;
 const GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FF;
 
+const TEXT_COLOR: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
+
 
 fn to_vec(ptr: *const u8, length: usize) -> Vec<u8> {
     let mut vec = vec![0 as u8; length];
@@ -575,7 +577,7 @@ fn load_textbox_background_textures(game: &mut glh::GLState) -> GLuint {
 }
 
 /// Set up the geometry for rendering title screen text.
-fn load_textbox_element_buffer(context: &glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLuint) {
+fn load_textbox_element_buffer(game: &glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLuint) {
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
     };
@@ -653,7 +655,7 @@ fn load_textbox(game: &mut glh::GLState, name: &str, font_tex: GLuint, pos_x: f3
     let name = String::from(name);
     let placement = TextBoxPlacement { pos_x, pos_y };
     let background = load_textbox_background(game);
-    let label = load_textbox_element(game, font_tex, 0.1, 0.1, 64.0);
+    let label = load_textbox_element(game, font_tex, 0.1, 0.01, 64.0);
     let content = load_textbox_element(game, font_tex, 0.1, 0.1, 64.0);
 
     TextBox {
@@ -711,7 +713,7 @@ fn text_to_vbo(
     let mut texcoords = vec![0.0; 12 * st.len()];
     let mut at_x = placement.pos_x + tb.placement.offset_x;
     //let end_at_x = 0.95;
-    let mut at_y = placement.pos_y + tb.placement.offset_y;
+    let mut at_y = placement.pos_y - tb.placement.offset_y;
 
     for (i, ch_i) in st.chars().enumerate() {
         let metadata_i = atlas.glyph_metadata[&(ch_i as usize)];
@@ -855,7 +857,7 @@ fn init_game() -> Game {
     let atlas_tex = load_font_texture(&atlas, gl::CLAMP_TO_EDGE).unwrap();
     let background = load_background(&mut gl_context);
     let board = load_board(&mut gl_context);
-    let score_board = load_textbox(&mut gl_context, "SCORE", atlas_tex, 0.5, 0.1);
+    let score_board = load_textbox(&mut gl_context, "SCORE", atlas_tex, 0.2, 0.1);
     let score = 0;
     let lines = 0;
     let tetrises = 0;
@@ -943,16 +945,49 @@ fn main() {
 
             // TODO: Render the UI elements.
 
+            /* ---------------------- BEGIN TEXT RENDERING ---------------------- */
             // TODO: Render the text.
             let tb =  game.score_board.clone();
-            let name = &tb.name;
             let placement = &tb.placement;
             let mut label = tb.label.clone();
             let mut content = tb.content.clone();
-            text_to_vbo(&mut game, &atlas, *placement, &mut label, name);
-            text_to_vbo(&mut game, &atlas, *placement, &mut content, "0xDEADBEEF");
+            text_to_vbo(&mut game, &atlas, *placement, &mut label, "SCORE").unwrap();
+            text_to_vbo(&mut game, &atlas, *placement, &mut content, "0xDEADBEEF").unwrap();
+            gl::UseProgram(tb.background.sp);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, tb.background.tex);
+            gl::BindVertexArray(tb.background.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6);
             
+            gl::UseProgram(label.sp);
+            // TODO: Move this somewhere else.
+            let text_color_loc = unsafe {
+                gl::GetUniformLocation(label.sp, glh::gl_str("text_color").as_ptr())
+            };
+            assert!(text_color_loc > -1);
+            gl::Uniform4f(text_color_loc, TEXT_COLOR[0], TEXT_COLOR[1], TEXT_COLOR[2], TEXT_COLOR[3]);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, label.tex);
+            gl::BindVertexArray(label.writer.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 5);
+            
+            gl::UseProgram(content.sp);
+            // TODO: Move this somewhere else.
+            let text_color_loc = unsafe {
+                gl::GetUniformLocation(content.sp, glh::gl_str("text_color").as_ptr())
+            };
+            assert!(text_color_loc > -1);
+            gl::Uniform4f(text_color_loc, TEXT_COLOR[0], TEXT_COLOR[1], TEXT_COLOR[2], TEXT_COLOR[3]);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, content.tex);
+            gl::BindVertexArray(content.writer.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 10);
 
+
+            /* ----------------------- END TEXT RENDERING ------------------------ */
             // TODO: Render the googly eyes.
         }
 
