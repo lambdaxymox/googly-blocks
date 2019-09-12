@@ -385,7 +385,10 @@ fn load_board(game: &mut glh::GLState) -> Board {
         tex: tex,
     }
 }
+
+/* ------------------------------------------------------------------------- */
 /* ------------------------------- TEXT BOX RENDERING ---------------------- */
+/* ------------------------------------------------------------------------- */
 #[derive(Copy, Clone, Debug)]
 struct TextBoxBackground {
     sp: GLuint,
@@ -393,6 +396,18 @@ struct TextBoxBackground {
     v_tex_vbo: GLuint,
     vao: GLuint,
     tex: GLuint,
+}
+
+#[derive(Copy, Clone, Debug)]
+struct AbsolutePlacement {
+    pos_x: f32,
+    pos_y: f32,
+}
+
+#[derive(Copy, Clone, Debug)]
+struct RelativePlacement {
+    offset_x: f32,
+    offset_y: f32,
 }
 
 // TODO: Place the texture image handle into the textbox element data structure
@@ -440,18 +455,6 @@ impl TextBoxElementWriter {
 
         Ok(bytes_written)
     }
-}
-
-#[derive(Copy, Clone, Debug)]
-struct AbsolutePlacement {
-    pos_x: f32,
-    pos_y: f32,
-}
-
-#[derive(Copy, Clone, Debug)]
-struct RelativePlacement {
-    offset_x: f32,
-    offset_y: f32,
 }
 
 #[derive(Clone, Debug)]
@@ -770,7 +773,9 @@ fn text_to_vbo(
     Ok((st.len(), point_count))
 }
 
+/* ------------------------------------------------------------------------- */
 /* --------------------------- END TEXT BOX RENDERING ---------------------- */
+/* ------------------------------------------------------------------------- */
 
 fn load_camera(width: f32, height: f32) -> PerspectiveFovCamera {
     let near = 0.1;
@@ -946,7 +951,9 @@ fn main() {
 
             // TODO: Render the UI elements.
 
+            /* ------------------------------------------------------------------ */
             /* ---------------------- BEGIN TEXT RENDERING ---------------------- */
+            /* ------------------------------------------------------------------ */
             // TODO: Render the text.
             let tb =  game.score_board.clone();
             let placement = &tb.placement;
@@ -987,8 +994,9 @@ fn main() {
             gl::BindVertexArray(content.writer.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6 * 10);
 
-
-            /* ----------------------- END TEXT RENDERING ------------------------ */
+            /* ------------------------------------------------------------------ */
+            /* ----------------------- END TEXT RENDERING ----------------------- */
+            /* ------------------------------------------------------------------ */
             // TODO: Render the googly eyes.
         }
 
