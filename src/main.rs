@@ -29,7 +29,7 @@ use bmfa::BitmapFontAtlas;
 use glfw::{Action, Context, Key};
 use gl::types::{GLfloat, GLint, GLuint, GLvoid, GLsizeiptr};
 use log::{info};
-use math::{One, Matrix4, Vector3};
+use math::{Array, One, Matrix4, Vector3};
 use mesh::ObjMesh;
 use teximage2d::TexImage2D;
 
@@ -479,7 +479,7 @@ fn create_shaders_textbox_element(game: &mut glh::GLState) -> GLuint {
     sp
 }
 
-fn load_textbox_obj() -> ObjMesh {
+fn create_textbox_background_mesh() -> ObjMesh {
     let points: Vec<[GLfloat; 3]> = vec![
         [1.0, 0.5, 0.0], [-1.0,  0.5, 0.0], [-1.0, -0.5, 0.0],
         [1.0, 0.5, 0.0], [-1.0, -0.5, 0.0], [ 1.0, -0.5, 0.0]
@@ -496,8 +496,10 @@ fn load_textbox_obj() -> ObjMesh {
     ObjMesh::new(points, tex_coords, normals)
 }
 
-fn send_to_gpu_background_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLuint) {
-    let mesh = load_textbox_obj();
+fn send_to_gpu_textbox_background_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLuint) {
+    let mesh = create_textbox_background_mesh();
+    let mat_scale = Matrix4::one();
+    let mat_trans = Matrix4::one();
 
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
@@ -510,6 +512,16 @@ fn send_to_gpu_background_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint, 
     };
     assert!(v_tex_loc > -1);
     let v_tex_loc = v_tex_loc as u32;
+
+    let m_scale_loc = unsafe { 
+        gl::GetUniformLocation(sp, glh::gl_str("m_scale").as_ptr())
+    };
+    assert!(m_scale_loc > -1);
+
+    let m_trans_loc = unsafe { 
+        gl::GetUniformLocation(sp, glh::gl_str("m_trans").as_ptr())
+    };
+    assert!(m_trans_loc > -1);
 
     let mut v_pos_vbo = 0;
     unsafe {
@@ -554,11 +566,17 @@ fn send_to_gpu_background_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint, 
         gl::EnableVertexAttribArray(v_tex_loc);
     }
 
+    unsafe {
+        gl::UseProgram(sp);
+        gl::UniformMatrix4fv(m_scale_loc, 1, gl::FALSE, mat_scale.as_ptr());
+        gl::UniformMatrix4fv(m_trans_loc, 1, gl::FALSE, mat_trans.as_ptr());
+    }
+
     (v_pos_vbo, v_tex_vbo, vao)
 }
 
 
-fn send_to_gpu_textbox_background(game: &mut glh::GLState) -> GLuint {
+fn send_to_gpu_textbox_background_texture(game: &mut glh::GLState) -> GLuint {
     let arr: &'static [u8; 934] = include_asset!("textbox_background.png");
     let asset = to_vec(&arr[0], 934);
     let tex_image = teximage2d::load_from_memory(&asset).unwrap();
@@ -613,8 +631,8 @@ fn create_buffers_textbox_element(game: &glh::GLState, sp: GLuint) -> (GLuint, G
 
 fn create_textbox_background(game: &mut glh::GLState) -> TextBoxBackground {
     let background_sp = create_shaders_textbox_background(game);
-    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_background_mesh(game, background_sp);
-    let background_tex = send_to_gpu_textbox_background(game);
+    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_textbox_background_mesh(game, background_sp);
+    let background_tex = send_to_gpu_textbox_background_texture(game);
     
     TextBoxBackground {
         sp: background_sp,
