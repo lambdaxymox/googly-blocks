@@ -296,7 +296,7 @@ dependencies = [
 
 [[package]]
 name = "googly-blocks"
-version = "0.1.36"
+version = "0.1.37"
 dependencies = [
  "bmfa 0.3.6 (git+https://github.com/lambdaxymox/bmfa)",
  "cgcamera 0.2.5 (git+https://github.com/lambdaxymox/cgcamera)",

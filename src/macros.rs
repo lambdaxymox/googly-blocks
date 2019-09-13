@@ -29,7 +29,7 @@ macro_rules! shader_file {
 #[cfg(target_os = "windows")]
 macro_rules! shader_file {
     ($asset:expr) => {
-        concat!(concat_path!("..", "assets"), $asset)
+        concat!(concat_path!("..", "shaders", "460"), $shader)
     }
 }
 
