@@ -41,7 +41,10 @@ use std::ptr;
 const GL_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FE;
 const GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FF;
 
-const TEXT_COLOR: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
+const HEADING_COLOR: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
+const TEXT_COLOR: [f32; 4] = [
+    0_f32 / 255_f32, 204_f32 / 255_f32, 0_f32 / 255_f32, 255_f32 / 255_f32
+];
 
 
 fn to_vec(ptr: *const u8, length: usize) -> Vec<u8> {
@@ -216,9 +219,15 @@ fn load_board_shaders(game: &mut glh::GLState) -> GLuint {
 
 fn load_board_obj() -> ObjMesh {
     let points: Vec<[GLfloat; 3]> = vec![
+        [1.0, 1.0, 0.0], [-1.0, -1.0, 0.0], [ 1.0, -1.0, 0.0],
+        [1.0, 1.0, 0.0], [-1.0,  1.0, 0.0], [-1.0, -1.0, 0.0]
+    ];
+    /*
+    let points: Vec<[GLfloat; 3]> = vec![
         [0.516, 1.000, 0.000], [-0.516, -1.000, 0.000], [ 0.516, -1.000, 0.000],
         [0.516, 1.000, 0.000], [-0.516,  1.000, 0.000], [-0.516, -1.000, 0.000],
     ];
+    */
     let tex_coords: Vec<[GLfloat; 2]> = vec![
         [1.0, 1.0], [0.0, 0.0], [1.0, 0.0],
         [1.0, 1.0], [0.0, 1.0], [0.0, 0.0],
@@ -481,9 +490,15 @@ fn create_shaders_textbox_element(game: &mut glh::GLState) -> GLuint {
 
 fn create_textbox_background_mesh() -> (ObjMesh, AbsolutePlacement) {
     let points: Vec<[GLfloat; 3]> = vec![
+        [1.0, 1.0, 0.0], [-1.0,  1.0, 0.0], [-1.0, -1.0, 0.0],
+        [1.0, 1.0, 0.0], [-1.0, -1.0, 0.0], [ 1.0, -1.0, 0.0]        
+    ];
+    /*
+    let points: Vec<[GLfloat; 3]> = vec![
         [0.4862, 0.2431, 0.0], [-0.4862,  0.2431, 0.0], [-0.4862, -0.2431, 0.0],
         [0.4862, 0.2431, 0.0], [-0.4862, -0.2431, 0.0], [ 0.4862, -0.2431, 0.0]
     ];
+    */
     let tex_coords: Vec<[GLfloat; 2]> = vec![
         [1.0, 1.0], [0.0, 1.0], [0.0, 0.0],
         [1.0, 1.0], [0.0, 0.0], [1.0, 0.0]
@@ -517,14 +532,15 @@ fn send_to_gpu_textbox_background_mesh(sp: GLuint, placement: AbsolutePlacement)
     let v_tex_loc = v_tex_loc as u32;
 
     let v_mat_scale_loc = unsafe { 
-        gl::GetUniformLocation(sp, glh::gl_str("v_mat_scale").as_ptr())
+        gl::GetUniformLocation(sp, glh::gl_str("v_mat_gui_scale").as_ptr())
     };
     assert!(v_mat_scale_loc > -1);
-
+    /*
     let v_mat_trans_loc = unsafe { 
         gl::GetUniformLocation(sp, glh::gl_str("v_mat_trans").as_ptr())
     };
     assert!(v_mat_trans_loc > -1);
+    */
 
     let mut v_pos_vbo = 0;
     unsafe {
@@ -572,7 +588,7 @@ fn send_to_gpu_textbox_background_mesh(sp: GLuint, placement: AbsolutePlacement)
     unsafe {
         gl::UseProgram(sp);
         gl::UniformMatrix4fv(v_mat_scale_loc, 1, gl::FALSE, mat_scale.as_ptr());
-        gl::UniformMatrix4fv(v_mat_trans_loc, 1, gl::FALSE, mat_trans.as_ptr());
+        //gl::UniformMatrix4fv(v_mat_trans_loc, 1, gl::FALSE, mat_trans.as_ptr());
     }
 
     (v_pos_vbo, v_tex_vbo, vao)
@@ -672,8 +688,8 @@ fn create_textbox(
     let name = String::from(name);
     let placement = AbsolutePlacement { pos_x, pos_y };
     let background = create_textbox_background(game, placement);
-    let label = create_textbox_element(game, font_tex, 0.1, 0.1, 72.0);
-    let content = create_textbox_element(game, font_tex, 0.1, 0.28, 72.0);
+    let label = create_textbox_element(game, font_tex, 0.1, 0.1, 64.0);
+    let content = create_textbox_element(game, font_tex, 0.1, 0.24, 64.0);
 
     TextBox {
         name: name,
@@ -856,6 +872,13 @@ struct Game {
     score: usize,
 }
 
+impl Game {
+    #[inline]
+    fn get_framebuffer_size(&self) -> (i32, i32) {
+        self.gl.window.get_framebuffer_size()
+    }
+}
+
 fn init_game() -> Game {
     init_logger("googly-blocks.log");
     info!("BEGIN LOG");
@@ -919,7 +942,7 @@ fn main() {
         // Update the game world.
         glh::update_fps_counter(&mut game.gl);
 
-        let (width, height) = game.gl.window.get_framebuffer_size();
+        let (width, height) = game.get_framebuffer_size();
         if (width != game.gl.width as i32) && (height != game.gl.height as i32) {
             glfw_framebuffer_size_callback(
                 &mut game, width as u32, height as u32
@@ -952,10 +975,10 @@ fn main() {
                 gl::GetUniformLocation(board.sp, glh::gl_str("gui_scale").as_ptr())
             };
             assert!(gui_scale_loc > -1);
-            // TODO: Why does this work?
-            let panel_width: f32 = 2.0 * 260.0;
-            let panel_height: f32 = 504.0;
-            let (viewport_width, viewport_height) = game.gl.window.get_framebuffer_size();
+            
+            let panel_width: f32 = 230.0;
+            let panel_height: f32 = 442.0;
+            let (viewport_width, viewport_height) = game.get_framebuffer_size();
             let x_scale = panel_width / (viewport_width as f32);
             let y_scale = panel_height / (viewport_height as f32);
             gl::Uniform2f(gui_scale_loc, x_scale, y_scale);
@@ -981,6 +1004,23 @@ fn main() {
             text_to_vbo(&mut game, &atlas, *placement, &mut label, "SCORE").unwrap();
             text_to_vbo(&mut game, &atlas, *placement, &mut content, "0xDEADBEEF").unwrap();
             gl::UseProgram(tb.background.sp);
+
+            /* SET THE GUI ELEMENT SCALE */
+            // TODO: Move this somewhere else.
+            let v_mat_gui_scale_loc = gl::GetUniformLocation(
+                tb.background.sp, glh::gl_str("v_mat_gui_scale").as_ptr()
+            );
+            assert!(v_mat_gui_scale_loc > -1);
+            
+            let panel_width: f32 = 218.0;
+            let panel_height: f32 = 109.0;
+            let (viewport_width, viewport_height) = game.get_framebuffer_size();
+            let x_scale = panel_width / (viewport_width as f32);
+            let y_scale = panel_height / (viewport_height as f32);
+            let gui_scale = Matrix4::from_nonuniform_scale(x_scale, y_scale, 0.0);
+            gl::UniformMatrix4fv(v_mat_gui_scale_loc, 1, gl::FALSE, gui_scale.as_ptr());
+            /* END SET THE GUI ELEMENT SCALE */
+
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, tb.background.tex);
@@ -988,12 +1028,12 @@ fn main() {
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
 
             gl::UseProgram(label.sp);
+            /* SET THE TEXT COLOR */
             // TODO: Move this somewhere else.
-            let text_color_loc = unsafe {
-                gl::GetUniformLocation(label.sp, glh::gl_str("text_color").as_ptr())
-            };
+            let text_color_loc = gl::GetUniformLocation(label.sp, glh::gl_str("text_color").as_ptr());
             assert!(text_color_loc > -1);
-            gl::Uniform4f(text_color_loc, TEXT_COLOR[0], TEXT_COLOR[1], TEXT_COLOR[2], TEXT_COLOR[3]);
+            gl::Uniform4f(text_color_loc, HEADING_COLOR[0], HEADING_COLOR[1], HEADING_COLOR[2], HEADING_COLOR[3]);
+            /* END SET THE TEXT COLOR. */
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, label.tex);
