@@ -5,7 +5,7 @@ uniform Matrices {
     mat4 m_view;
     mat4 m_model;
 };
-
+uniform vec2 gui_scale;
 in vec3 v_pos;
 in vec2 v_tex;
 
@@ -15,5 +15,6 @@ out Data {
 
 void main() {
     DataOut.tex_coord = v_tex;
-    gl_Position = m_proj * m_view * m_model * vec4 (v_pos, 1.0);
+    vec3 scale = vec3 (gui_scale, 0.0);
+    gl_Position = m_proj * m_view * m_model * vec4 (scale * v_pos, 1.0);
 }

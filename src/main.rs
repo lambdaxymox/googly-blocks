@@ -860,8 +860,8 @@ fn init_game() -> Game {
     init_logger("googly-blocks.log");
     info!("BEGIN LOG");
     info!("build version: ??? ?? ???? ??:??:??");
-    let width = 720;
-    let height = 480;
+    let width = 896;
+    let height = 504;
     let mut gl_context = init_gl(width, height);
     let camera = load_camera(width as f32, height as f32);
     let atlas = load_font_atlas();
@@ -945,7 +945,21 @@ fn main() {
             // a 2D scene using 3D abstractions. Otherwise Z-Buffering would prevent us
             // from rendering the game board.
             let board = &game.board;
+            
             gl::UseProgram(board.sp);
+            // TODO: Move this somewhere else.
+            let gui_scale_loc = unsafe {
+                gl::GetUniformLocation(board.sp, glh::gl_str("gui_scale").as_ptr())
+            };
+            assert!(gui_scale_loc > -1);
+            // TODO: Why does this work?
+            let panel_width: f32 = 2.0 * 260.0;
+            let panel_height: f32 = 504.0;
+            let (viewport_width, viewport_height) = game.gl.window.get_framebuffer_size();
+            let x_scale = panel_width / (viewport_width as f32);
+            let y_scale = panel_height / (viewport_height as f32);
+            gl::Uniform2f(gui_scale_loc, x_scale, y_scale);
+
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, board.tex);
@@ -972,7 +986,7 @@ fn main() {
             gl::BindTexture(gl::TEXTURE_2D, tb.background.tex);
             gl::BindVertexArray(tb.background.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
-            
+
             gl::UseProgram(label.sp);
             // TODO: Move this somewhere else.
             let text_color_loc = unsafe {
