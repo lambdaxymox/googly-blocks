@@ -231,7 +231,7 @@ fn load_board_obj() -> ObjMesh {
     ObjMesh::new(points, tex_coords, normals)
 }
 
-fn load_board_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLuint) {
+fn load_board_mesh(sp: GLuint) -> (GLuint, GLuint, GLuint) {
     let mesh = load_board_obj();
 
     let v_pos_loc = unsafe {
@@ -373,7 +373,7 @@ struct Board {
 
 fn load_board(game: &mut glh::GLState) -> Board {
     let sp = load_board_shaders(game);
-    let (v_pos_vbo, v_tex_vbo, vao) = load_board_mesh(game, sp);
+    let (v_pos_vbo, v_tex_vbo, vao) = load_board_mesh(sp);
     let tex = load_board_textures(game);
     load_board_uniforms(game, sp);
 
