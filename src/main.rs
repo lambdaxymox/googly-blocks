@@ -479,7 +479,7 @@ fn create_shaders_textbox_element(game: &mut glh::GLState) -> GLuint {
     sp
 }
 
-fn create_textbox_background_mesh() -> ObjMesh {
+fn create_textbox_background_mesh() -> (ObjMesh, AbsolutePlacement) {
     let points: Vec<[GLfloat; 3]> = vec![
         [0.4862, 0.2431, 0.0], [-0.4862,  0.2431, 0.0], [-0.4862, -0.2431, 0.0],
         [0.4862, 0.2431, 0.0], [-0.4862, -0.2431, 0.0], [ 0.4862, -0.2431, 0.0]
@@ -492,14 +492,16 @@ fn create_textbox_background_mesh() -> ObjMesh {
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0]
     ];
+    let mesh = ObjMesh::new(points, tex_coords, normals);
+    let top_left = AbsolutePlacement { pos_x: -0.4862,  pos_y: 0.2431 };
 
-    ObjMesh::new(points, tex_coords, normals)
+    (mesh, top_left)
 }
 
 fn send_to_gpu_textbox_background_mesh(sp: GLuint, placement: AbsolutePlacement) -> (GLuint, GLuint, GLuint) {
-    let mesh = create_textbox_background_mesh();
+    let (mesh, top_left) = create_textbox_background_mesh();
     let mat_scale = Matrix4::one();
-    let distance = cgmath::vec3((placement.pos_x, placement.pos_y, 0.0));
+    let distance = cgmath::vec3((placement.pos_x - top_left.pos_x, placement.pos_y - top_left.pos_y, 0.0));
     let mat_trans = Matrix4::from_translation(distance);
 
     let v_pos_loc = unsafe {
@@ -663,7 +665,10 @@ fn create_textbox_element(
     }
 }
 
-fn create_textbox(game: &mut glh::GLState, name: &str, font_tex: GLuint, pos_x: f32, pos_y: f32) -> TextBox {
+fn create_textbox(
+    game: &mut glh::GLState, 
+    name: &str, font_tex: GLuint, pos_x: f32, pos_y: f32) -> TextBox {
+    
     let name = String::from(name);
     let placement = AbsolutePlacement { pos_x, pos_y };
     let background = create_textbox_background(game, placement);
