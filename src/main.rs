@@ -496,10 +496,11 @@ fn create_textbox_background_mesh() -> ObjMesh {
     ObjMesh::new(points, tex_coords, normals)
 }
 
-fn send_to_gpu_textbox_background_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLuint) {
+fn send_to_gpu_textbox_background_mesh(game: &mut glh::GLState, sp: GLuint, placement: AbsolutePlacement) -> (GLuint, GLuint, GLuint) {
     let mesh = create_textbox_background_mesh();
     let mat_scale = Matrix4::one();
-    let mat_trans = Matrix4::one();
+    let distance = cgmath::vec3((placement.pos_x, placement.pos_y, 0.0));
+    let mat_trans = Matrix4::from_translation(distance);
 
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
@@ -513,15 +514,15 @@ fn send_to_gpu_textbox_background_mesh(game: &mut glh::GLState, sp: GLuint) -> (
     assert!(v_tex_loc > -1);
     let v_tex_loc = v_tex_loc as u32;
 
-    let m_scale_loc = unsafe { 
-        gl::GetUniformLocation(sp, glh::gl_str("m_scale").as_ptr())
+    let v_mat_scale_loc = unsafe { 
+        gl::GetUniformLocation(sp, glh::gl_str("v_mat_scale").as_ptr())
     };
-    assert!(m_scale_loc > -1);
+    assert!(v_mat_scale_loc > -1);
 
-    let m_trans_loc = unsafe { 
-        gl::GetUniformLocation(sp, glh::gl_str("m_trans").as_ptr())
+    let v_mat_trans_loc = unsafe { 
+        gl::GetUniformLocation(sp, glh::gl_str("v_mat_trans").as_ptr())
     };
-    assert!(m_trans_loc > -1);
+    assert!(v_mat_trans_loc > -1);
 
     let mut v_pos_vbo = 0;
     unsafe {
@@ -568,8 +569,8 @@ fn send_to_gpu_textbox_background_mesh(game: &mut glh::GLState, sp: GLuint) -> (
 
     unsafe {
         gl::UseProgram(sp);
-        gl::UniformMatrix4fv(m_scale_loc, 1, gl::FALSE, mat_scale.as_ptr());
-        gl::UniformMatrix4fv(m_trans_loc, 1, gl::FALSE, mat_trans.as_ptr());
+        gl::UniformMatrix4fv(v_mat_scale_loc, 1, gl::FALSE, mat_scale.as_ptr());
+        gl::UniformMatrix4fv(v_mat_trans_loc, 1, gl::FALSE, mat_trans.as_ptr());
     }
 
     (v_pos_vbo, v_tex_vbo, vao)
@@ -629,9 +630,9 @@ fn create_buffers_textbox_element(game: &glh::GLState, sp: GLuint) -> (GLuint, G
     (v_pos_vbo, v_tex_vbo, vao)
 }
 
-fn create_textbox_background(game: &mut glh::GLState) -> TextBoxBackground {
+fn create_textbox_background(game: &mut glh::GLState, placement: AbsolutePlacement) -> TextBoxBackground {
     let background_sp = create_shaders_textbox_background(game);
-    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_textbox_background_mesh(game, background_sp);
+    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_textbox_background_mesh(game, background_sp, placement);
     let background_tex = send_to_gpu_textbox_background_texture(game);
     
     TextBoxBackground {
@@ -665,9 +666,9 @@ fn create_textbox_element(
 fn create_textbox(game: &mut glh::GLState, name: &str, font_tex: GLuint, pos_x: f32, pos_y: f32) -> TextBox {
     let name = String::from(name);
     let placement = AbsolutePlacement { pos_x, pos_y };
-    let background = create_textbox_background(game);
+    let background = create_textbox_background(game, placement);
     let label = create_textbox_element(game, font_tex, 0.1, 0.01, 64.0);
-    let content = create_textbox_element(game, font_tex, 0.1, 0.1, 64.0);
+    let content = create_textbox_element(game, font_tex, 0.1, 0.14, 64.0);
 
     TextBox {
         name: name,
@@ -718,7 +719,6 @@ fn text_to_vbo(
     let scale_px = tb.scale_px;
     let height = app.gl.height;
     let width = app.gl.width;
-    //let line_spacing = 0.05;
 
     let mut points = vec![0.0; 12 * st.len()];
     let mut texcoords = vec![0.0; 12 * st.len()];
@@ -738,12 +738,6 @@ fn text_to_vbo(
         let y_pos = at_y - (scale_px / (height as f32)) * metadata_i.y_offset;
 
         at_x += metadata_i.width * (scale_px / width as f32);
-        /*
-        if at_x >= end_at_x {
-            at_x = placement.start_at_x;
-            at_y -= line_spacing + metadata_i.height * (scale_px / height as f32);
-        }
-        */
 
         points[12 * i]     = x_pos;
         points[12 * i + 1] = y_pos;
