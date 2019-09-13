@@ -216,8 +216,8 @@ fn load_board_shaders(game: &mut glh::GLState) -> GLuint {
 
 fn load_board_obj() -> ObjMesh {
     let points: Vec<[GLfloat; 3]> = vec![
-        [0.5, 1.0, 0.0], [-0.5, -1.0, 0.0], [ 0.5, -1.0, 0.0],
-        [0.5, 1.0, 0.0], [-0.5,  1.0, 0.0], [-0.5, -1.0, 0.0],
+        [0.516, 1.000, 0.000], [-0.516, -1.000, 0.000], [ 0.516, -1.000, 0.000],
+        [0.516, 1.000, 0.000], [-0.516,  1.000, 0.000], [-0.516, -1.000, 0.000],
     ];
     let tex_coords: Vec<[GLfloat; 2]> = vec![
         [1.0, 1.0], [0.0, 0.0], [1.0, 0.0],
@@ -481,8 +481,8 @@ fn create_shaders_textbox_element(game: &mut glh::GLState) -> GLuint {
 
 fn create_textbox_background_mesh() -> ObjMesh {
     let points: Vec<[GLfloat; 3]> = vec![
-        [1.0, 0.5, 0.0], [-1.0,  0.5, 0.0], [-1.0, -0.5, 0.0],
-        [1.0, 0.5, 0.0], [-1.0, -0.5, 0.0], [ 1.0, -0.5, 0.0]
+        [0.4862, 0.2431, 0.0], [-0.4862,  0.2431, 0.0], [-0.4862, -0.2431, 0.0],
+        [0.4862, 0.2431, 0.0], [-0.4862, -0.2431, 0.0], [ 0.4862, -0.2431, 0.0]
     ];
     let tex_coords: Vec<[GLfloat; 2]> = vec![
         [1.0, 1.0], [0.0, 1.0], [0.0, 0.0],
@@ -496,7 +496,7 @@ fn create_textbox_background_mesh() -> ObjMesh {
     ObjMesh::new(points, tex_coords, normals)
 }
 
-fn send_to_gpu_textbox_background_mesh(game: &mut glh::GLState, sp: GLuint, placement: AbsolutePlacement) -> (GLuint, GLuint, GLuint) {
+fn send_to_gpu_textbox_background_mesh(sp: GLuint, placement: AbsolutePlacement) -> (GLuint, GLuint, GLuint) {
     let mesh = create_textbox_background_mesh();
     let mat_scale = Matrix4::one();
     let distance = cgmath::vec3((placement.pos_x, placement.pos_y, 0.0));
@@ -587,7 +587,7 @@ fn send_to_gpu_textbox_background_texture(game: &mut glh::GLState) -> GLuint {
 }
 
 /// Set up the geometry for rendering title screen text.
-fn create_buffers_textbox_element(game: &glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLuint) {
+fn create_buffers_textbox_element(sp: GLuint) -> (GLuint, GLuint, GLuint) {
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
     };
@@ -632,7 +632,7 @@ fn create_buffers_textbox_element(game: &glh::GLState, sp: GLuint) -> (GLuint, G
 
 fn create_textbox_background(game: &mut glh::GLState, placement: AbsolutePlacement) -> TextBoxBackground {
     let background_sp = create_shaders_textbox_background(game);
-    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_textbox_background_mesh(game, background_sp, placement);
+    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_textbox_background_mesh(background_sp, placement);
     let background_tex = send_to_gpu_textbox_background_texture(game);
     
     TextBoxBackground {
@@ -649,7 +649,7 @@ fn create_textbox_element(
     offset_x: f32, offset_y: f32, scale_px: f32) -> TextBoxElement {
     
     let sp = create_shaders_textbox_element(game);
-    let (v_pos_vbo, v_tex_vbo, vao) = create_buffers_textbox_element(game, sp);
+    let (v_pos_vbo, v_tex_vbo, vao) = create_buffers_textbox_element(sp);
     let placement = RelativePlacement { offset_x, offset_y };
 
     TextBoxElement {
