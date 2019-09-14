@@ -131,7 +131,7 @@ fn send_to_gpu_shaders_background(game: &mut glh::GLState, source: ShaderSource)
     send_to_gpu_shaders(game, source)
 }
 
-fn load_background_obj() -> ObjMesh {
+fn create_geometry_background() -> ObjMesh {
     let points: Vec<[GLfloat; 3]> = vec![
         [1.0, 1.0, 0.0], [-1.0, -1.0, 0.0], [ 1.0, -1.0, 0.0],
         [1.0, 1.0, 0.0], [-1.0,  1.0, 0.0], [-1.0, -1.0, 0.0],
@@ -148,8 +148,8 @@ fn load_background_obj() -> ObjMesh {
     ObjMesh::new(points, tex_coords, normals)
 }
 
-fn load_background_mesh(game: &mut glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLuint) {
-    let mesh = load_background_obj();
+fn send_to_gpu_geometry_background(game: &mut glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLuint) {
+    let mesh = create_geometry_background();
 
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
@@ -225,7 +225,7 @@ struct Background {
 fn load_background(game: &mut glh::GLState) -> Background {
     let shader_source = create_shaders_background();
     let sp = send_to_gpu_shaders_background(game, shader_source);
-    let (v_pos_vbo, v_tex_vbo, vao) = load_background_mesh(game, sp);
+    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_geometry_background(game, sp);
     let tex = load_background_textures(game);
 
     Background {
