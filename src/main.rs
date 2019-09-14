@@ -462,7 +462,7 @@ fn update_board_uniforms(game: &mut Game) {
     let gui_scale_x = panel_width / (viewport_width as f32);
     let gui_scale_y = panel_height / (viewport_height as f32);
     let uniforms = BoardUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
-    send_to_gpu_uniforms_board(&mut game.gl, game.board.sp, uniforms);
+    send_to_gpu_uniforms_board(&mut game.gl, game.ui.board.sp, uniforms);
 }
 
 /* ----------------------------------------------------------------------------------- */
@@ -958,13 +958,17 @@ fn init_gl(width: u32, height: u32) -> glh::GLState {
     gl_state
 }
 
+struct UI {
+    atlas: BitmapFontAtlas,
+    board: Board,
+    score_board: TextBox,
+}
+
 struct Game {
     gl: glh::GLState,
     camera: PerspectiveFovCamera,
-    atlas: BitmapFontAtlas,
+    ui: UI,
     background: Background,
-    board: Board,
-    score_board: TextBox,
 }
 
 impl Game {
@@ -997,6 +1001,11 @@ impl Game {
     fn swap_buffers(&mut self) {
         self.gl.window.swap_buffers();
     }
+
+    #[inline(always)]
+    fn update_ui(&mut self) {
+        update_board_uniforms(self);
+    }
 }
 
 fn init_game() -> Game {
@@ -1022,14 +1031,13 @@ fn init_game() -> Game {
 
     let board = load_board(&mut gl_context, board_uniforms);
     let score_board = create_textbox(&mut gl_context, "SCORE", atlas_tex, 0.1, 0.1);
+    let ui = UI {atlas: atlas, board: board, score_board: score_board };
 
     Game {
         gl: gl_context,
         camera: camera,
-        atlas: atlas,
+        ui: ui,
         background: background,
-        board: board,
-        score_board: score_board,
     }
 }
 
@@ -1090,12 +1098,12 @@ fn main() {
             // Render the game board. We turn off depth testing to do so since this is
             // a 2D scene using 3D abstractions. Otherwise Z-Buffering would prevent us
             // from rendering the game board.
-            gl::UseProgram(game.board.sp);
-            update_board_uniforms(&mut game);
+            gl::UseProgram(game.ui.board.sp);
+            game.update_ui();
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, game.board.tex);
-            gl::BindVertexArray(game.board.vao);
+            gl::BindTexture(gl::TEXTURE_2D, game.ui.board.tex);
+            gl::BindVertexArray(game.ui.board.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
             /*
             // TODO: Render the blocks instanced.
