@@ -227,10 +227,10 @@ struct Background {
 
 fn load_background(game: &mut glh::GLState) -> Background {
     let shader_source = create_shaders_background();
-    let sp = send_to_gpu_shaders_background(game, shader_source);
     let mesh = create_geometry_background();
-    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_geometry_background(sp, &mesh);
     let tex_image = create_textures_background();
+    let sp = send_to_gpu_shaders_background(game, shader_source);
+    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_geometry_background(sp, &mesh);
     let tex = send_to_gpu_textures_background(&tex_image);
 
     Background {
