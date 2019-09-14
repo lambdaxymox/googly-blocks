@@ -558,17 +558,20 @@ fn send_to_gpu_shaders_textbox_background(game: &mut glh::GLState, source: Shade
     send_to_gpu_shaders(game, source)
 }
 
-fn create_shaders_textbox_element(game: &mut glh::GLState) -> GLuint {
-    let mut vert_reader = io::Cursor::new(include_shader!("textbox_element.vert.glsl"));
-    let mut frag_reader = io::Cursor::new(include_shader!("textbox_element.frag.glsl"));
-    let sp = glh::create_program_from_reader(
-        game,
-        &mut vert_reader, "textbox_element.vert.glsl",
-        &mut frag_reader, "textbox_element.frag.glsl"
-    ).unwrap();
-    assert!(sp > 0);
+fn create_shaders_textbox_element() -> ShaderSource {
+    let vert_source = include_shader!("textbox_element.vert.glsl");
+    let frag_source = include_shader!("textbox_element.frag.glsl");
 
-    sp
+    ShaderSource { 
+        vert_name: "textbox_element.vert.glsl",
+        vert_source: vert_source,
+        frag_name: "textbox_element.frag.glsl",
+        frag_source: frag_source,
+    }    
+}
+
+fn send_to_gpu_shaders_textbox_element(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+    send_to_gpu_shaders(game, source)
 }
 
 fn create_textbox_background_mesh() -> (ObjMesh, AbsolutePlacement) {
@@ -748,11 +751,12 @@ fn create_textbox_background(game: &mut glh::GLState, placement: AbsolutePlaceme
     }
 }
 
-fn create_textbox_element(
+fn create_textbox_buffer(
     game: &mut glh::GLState, font_tex: GLuint, 
     offset_x: f32, offset_y: f32, scale_px: f32) -> TextBoxBuffer {
     
-    let sp = create_shaders_textbox_element(game);
+    let shader_source = create_shaders_textbox_element();
+    let sp = send_to_gpu_shaders_textbox_element(game, shader_source);
     let (v_pos_vbo, v_tex_vbo, vao) = create_buffers_textbox_element(sp);
     let placement = RelativePlacement { offset_x, offset_y };
 
@@ -774,8 +778,8 @@ fn create_textbox(
     let name = String::from(name);
     let placement = AbsolutePlacement { pos_x, pos_y };
     let background = create_textbox_background(game, placement);
-    let label = create_textbox_element(game, font_tex, 0.1, 0.1, 64.0);
-    let content = create_textbox_element(game, font_tex, 0.1, 0.24, 64.0);
+    let label = create_textbox_buffer(game, font_tex, 0.1, 0.1, 64.0);
+    let content = create_textbox_buffer(game, font_tex, 0.1, 0.24, 64.0);
 
     TextBox {
         name: name,
