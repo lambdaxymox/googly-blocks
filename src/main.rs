@@ -149,8 +149,6 @@ fn create_geometry_background() -> ObjMesh {
 }
 
 fn send_to_gpu_geometry_background(game: &mut glh::GLState, sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuint, GLuint) {
-    let mesh = create_geometry_background();
-
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
     };
