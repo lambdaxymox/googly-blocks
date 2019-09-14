@@ -965,10 +965,6 @@ struct Game {
     background: Background,
     board: Board,
     score_board: TextBox,
-    level: usize,
-    tetrises: usize,
-    lines: usize,
-    score: usize,
 }
 
 impl Game {
@@ -1001,10 +997,6 @@ fn init_game() -> Game {
 
     let board = load_board(&mut gl_context, board_uniforms);
     let score_board = create_textbox(&mut gl_context, "SCORE", atlas_tex, 0.1, 0.1);
-    let score = 0;
-    let lines = 0;
-    let tetrises = 0;
-    let level = 0;
 
     Game {
         gl: gl_context,
@@ -1013,10 +1005,6 @@ fn init_game() -> Game {
         background: background,
         board: board,
         score_board: score_board,
-        score: score,
-        lines: lines,
-        tetrises: tetrises,
-        level: level,
     }
 }
 
