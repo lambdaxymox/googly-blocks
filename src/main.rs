@@ -148,7 +148,7 @@ fn create_geometry_background() -> ObjMesh {
     ObjMesh::new(points, tex_coords, normals)
 }
 
-fn send_to_gpu_geometry_background(game: &mut glh::GLState, sp: GLuint) -> (GLuint, GLuint, GLuint) {
+fn send_to_gpu_geometry_background(game: &mut glh::GLState, sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuint, GLuint) {
     let mesh = create_geometry_background();
 
     let v_pos_loc = unsafe {
@@ -225,7 +225,8 @@ struct Background {
 fn load_background(game: &mut glh::GLState) -> Background {
     let shader_source = create_shaders_background();
     let sp = send_to_gpu_shaders_background(game, shader_source);
-    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_geometry_background(game, sp);
+    let mesh = create_geometry_background();
+    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_geometry_background(game, sp, &mesh);
     let tex = load_background_textures(game);
 
     Background {
