@@ -358,16 +358,18 @@ fn send_to_gpu_geometry_board(sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuint, GL
     (v_pos_vbo, v_tex_vbo, vao)
 }
 
-fn load_board_textures(game: &mut glh::GLState) -> GLuint {
+fn create_textures_board() -> TexImage2D {
     let arr: &'static [u8; 4826] = include_asset!("board.png");
     let asset = to_vec(&arr[0], 4826);
-    let tex_image = teximage2d::load_from_memory(&asset).unwrap();
-    let tex = send_to_gpu_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
 
-    tex
+    teximage2d::load_from_memory(&asset).unwrap()
 }
 
-fn load_board_uniforms(game: &mut glh::GLState, sp: GLuint) {
+fn send_to_gpu_textures_board(tex_image: &TexImage2D) -> GLuint {
+    send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()
+}
+
+fn send_to_gpu_uniforms_board(game: &mut glh::GLState, sp: GLuint) {
     let model_mat = Matrix4::one();
     //let view_mat = game.camera.view_mat;
     //let proj_mat = game.camera.proj_mat;
@@ -446,8 +448,9 @@ fn load_board(game: &mut glh::GLState) -> Board {
     let sp = send_to_gpu_shaders_board(game, shader_source);
     let mesh = create_geometry_board();
     let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_geometry_board(sp, &mesh);
-    let tex = load_board_textures(game);
-    load_board_uniforms(game, sp);
+    let tex_image = create_textures_board();
+    let tex = send_to_gpu_textures_board(&tex_image);
+    send_to_gpu_uniforms_board(game, sp);
 
     Board {
         sp: sp,
