@@ -820,12 +820,12 @@ fn send_to_gpu_font_texture(atlas: &BitmapFontAtlas, wrapping_mode: GLuint) -> R
 }
 
 fn text_to_vbo(
-    app: &mut Game, atlas: &BitmapFontAtlas, 
+    atlas: &BitmapFontAtlas, viewport_width: u32, viewport_height: u32,
     placement: AbsolutePlacement, tb: &mut TextBoxElement, st: &str) -> io::Result<(usize, usize)> {
     
     let scale_px = tb.scale_px;
-    let height = app.gl.height;
-    let width = app.gl.width;
+    let height = viewport_height;
+    let width = viewport_width;
 
     let mut points = vec![0.0; 12 * st.len()];
     let mut texcoords = vec![0.0; 12 * st.len()];
@@ -960,9 +960,9 @@ fn init_gl(width: u32, height: u32) -> glh::GLState {
 }
 
 struct UI {
-    atlas: BitmapFontAtlas,
+    atlas: Box<BitmapFontAtlas>,
     board: Board,
-    score_board: TextBox,
+    score_panel: TextBox,
 }
 
 struct Game {
@@ -1036,20 +1036,19 @@ impl Game {
             gl::BindVertexArray(self.ui.board.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
 
-            /*
             /* ------------------------------------------------------------------ */
             /* ---------------------- BEGIN TEXT RENDERING ---------------------- */
             /* ------------------------------------------------------------------ */
-            let tb =  game.score_board.clone();
-            let placement = &tb.placement;
+            let tb = self.ui.score_panel.clone();
+            let placement = tb.placement;
             let mut label = tb.label.clone();
             let mut content = tb.content.clone();
-            text_to_vbo(&mut game, &atlas, *placement, &mut label, "SCORE").unwrap();
-            text_to_vbo(&mut game, &atlas, *placement, &mut content, "0xDEADBEEF").unwrap();
-            gl::UseProgram(tb.background.sp);
-
+            let viewport_width = self.gl.width;
+            let viewport_height = self.gl.height;
+            text_to_vbo(&self.ui.atlas, viewport_width, viewport_height, placement, &mut label, "SCORE").unwrap();
+            text_to_vbo(&self.ui.atlas, viewport_width, viewport_height, placement, &mut content, "0xDEADBEEF").unwrap();
+            
             /* SET THE GUI ELEMENT SCALE */
-            // TODO: Move this somewhere else.
             let v_mat_gui_scale_loc = gl::GetUniformLocation(
                 tb.background.sp, glh::gl_str("v_mat_gui_scale").as_ptr()
             );
@@ -1057,19 +1056,20 @@ impl Game {
             
             let panel_width: f32 = 218.0;
             let panel_height: f32 = 109.0;
-            let (viewport_width, viewport_height) = game.get_framebuffer_size();
+            let (viewport_width, viewport_height) = self.get_framebuffer_size();
             let x_scale = panel_width / (viewport_width as f32);
             let y_scale = panel_height / (viewport_height as f32);
             let gui_scale = Matrix4::from_nonuniform_scale(x_scale, y_scale, 0.0);
+
+            gl::UseProgram(tb.background.sp);
             gl::UniformMatrix4fv(v_mat_gui_scale_loc, 1, gl::FALSE, gui_scale.as_ptr());
             /* END SET THE GUI ELEMENT SCALE */
-
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, tb.background.tex);
             gl::BindVertexArray(tb.background.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
-
+            /*
             gl::UseProgram(label.sp);
             /* SET THE TEXT COLOR */
             // TODO: Move this somewhere else.
@@ -1122,7 +1122,7 @@ fn init_game() -> Game {
     let height = 504;
     let mut gl_context = init_gl(width, height);
     let camera = load_camera(width as f32, height as f32);
-    let atlas = load_font_atlas();
+    let atlas = Box::new(load_font_atlas());
     let atlas_tex = send_to_gpu_font_texture(&atlas, gl::CLAMP_TO_EDGE).unwrap();
     let background = load_background(&mut gl_context);
 
@@ -1136,8 +1136,8 @@ fn init_game() -> Game {
     let board_uniforms = BoardUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
 
     let board = load_board(&mut gl_context, board_uniforms);
-    let score_board = create_textbox(&mut gl_context, "SCORE", atlas_tex, 0.1, 0.1);
-    let ui = UI {atlas: atlas, board: board, score_board: score_board };
+    let score_panel = create_textbox(&mut gl_context, "SCORE", atlas_tex, 0.1, 0.1);
+    let ui = UI {atlas: atlas, board: board, score_panel: score_panel };
 
     Game {
         gl: gl_context,
