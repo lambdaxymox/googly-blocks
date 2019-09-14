@@ -537,10 +537,12 @@ fn create_shaders_textbox_background() -> ShaderSource {
     }
 }
 
+/// Send the background image for a textbox to the GPU.
 fn send_to_gpu_shaders_textbox_background(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
     send_to_gpu_shaders(game, source)
 }
 
+/// Load the shaders for a textbox buffer.
 fn create_shaders_textbox_element() -> ShaderSource {
     let vert_source = include_shader!("textbox_element.vert.glsl");
     let frag_source = include_shader!("textbox_element.frag.glsl");
@@ -553,6 +555,7 @@ fn create_shaders_textbox_element() -> ShaderSource {
     }    
 }
 
+/// Send the shaders for a textbox buffer to the GPU.
 fn send_to_gpu_shaders_textbox_element(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
     send_to_gpu_shaders(game, source)
 }
@@ -582,6 +585,7 @@ fn create_textbox_background_mesh() -> (ObjMesh, AbsolutePlacement) {
     (mesh, top_left)
 }
 
+/// Send the textbox background geometry to the GPU.
 fn send_to_gpu_geometry_textbox_background(sp: GLuint, placement: AbsolutePlacement) -> (GLuint, GLuint, GLuint) {
     let (mesh, top_left) = create_textbox_background_mesh();
     let mat_scale = Matrix4::one();
@@ -663,6 +667,7 @@ fn send_to_gpu_geometry_textbox_background(sp: GLuint, placement: AbsolutePlacem
     (v_pos_vbo, v_tex_vbo, vao)
 }
 
+/// Load the textbox background for the texture.
 fn create_texture_textbox_background() -> TexImage2D {
     let arr: &'static [u8; 934] = include_asset!("textbox_background.png");
     let asset = to_vec(&arr[0], 934);
@@ -670,6 +675,7 @@ fn create_texture_textbox_background() -> TexImage2D {
     teximage2d::load_from_memory(&asset).unwrap()
 }
 
+/// Send the background image texture of a textbox to the GPU.
 fn send_to_gpu_texture_textbox_background(game: &mut glh::GLState, tex_image: &TexImage2D) -> GLuint {
     send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()
 }
@@ -938,6 +944,7 @@ fn load_camera(width: f32, height: f32) -> PerspectiveFovCamera {
     PerspectiveFovCamera::new(frustum, attitude)
 }
 
+/// Load a file atlas.
 fn load_font_atlas() -> bmfa::BitmapFontAtlas {
     let arr: &'static [u8; 115559] = include_asset!("googly_blocks.bmfa");
     let contents = to_vec(&arr[0], 115559);
