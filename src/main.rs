@@ -502,7 +502,7 @@ struct RelativePlacement {
 // TODO: Place the texture image handle into the textbox element data structure
 // for when we actually render the text.
 #[derive(Copy, Clone, Debug)]
-struct TextBoxElement {
+struct TextBoxBuffer {
     sp: GLuint,
     tex: GLuint,
     vao: GLuint,
@@ -512,7 +512,7 @@ struct TextBoxElement {
     scale_px: f32,
 }
 
-impl TextBoxElement {
+impl TextBoxBuffer {
     fn write(&mut self, points: &[GLfloat], texcoords: &[GLfloat]) -> io::Result<usize> {
         unsafe {
             gl::BindBuffer(gl::ARRAY_BUFFER, self.v_pos_vbo);
@@ -538,21 +538,24 @@ struct TextBox {
     name: String,
     placement: AbsolutePlacement,
     background: TextBoxBackground,
-    label: TextBoxElement,
-    content: TextBoxElement,
+    label: TextBoxBuffer,
+    content: TextBoxBuffer,
 }
 
-fn create_shaders_textbox_background(game: &mut glh::GLState) -> GLuint {
-    let mut vert_reader = io::Cursor::new(include_shader!("textbox_background.vert.glsl"));
-    let mut frag_reader = io::Cursor::new(include_shader!("textbox_background.frag.glsl"));
-    let sp = glh::create_program_from_reader(
-        game,
-        &mut vert_reader, "textbox_background.vert.glsl",
-        &mut frag_reader, "textbox_background.frag.glsl"
-    ).unwrap();
-    assert!(sp > 0);
+fn create_shaders_textbox_background() -> ShaderSource {
+    let vert_source = include_shader!("textbox_background.vert.glsl");
+    let frag_source = include_shader!("textbox_background.frag.glsl");
 
-    sp
+    ShaderSource { 
+        vert_name: "textbox_background.vert.glsl",
+        vert_source: vert_source,
+        frag_name: "textbox_background.frag.glsl",
+        frag_source: frag_source,
+    }
+}
+
+fn send_to_gpu_shaders_textbox_background(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+    send_to_gpu_shaders(game, source)
 }
 
 fn create_shaders_textbox_element(game: &mut glh::GLState) -> GLuint {
@@ -593,7 +596,7 @@ fn create_textbox_background_mesh() -> (ObjMesh, AbsolutePlacement) {
     (mesh, top_left)
 }
 
-fn send_to_gpu_textbox_background_mesh(sp: GLuint, placement: AbsolutePlacement) -> (GLuint, GLuint, GLuint) {
+fn send_to_gpu_geometry_textbox_background(sp: GLuint, placement: AbsolutePlacement) -> (GLuint, GLuint, GLuint) {
     let (mesh, top_left) = create_textbox_background_mesh();
     let mat_scale = Matrix4::one();
     let distance = cgmath::vec3((placement.pos_x - top_left.pos_x, placement.pos_y - top_left.pos_y, 0.0));
@@ -674,14 +677,15 @@ fn send_to_gpu_textbox_background_mesh(sp: GLuint, placement: AbsolutePlacement)
     (v_pos_vbo, v_tex_vbo, vao)
 }
 
-
-fn send_to_gpu_textbox_background_texture(game: &mut glh::GLState) -> GLuint {
+fn create_texture_textbox_background() -> TexImage2D {
     let arr: &'static [u8; 934] = include_asset!("textbox_background.png");
     let asset = to_vec(&arr[0], 934);
-    let tex_image = teximage2d::load_from_memory(&asset).unwrap();
-    let tex = send_to_gpu_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
 
-    tex
+    teximage2d::load_from_memory(&asset).unwrap()
+}
+
+fn send_to_gpu_texture_textbox_background(game: &mut glh::GLState, tex_image: &TexImage2D) -> GLuint {
+    send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()
 }
 
 /// Set up the geometry for rendering title screen text.
@@ -729,28 +733,30 @@ fn create_buffers_textbox_element(sp: GLuint) -> (GLuint, GLuint, GLuint) {
 }
 
 fn create_textbox_background(game: &mut glh::GLState, placement: AbsolutePlacement) -> TextBoxBackground {
-    let background_sp = create_shaders_textbox_background(game);
-    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_textbox_background_mesh(background_sp, placement);
-    let background_tex = send_to_gpu_textbox_background_texture(game);
+    let shader_source = create_shaders_textbox_background();
+    let sp = send_to_gpu_shaders_textbox_background(game, shader_source);
+    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_geometry_textbox_background(sp, placement);
+    let tex_image = create_texture_textbox_background();
+    let tex = send_to_gpu_texture_textbox_background(game, &tex_image);
     
     TextBoxBackground {
-        sp: background_sp,
+        sp: sp,
         v_pos_vbo: v_pos_vbo,
         v_tex_vbo: v_tex_vbo,
         vao: vao,
-        tex: background_tex,
-    }       
+        tex: tex,
+    }
 }
 
 fn create_textbox_element(
     game: &mut glh::GLState, font_tex: GLuint, 
-    offset_x: f32, offset_y: f32, scale_px: f32) -> TextBoxElement {
+    offset_x: f32, offset_y: f32, scale_px: f32) -> TextBoxBuffer {
     
     let sp = create_shaders_textbox_element(game);
     let (v_pos_vbo, v_tex_vbo, vao) = create_buffers_textbox_element(sp);
     let placement = RelativePlacement { offset_x, offset_y };
 
-    TextBoxElement {
+    TextBoxBuffer {
         sp: sp,
         tex: font_tex,
         vao: vao,
@@ -816,7 +822,7 @@ fn send_to_gpu_font_texture(atlas: &BitmapFontAtlas, wrapping_mode: GLuint) -> R
 fn text_to_vbo(
     atlas: &BitmapFontAtlas, 
     viewport_width: u32, viewport_height: u32,
-    placement: AbsolutePlacement, tb: &mut TextBoxElement, st: &str) -> io::Result<(usize, usize)> {
+    placement: AbsolutePlacement, tb: &mut TextBoxBuffer, st: &str) -> io::Result<(usize, usize)> {
     
     let scale_px = tb.scale_px;
     let height = viewport_height;
