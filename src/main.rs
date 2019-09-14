@@ -85,23 +85,13 @@ fn send_to_gpu_texture(tex_data: &TexImage2D, wrapping_mode: GLuint) -> Result<G
 
     Ok(tex)
 }
-/* ----------------------------------------------------------------------------------- */
-/*
- * 
- *    LOAD BACKGROUND LAYER
- * 
- * 
- *
- * 
- * 
- * 
- * 
- *  
-*/
-/* ----------------------------------------------------------------------------------- */
+
+
 #[derive(Copy, Clone)]
 struct ShaderSource {
+    vert_name: &'static str,
     vert_source: &'static str,
+    frag_name: &'static str,
     frag_source: &'static str,
 }
 
@@ -110,7 +100,12 @@ fn create_shaders_background() -> ShaderSource {
     let vert_source = include_shader!("background.vert.glsl");
     let frag_source = include_shader!("background.frag.glsl");
 
-    ShaderSource { vert_source: vert_source, frag_source: frag_source }
+    ShaderSource { 
+        vert_name: "background.vert.glsl",
+        vert_source: vert_source,
+        frag_name: "background.frag.glsl",
+        frag_source: frag_source,
+    }
 }
 
 fn send_to_gpu_shaders(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
@@ -118,8 +113,8 @@ fn send_to_gpu_shaders(game: &mut glh::GLState, source: ShaderSource) -> GLuint 
     let mut frag_reader = io::Cursor::new(source.frag_source);
     let sp = glh::create_program_from_reader(
         game,
-        &mut vert_reader, "background.vert.glsl",
-        &mut frag_reader, "background.frag.glsl"
+        &mut vert_reader, source.vert_name,
+        &mut frag_reader, source.frag_name
     ).unwrap();
     assert!(sp > 0);
 
@@ -214,9 +209,7 @@ fn create_textures_background() -> TexImage2D {
 }
 
 fn send_to_gpu_textures_background(tex_image: &TexImage2D) -> GLuint {
-    let tex = send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap();
-
-    tex
+    send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()
 }
 
 struct Background {
@@ -243,34 +236,49 @@ fn load_background(game: &mut glh::GLState) -> Background {
         tex: tex,
     }
 }
+
+
 /* ----------------------------------------------------------------------------------- */
 /*
  * 
- *    END LOAD BACKGROUND LAYER
+ *    LOAD UI/BOARD LAYER
+ * 
+ * 
+ *
  * 
  * 
  * 
  * 
- * 
- * 
- * 
+ *  
 */
 /* ----------------------------------------------------------------------------------- */
+#[inline]
+fn create_shaders_board() -> ShaderSource {
+    let vert_source = include_shader!("board.vert.glsl");
+    let frag_source = include_shader!("board.frag.glsl");
 
-fn load_board_shaders(game: &mut glh::GLState) -> GLuint {
-    let mut vert_reader = io::Cursor::new(include_shader!("board.vert.glsl"));
-    let mut frag_reader = io::Cursor::new(include_shader!("board.frag.glsl"));
+    ShaderSource { 
+        vert_name: "board.vert.glsl",
+        vert_source: vert_source, 
+        frag_name: "board.frag.glsl",
+        frag_source: frag_source 
+    }
+}
+
+fn send_to_gpu_shaders_board(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+    let mut vert_reader = io::Cursor::new(source.vert_source);
+    let mut frag_reader = io::Cursor::new(source.frag_source);
     let sp = glh::create_program_from_reader(
         game,
-        &mut vert_reader, "board.vert.glsl",
-        &mut frag_reader, "board.frag.glsl"
+        &mut vert_reader, source.vert_name,
+        &mut frag_reader, source.frag_name,
     ).unwrap();
     assert!(sp > 0);
 
     sp
 }
 
-fn load_board_obj() -> ObjMesh {
+fn create_geometry_board() -> ObjMesh {
     let points: Vec<[GLfloat; 3]> = vec![
         [1.0, 1.0, 0.0], [-1.0, -1.0, 0.0], [ 1.0, -1.0, 0.0],
         [1.0, 1.0, 0.0], [-1.0,  1.0, 0.0], [-1.0, -1.0, 0.0]
@@ -293,9 +301,7 @@ fn load_board_obj() -> ObjMesh {
     ObjMesh::new(points, tex_coords, normals)
 }
 
-fn load_board_mesh(sp: GLuint) -> (GLuint, GLuint, GLuint) {
-    let mesh = load_board_obj();
-
+fn send_to_gpu_geometry_board(sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuint, GLuint) {
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
     };
@@ -323,6 +329,9 @@ fn load_board_mesh(sp: GLuint) -> (GLuint, GLuint, GLuint) {
     let mut v_tex_vbo = 0;
     unsafe {
         gl::GenBuffers(1, &mut v_tex_vbo);
+    }
+    assert!(v_tex_vbo > 0);
+    unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
         gl::BufferData(
             gl::ARRAY_BUFFER,
@@ -330,7 +339,6 @@ fn load_board_mesh(sp: GLuint) -> (GLuint, GLuint, GLuint) {
             mesh.tex_coords.as_ptr() as *const GLvoid, gl::STATIC_DRAW
         )
     }
-    assert!(v_tex_vbo > 0);
 
     let mut vao = 0;
     unsafe {
@@ -434,8 +442,10 @@ struct Board {
 }
 
 fn load_board(game: &mut glh::GLState) -> Board {
-    let sp = load_board_shaders(game);
-    let (v_pos_vbo, v_tex_vbo, vao) = load_board_mesh(sp);
+    let shader_source = create_shaders_board();
+    let sp = send_to_gpu_shaders_board(game, shader_source);
+    let mesh = create_geometry_board();
+    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_geometry_board(sp, &mesh);
     let tex = load_board_textures(game);
     load_board_uniforms(game, sp);
 
@@ -447,6 +457,20 @@ fn load_board(game: &mut glh::GLState) -> Board {
         tex: tex,
     }
 }
+
+/* ----------------------------------------------------------------------------------- */
+/*
+ * 
+ *    END LOAD UI/BOARD LAYER
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+*/
+/* ----------------------------------------------------------------------------------- */
 
 /* ------------------------------------------------------------------------- */
 /* ------------------------------- TEXT BOX RENDERING ---------------------- */
