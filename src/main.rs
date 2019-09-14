@@ -972,6 +972,31 @@ impl Game {
     fn get_framebuffer_size(&self) -> (i32, i32) {
         self.gl.window.get_framebuffer_size()
     }
+
+    #[inline]
+    fn window_should_close(&self) -> bool {
+        self.gl.window.should_close()
+    }
+
+    #[inline]
+    fn window_set_should_close(&mut self, close: bool) {
+        self.gl.window.set_should_close(true);
+    }
+
+    #[inline]
+    fn update_fps_counter(&mut self) {
+        glh::update_fps_counter(&mut self.gl);
+    }
+
+    #[inline]
+    fn update_timers(&mut self) -> f64 {
+        glh::update_timers(&mut self.gl)
+    }
+
+    #[inline]
+    fn swap_buffers(&mut self) {
+        self.gl.window.swap_buffers();
+    }
 }
 
 fn init_game() -> Game {
@@ -1024,20 +1049,20 @@ fn main() {
 
     let atlas = load_font_atlas();
 
-    while !game.gl.window.should_close() {
+    while !game.window_should_close() {
         // Check input.
-        let elapsed_seconds = glh::update_timers(&mut game.gl);
+        let elapsed_seconds = game.update_timers();
 
         game.gl.glfw.poll_events();
         match game.gl.window.get_key(Key::Escape) {
             Action::Press | Action::Repeat => {
-                game.gl.window.set_should_close(true);
+                game.window_set_should_close(true);
             }
             _ => {}
         }
 
         // Update the game world.
-        glh::update_fps_counter(&mut game.gl);
+        game.update_fps_counter();
 
         let (width, height) = game.get_framebuffer_size();
         if (width != game.gl.width as i32) && (height != game.gl.height as i32) {
@@ -1142,7 +1167,7 @@ fn main() {
         }
 
         // Send the results to the output.
-        game.gl.window.swap_buffers();
+        game.swap_buffers();
     }
 
     info!("END LOG");
