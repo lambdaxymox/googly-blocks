@@ -880,6 +880,24 @@ fn text_to_vbo(
 
     Ok((st.len(), point_count))
 }
+
+fn update_score_panel_uniforms(game: &mut Game) {
+    let v_mat_gui_scale_loc = unsafe { 
+        gl::GetUniformLocation(game.ui.score_panel.background.sp, glh::gl_str("v_mat_gui_scale").as_ptr())
+    };
+    assert!(v_mat_gui_scale_loc > -1);
+            
+    let panel_width: f32 = 218.0;
+    let panel_height: f32 = 109.0;
+    let (viewport_width, viewport_height) = game.get_framebuffer_size();
+    let x_scale = panel_width / (viewport_width as f32);
+    let y_scale = panel_height / (viewport_height as f32);
+    let gui_scale = Matrix4::from_nonuniform_scale(x_scale, y_scale, 0.0);
+    unsafe {
+        gl::UseProgram(game.ui.score_panel.background.sp);
+        gl::UniformMatrix4fv(v_mat_gui_scale_loc, 1, gl::FALSE, gui_scale.as_ptr());
+    }
+}
 /* ------------------------------------------------------------------------- */
 /* --------------------------- END TEXT BOX RENDERING ---------------------- */
 /* ------------------------------------------------------------------------- */
@@ -1004,11 +1022,6 @@ impl Game {
     }
 
     #[inline(always)]
-    fn update_ui(&mut self) {
-        update_board_uniforms(self);
-    }
-
-    #[inline(always)]
     fn update_background(&mut self) {
     }
 
@@ -1021,6 +1034,12 @@ impl Game {
             gl::BindVertexArray(self.background.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
         }
+    }
+
+    #[inline(always)]
+    fn update_ui(&mut self) {
+        update_board_uniforms(self);
+        update_score_panel_uniforms(self);
     }
 
     #[inline(always)]
@@ -1047,23 +1066,8 @@ impl Game {
             let viewport_height = self.gl.height;
             text_to_vbo(&self.ui.atlas, viewport_width, viewport_height, placement, &mut label, "SCORE").unwrap();
             text_to_vbo(&self.ui.atlas, viewport_width, viewport_height, placement, &mut content, "0xDEADBEEF").unwrap();
-            
-            /* SET THE GUI ELEMENT SCALE */
-            let v_mat_gui_scale_loc = gl::GetUniformLocation(
-                tb.background.sp, glh::gl_str("v_mat_gui_scale").as_ptr()
-            );
-            assert!(v_mat_gui_scale_loc > -1);
-            
-            let panel_width: f32 = 218.0;
-            let panel_height: f32 = 109.0;
-            let (viewport_width, viewport_height) = self.get_framebuffer_size();
-            let x_scale = panel_width / (viewport_width as f32);
-            let y_scale = panel_height / (viewport_height as f32);
-            let gui_scale = Matrix4::from_nonuniform_scale(x_scale, y_scale, 0.0);
 
             gl::UseProgram(tb.background.sp);
-            gl::UniformMatrix4fv(v_mat_gui_scale_loc, 1, gl::FALSE, gui_scale.as_ptr());
-            /* END SET THE GUI ELEMENT SCALE */
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, tb.background.tex);
