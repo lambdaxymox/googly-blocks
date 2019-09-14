@@ -1065,7 +1065,7 @@ impl Game {
             let viewport_width = self.gl.width;
             let viewport_height = self.gl.height;
             text_to_vbo(&self.ui.atlas, viewport_width, viewport_height, placement, &mut label, "SCORE").unwrap();
-            text_to_vbo(&self.ui.atlas, viewport_width, viewport_height, placement, &mut content, "0xDEADBEEF").unwrap();
+            text_to_vbo(&self.ui.atlas, viewport_width, viewport_height, placement, &mut content, "DEADBEEF").unwrap();
 
             gl::UseProgram(tb.background.sp);
             gl::Disable(gl::DEPTH_TEST);
