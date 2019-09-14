@@ -148,7 +148,7 @@ fn create_geometry_background() -> ObjMesh {
     ObjMesh::new(points, tex_coords, normals)
 }
 
-fn send_to_gpu_geometry_background(game: &mut glh::GLState, sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuint, GLuint) {
+fn send_to_gpu_geometry_background(sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuint, GLuint) {
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
     };
@@ -211,7 +211,7 @@ fn create_textures_background() -> TexImage2D {
     tex_image
 }
 
-fn send_to_gpu_textures_background(game: &mut glh::GLState, tex_image: &TexImage2D) -> GLuint {
+fn send_to_gpu_textures_background(tex_image: &TexImage2D) -> GLuint {
     let tex = send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap();
 
     tex
@@ -229,9 +229,9 @@ fn load_background(game: &mut glh::GLState) -> Background {
     let shader_source = create_shaders_background();
     let sp = send_to_gpu_shaders_background(game, shader_source);
     let mesh = create_geometry_background();
-    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_geometry_background(game, sp, &mesh);
+    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_geometry_background(sp, &mesh);
     let tex_image = create_textures_background();
-    let tex = send_to_gpu_textures_background(game, &tex_image);
+    let tex = send_to_gpu_textures_background(&tex_image);
 
     Background {
         sp: sp,
