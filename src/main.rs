@@ -968,32 +968,32 @@ struct Game {
 }
 
 impl Game {
-    #[inline]
+    #[inline(always)]
     fn get_framebuffer_size(&self) -> (i32, i32) {
         self.gl.window.get_framebuffer_size()
     }
 
-    #[inline]
+    #[inline(always)]
     fn window_should_close(&self) -> bool {
         self.gl.window.should_close()
     }
 
-    #[inline]
+    #[inline(always)]
     fn window_set_should_close(&mut self, close: bool) {
         self.gl.window.set_should_close(true);
     }
 
-    #[inline]
+    #[inline(always)]
     fn update_fps_counter(&mut self) {
         glh::update_fps_counter(&mut self.gl);
     }
 
-    #[inline]
+    #[inline(always)]
     fn update_timers(&mut self) -> f64 {
         glh::update_timers(&mut self.gl)
     }
 
-    #[inline]
+    #[inline(always)]
     fn swap_buffers(&mut self) {
         self.gl.window.swap_buffers();
     }
