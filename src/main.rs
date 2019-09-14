@@ -543,7 +543,7 @@ fn send_to_gpu_shaders_textbox_background(game: &mut glh::GLState, source: Shade
 }
 
 /// Load the shaders for a textbox buffer.
-fn create_shaders_textbox_element() -> ShaderSource {
+fn create_shaders_textbox_buffer() -> ShaderSource {
     let vert_source = include_shader!("textbox_element.vert.glsl");
     let frag_source = include_shader!("textbox_element.frag.glsl");
 
@@ -556,7 +556,7 @@ fn create_shaders_textbox_element() -> ShaderSource {
 }
 
 /// Send the shaders for a textbox buffer to the GPU.
-fn send_to_gpu_shaders_textbox_element(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+fn send_to_gpu_shaders_textbox_buffer(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
     send_to_gpu_shaders(game, source)
 }
 
@@ -681,7 +681,7 @@ fn send_to_gpu_texture_textbox_background(game: &mut glh::GLState, tex_image: &T
 }
 
 /// Set up the geometry for rendering title screen text.
-fn create_buffers_textbox_element(sp: GLuint) -> (GLuint, GLuint, GLuint) {
+fn create_buffers_textbox_buffer(sp: GLuint) -> (GLuint, GLuint, GLuint) {
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
     };
@@ -744,9 +744,9 @@ fn create_textbox_buffer(
     game: &mut glh::GLState, font_tex: GLuint, 
     offset_x: f32, offset_y: f32, scale_px: f32) -> TextBoxBuffer {
     
-    let shader_source = create_shaders_textbox_element();
-    let sp = send_to_gpu_shaders_textbox_element(game, shader_source);
-    let (v_pos_vbo, v_tex_vbo, vao) = create_buffers_textbox_element(sp);
+    let shader_source = create_shaders_textbox_buffer();
+    let sp = send_to_gpu_shaders_textbox_buffer(game, shader_source);
+    let (v_pos_vbo, v_tex_vbo, vao) = create_buffers_textbox_buffer(sp);
     let placement = RelativePlacement { offset_x, offset_y };
 
     TextBoxBuffer {
