@@ -1,9 +1,7 @@
 #version 460 core
 
 uniform Matrices {
-    mat4 m_proj;
-    mat4 m_view;
-    mat4 m_model;
+    mat4 m_trans;
     mat4 m_gui_scale;
 };
 
@@ -16,5 +14,5 @@ out Data {
 
 void main() {
     DataOut.tex_coord = v_tex;
-    gl_Position = m_proj * m_view * m_model * m_gui_scale * vec4 (v_pos, 1.0);
+    gl_Position = m_trans * m_gui_scale * vec4 (v_pos, 1.0);
 }

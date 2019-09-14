@@ -363,11 +363,7 @@ struct BoardUniforms {
 }
 
 fn send_to_gpu_uniforms_board(game: &mut glh::GLState, sp: GLuint, uniforms: BoardUniforms) {
-    let model_mat = Matrix4::one();
-    //let view_mat = game.camera.view_mat;
-    //let proj_mat = game.camera.proj_mat;
-    let view_mat = Matrix4::one();
-    let proj_mat = Matrix4::one();
+    let trans_mat = Matrix4::one();
     let gui_scale_mat = Matrix4::from_nonuniform_scale(uniforms.gui_scale_x, uniforms.gui_scale_y, 0.0);
 
     let ubo_index = unsafe {
@@ -383,25 +379,25 @@ fn send_to_gpu_uniforms_board(game: &mut glh::GLState, sp: GLuint, uniforms: Boa
     }
     assert!(ubo_size > 0);
 
-    let mut indices = [0; 4];
-    let mut sizes = [0; 4];
-    let mut offsets = [0; 4];
-    let mut types = [0; 4];
+    let mut indices = [0; 2];
+    let mut sizes = [0; 2];
+    let mut offsets = [0; 2];
+    let mut types = [0; 2];
     unsafe {
         gl::GetActiveUniformBlockiv(
             sp, ubo_index,
             gl::UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indices.as_mut_ptr()
         );
         gl::GetActiveUniformsiv(
-            sp, 4, indices.as_ptr() as *const u32,
+            sp, 2, indices.as_ptr() as *const u32,
             gl::UNIFORM_OFFSET, offsets.as_mut_ptr()
         );
         gl::GetActiveUniformsiv(
-            sp, 4, indices.as_ptr() as *const u32,
+            sp, 2, indices.as_ptr() as *const u32,
             gl::UNIFORM_SIZE, sizes.as_mut_ptr()
         );
         gl::GetActiveUniformsiv(
-            sp, 4, indices.as_ptr() as *const u32,
+            sp, 2, indices.as_ptr() as *const u32,
             gl::UNIFORM_TYPE, types.as_mut_ptr()
         );
     }
@@ -409,10 +405,8 @@ fn send_to_gpu_uniforms_board(game: &mut glh::GLState, sp: GLuint, uniforms: Boa
     // Copy the uniform block data into a buffer to be passed to the GPU.
     let mut buffer = vec![0 as u8; ubo_size as usize];
     unsafe {
-        ptr::copy(&proj_mat, mem::transmute(&mut buffer[offsets[0] as usize]), 1);
-        ptr::copy(&view_mat, mem::transmute(&mut buffer[offsets[1] as usize]), 1);
-        ptr::copy(&model_mat, mem::transmute(&mut buffer[offsets[2] as usize]), 1);
-        ptr::copy(&gui_scale_mat, mem::transmute(&mut buffer[offsets[3] as usize]), 1);
+        ptr::copy(&trans_mat, mem::transmute(&mut buffer[offsets[1] as usize]), 1);
+        ptr::copy(&gui_scale_mat, mem::transmute(&mut buffer[offsets[0] as usize]), 1);
     }
 
     let mut ubo = 0;
