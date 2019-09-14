@@ -909,6 +909,22 @@ fn update_score_panel_content(game: &mut Game) {
         &game.ui.atlas, 
         viewport_width, viewport_height, placement, &mut content, "DEADBEEF"
     ).unwrap();
+
+    let text_color_loc = unsafe { 
+        gl::GetUniformLocation(label.sp, glh::gl_str("text_color").as_ptr())
+    };
+    assert!(text_color_loc > -1);
+    unsafe { 
+        gl::Uniform4fv(text_color_loc, 1, HEADING_COLOR.as_ptr());
+    }
+
+    let text_color_loc = unsafe {
+        gl::GetUniformLocation(content.sp, glh::gl_str("text_color").as_ptr())
+    };
+    assert!(text_color_loc > -1);
+    unsafe {
+        gl::Uniform4fv(text_color_loc, 1, TEXT_COLOR.as_ptr());
+    }
 }
 /* ------------------------------------------------------------------------- */
 /* --------------------------- END TEXT BOX RENDERING ---------------------- */
@@ -1068,9 +1084,6 @@ impl Game {
             gl::BindVertexArray(self.ui.board.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
 
-            /* ------------------------------------------------------------------ */
-            /* ---------------------- BEGIN TEXT RENDERING ---------------------- */
-            /* ------------------------------------------------------------------ */
             let background = self.ui.score_panel.background;
             gl::UseProgram(background.sp);
             gl::Disable(gl::DEPTH_TEST);
@@ -1078,37 +1091,22 @@ impl Game {
             gl::BindTexture(gl::TEXTURE_2D, background.tex);
             gl::BindVertexArray(background.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
-            /*
+            
+            let label = self.ui.score_panel.label;
             gl::UseProgram(label.sp);
-            /* SET THE TEXT COLOR */
-            // TODO: Move this somewhere else.
-            let text_color_loc = gl::GetUniformLocation(label.sp, glh::gl_str("text_color").as_ptr());
-            assert!(text_color_loc > -1);
-            gl::Uniform4fv(text_color_loc, 1, HEADING_COLOR.as_ptr());
-            /* END SET THE TEXT COLOR. */
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, label.tex);
             gl::BindVertexArray(label.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6 * 5);
             
+            let content = self.ui.score_panel.content;
             gl::UseProgram(content.sp);
-            // TODO: Move this somewhere else.
-            let text_color_loc = unsafe {
-                gl::GetUniformLocation(content.sp, glh::gl_str("text_color").as_ptr())
-            };
-            assert!(text_color_loc > -1);
-            gl::Uniform4fv(text_color_loc, 1, TEXT_COLOR.as_ptr());
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, content.tex);
             gl::BindVertexArray(content.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 10);
-
-            /* ------------------------------------------------------------------ */
-            /* ----------------------- END TEXT RENDERING ----------------------- */
-            /* ------------------------------------------------------------------ */
-            */
+            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 8);
         }
     }
 
