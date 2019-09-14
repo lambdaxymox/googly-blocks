@@ -814,7 +814,8 @@ fn send_to_gpu_font_texture(atlas: &BitmapFontAtlas, wrapping_mode: GLuint) -> R
 }
 
 fn text_to_vbo(
-    atlas: &BitmapFontAtlas, viewport_width: u32, viewport_height: u32,
+    atlas: &BitmapFontAtlas, 
+    viewport_width: u32, viewport_height: u32,
     placement: AbsolutePlacement, tb: &mut TextBoxElement, st: &str) -> io::Result<(usize, usize)> {
     
     let scale_px = tb.scale_px;
@@ -891,6 +892,23 @@ fn update_score_panel_uniforms(game: &mut Game) {
         gl::UseProgram(game.ui.score_panel.background.sp);
         gl::UniformMatrix4fv(v_mat_gui_scale_loc, 1, gl::FALSE, gui_scale.as_ptr());
     }
+}
+
+fn update_score_panel_content(game: &mut Game) {
+    let tb = game.ui.score_panel.clone();
+    let placement = tb.placement;
+    let mut label = tb.label.clone();
+    let mut content = tb.content.clone();
+    let viewport_width = game.gl.width;
+    let viewport_height = game.gl.height;
+    text_to_vbo(
+        &game.ui.atlas, 
+        viewport_width, viewport_height, placement, &mut label, "SCORE"
+    ).unwrap();
+    text_to_vbo(
+        &game.ui.atlas, 
+        viewport_width, viewport_height, placement, &mut content, "DEADBEEF"
+    ).unwrap();
 }
 /* ------------------------------------------------------------------------- */
 /* --------------------------- END TEXT BOX RENDERING ---------------------- */
@@ -1034,6 +1052,7 @@ impl Game {
     fn update_ui(&mut self) {
         update_board_uniforms(self);
         update_score_panel_uniforms(self);
+        update_score_panel_content(self);
     }
 
     #[inline(always)]
@@ -1052,20 +1071,11 @@ impl Game {
             /* ------------------------------------------------------------------ */
             /* ---------------------- BEGIN TEXT RENDERING ---------------------- */
             /* ------------------------------------------------------------------ */
-            let tb = self.ui.score_panel.clone();
-            let placement = tb.placement;
-            let mut label = tb.label.clone();
-            let mut content = tb.content.clone();
-            let viewport_width = self.gl.width;
-            let viewport_height = self.gl.height;
-            text_to_vbo(&self.ui.atlas, viewport_width, viewport_height, placement, &mut label, "SCORE").unwrap();
-            text_to_vbo(&self.ui.atlas, viewport_width, viewport_height, placement, &mut content, "DEADBEEF").unwrap();
-
-            gl::UseProgram(tb.background.sp);
+            gl::UseProgram(self.ui.score_panel.background.sp);
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, tb.background.tex);
-            gl::BindVertexArray(tb.background.vao);
+            gl::BindTexture(gl::TEXTURE_2D, self.ui.score_panel.background.tex);
+            gl::BindVertexArray(self.ui.score_panel.background.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
             /*
             gl::UseProgram(label.sp);
