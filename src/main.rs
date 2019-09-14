@@ -85,10 +85,37 @@ fn send_to_gpu_texture(tex_data: &TexImage2D, wrapping_mode: GLuint) -> Result<G
 
     Ok(tex)
 }
+/* ----------------------------------------------------------------------------------- */
+/*
+ * 
+ *    LOAD BACKGROUND LAYER
+ * 
+ * 
+ *
+ * 
+ * 
+ * 
+ * 
+ *  
+*/
+/* ----------------------------------------------------------------------------------- */
+#[derive(Copy, Clone)]
+struct ShaderSource {
+    vert_source: &'static str,
+    frag_source: &'static str,
+}
 
-fn load_background_shaders(game: &mut glh::GLState) -> GLuint {
-    let mut vert_reader = io::Cursor::new(include_shader!("background.vert.glsl"));
-    let mut frag_reader = io::Cursor::new(include_shader!("background.frag.glsl"));
+#[inline]
+fn create_shaders_background() -> ShaderSource {
+    let vert_source = include_shader!("background.vert.glsl");
+    let frag_source = include_shader!("background.frag.glsl");
+
+    ShaderSource { vert_source: vert_source, frag_source: frag_source }
+}
+
+fn send_to_gpu_shaders(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+    let mut vert_reader = io::Cursor::new(source.vert_source);
+    let mut frag_reader = io::Cursor::new(source.frag_source);
     let sp = glh::create_program_from_reader(
         game,
         &mut vert_reader, "background.vert.glsl",
@@ -97,6 +124,11 @@ fn load_background_shaders(game: &mut glh::GLState) -> GLuint {
     assert!(sp > 0);
 
     sp
+}
+
+#[inline]
+fn send_to_gpu_shaders_background(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+    send_to_gpu_shaders(game, source)
 }
 
 fn load_background_obj() -> ObjMesh {
@@ -191,7 +223,8 @@ struct Background {
 }
 
 fn load_background(game: &mut glh::GLState) -> Background {
-    let sp = load_background_shaders(game);
+    let shader_source = create_shaders_background();
+    let sp = send_to_gpu_shaders_background(game, shader_source);
     let (v_pos_vbo, v_tex_vbo, vao) = load_background_mesh(game, sp);
     let tex = load_background_textures(game);
 
@@ -203,6 +236,19 @@ fn load_background(game: &mut glh::GLState) -> Background {
         tex: tex,
     }
 }
+/* ----------------------------------------------------------------------------------- */
+/*
+ * 
+ *    END LOAD BACKGROUND LAYER
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+*/
+/* ----------------------------------------------------------------------------------- */
 
 fn load_board_shaders(game: &mut glh::GLState) -> GLuint {
     let mut vert_reader = io::Cursor::new(include_shader!("board.vert.glsl"));
@@ -964,6 +1010,7 @@ fn main() {
             gl::BindVertexArray(background.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
 
+            /*
             // Render the game board. We turn off depth testing to do so since this is
             // a 2D scene using 3D abstractions. Otherwise Z-Buffering would prevent us
             // from rendering the game board.
@@ -1032,7 +1079,7 @@ fn main() {
             // TODO: Move this somewhere else.
             let text_color_loc = gl::GetUniformLocation(label.sp, glh::gl_str("text_color").as_ptr());
             assert!(text_color_loc > -1);
-            gl::Uniform4f(text_color_loc, HEADING_COLOR[0], HEADING_COLOR[1], HEADING_COLOR[2], HEADING_COLOR[3]);
+            gl::Uniform4fv(text_color_loc, 1, HEADING_COLOR.as_ptr());
             /* END SET THE TEXT COLOR. */
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
@@ -1046,7 +1093,7 @@ fn main() {
                 gl::GetUniformLocation(content.sp, glh::gl_str("text_color").as_ptr())
             };
             assert!(text_color_loc > -1);
-            gl::Uniform4f(text_color_loc, TEXT_COLOR[0], TEXT_COLOR[1], TEXT_COLOR[2], TEXT_COLOR[3]);
+            gl::Uniform4fv(text_color_loc, 1, TEXT_COLOR.as_ptr());
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, content.tex);
@@ -1057,6 +1104,7 @@ fn main() {
             /* ----------------------- END TEXT RENDERING ----------------------- */
             /* ------------------------------------------------------------------ */
             // TODO: Render the googly eyes.
+            */
         }
 
         // Send the results to the output.
