@@ -203,11 +203,16 @@ fn send_to_gpu_geometry_background(game: &mut glh::GLState, sp: GLuint, mesh: &O
     (v_pos_vbo, v_tex_vbo, vao)
 }
 
-fn load_background_textures(game: &mut glh::GLState) -> GLuint {
+fn create_textures_background() -> TexImage2D {
     let arr: &'static [u8; 27695] = include_asset!("title.png");
     let asset = to_vec(&arr[0], 27695);
     let tex_image = teximage2d::load_from_memory(&asset).unwrap();
-    let tex = send_to_gpu_texture(&tex_image, gl::CLAMP_TO_EDGE).unwrap();
+
+    tex_image
+}
+
+fn send_to_gpu_textures_background(game: &mut glh::GLState, tex_image: &TexImage2D) -> GLuint {
+    let tex = send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap();
 
     tex
 }
@@ -225,7 +230,8 @@ fn load_background(game: &mut glh::GLState) -> Background {
     let sp = send_to_gpu_shaders_background(game, shader_source);
     let mesh = create_geometry_background();
     let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_geometry_background(game, sp, &mesh);
-    let tex = load_background_textures(game);
+    let tex_image = create_textures_background();
+    let tex = send_to_gpu_textures_background(game, &tex_image);
 
     Background {
         sp: sp,
