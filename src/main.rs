@@ -176,6 +176,9 @@ fn send_to_gpu_geometry_background(sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuin
     let mut v_tex_vbo = 0;
     unsafe {
         gl::GenBuffers(1, &mut v_tex_vbo);
+    }
+    assert!(v_tex_vbo > 0);
+    unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
         gl::BufferData(
             gl::ARRAY_BUFFER,
@@ -183,7 +186,6 @@ fn send_to_gpu_geometry_background(sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuin
             mesh.tex_coords.as_ptr() as *const GLvoid, gl::STATIC_DRAW
         )
     }
-    assert!(v_tex_vbo > 0);
 
     let mut vao = 0;
     unsafe {
