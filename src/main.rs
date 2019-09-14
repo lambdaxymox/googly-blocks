@@ -1015,7 +1015,7 @@ impl Game {
 
     #[inline(always)]
     fn window_set_should_close(&mut self, close: bool) {
-        self.gl.window.set_should_close(true);
+        self.gl.window.set_should_close(close);
     }
 
     #[inline(always)]
@@ -1071,11 +1071,12 @@ impl Game {
             /* ------------------------------------------------------------------ */
             /* ---------------------- BEGIN TEXT RENDERING ---------------------- */
             /* ------------------------------------------------------------------ */
-            gl::UseProgram(self.ui.score_panel.background.sp);
+            let background = self.ui.score_panel.background;
+            gl::UseProgram(background.sp);
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, self.ui.score_panel.background.tex);
-            gl::BindVertexArray(self.ui.score_panel.background.vao);
+            gl::BindTexture(gl::TEXTURE_2D, background.tex);
+            gl::BindVertexArray(background.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
             /*
             gl::UseProgram(label.sp);
