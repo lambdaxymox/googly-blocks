@@ -212,6 +212,7 @@ fn send_to_gpu_textures_background(tex_image: &TexImage2D) -> GLuint {
     send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()
 }
 
+#[derive(Copy, Clone)]
 struct Background {
     sp: GLuint,
     v_pos_vbo: GLuint,
@@ -1006,108 +1007,36 @@ impl Game {
     fn update_ui(&mut self) {
         update_board_uniforms(self);
     }
-}
 
-fn init_game() -> Game {
-    init_logger("googly-blocks.log");
-    info!("BEGIN LOG");
-    info!("build version: ??? ?? ???? ??:??:??");
-    let width = 896;
-    let height = 504;
-    let mut gl_context = init_gl(width, height);
-    let camera = load_camera(width as f32, height as f32);
-    let atlas = load_font_atlas();
-    let atlas_tex = send_to_gpu_font_texture(&atlas, gl::CLAMP_TO_EDGE).unwrap();
-    let background = load_background(&mut gl_context);
-
-    let (viewport_width, viewport_height) = gl_context.window.get_framebuffer_size();
-    let viewport_width = viewport_width as f32;
-    let viewport_height = viewport_height as f32;
-    let panel_width: f32 = 230.0;
-    let panel_height: f32 = 442.0;
-    let gui_scale_x = panel_width / viewport_width;
-    let gui_scale_y = panel_height / viewport_height;
-    let board_uniforms = BoardUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
-
-    let board = load_board(&mut gl_context, board_uniforms);
-    let score_board = create_textbox(&mut gl_context, "SCORE", atlas_tex, 0.1, 0.1);
-    let ui = UI {atlas: atlas, board: board, score_board: score_board };
-
-    Game {
-        gl: gl_context,
-        camera: camera,
-        ui: ui,
-        background: background,
-    }
-}
-
-fn main() {
-    let mut game = init_game();
-    unsafe {
-        // Enable depth testing.
-        gl::Enable(gl::DEPTH_TEST);
-        gl::DepthFunc(gl::LESS);
-        gl::Enable(gl::CULL_FACE);
-        gl::CullFace(gl::BACK);
-        gl::FrontFace(gl::CCW);
-        // Gray background.
-        gl::ClearColor(0.2, 0.2, 0.2, 1.0);
-        gl::Viewport(0, 0, game.gl.width as i32, game.gl.height as i32);
+    #[inline(always)]
+    fn update_background(&mut self) {
     }
 
-    let atlas = load_font_atlas();
-
-    while !game.window_should_close() {
-        // Check input.
-        let elapsed_seconds = game.update_timers();
-
-        game.gl.glfw.poll_events();
-        match game.gl.window.get_key(Key::Escape) {
-            Action::Press | Action::Repeat => {
-                game.window_set_should_close(true);
-            }
-            _ => {}
-        }
-
-        // Update the game world.
-        game.update_fps_counter();
-
-        let (width, height) = game.get_framebuffer_size();
-        if (width != game.gl.width as i32) && (height != game.gl.height as i32) {
-            glfw_framebuffer_size_callback(
-                &mut game, width as u32, height as u32
-            );
-        }
-
-        // Render the results.
+    #[inline(always)]
+    fn render_background(&mut self) {
         unsafe {
-            // Clear the screen.
-            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
-            gl::ClearColor(0.2, 0.2, 0.2, 1.0);
-            gl::Viewport(0, 0, game.gl.width as i32, game.gl.height as i32);
-
-            // Render the background.
-            let background = &game.background;
-            gl::UseProgram(background.sp);
+            gl::UseProgram(self.background.sp);
             gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, background.tex);
-            gl::BindVertexArray(background.vao);
+            gl::BindTexture(gl::TEXTURE_2D, self.background.tex);
+            gl::BindVertexArray(self.background.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
+        }
+    }
 
-            
+    #[inline(always)]
+    fn render_ui(&mut self) {
+        unsafe {
             // Render the game board. We turn off depth testing to do so since this is
             // a 2D scene using 3D abstractions. Otherwise Z-Buffering would prevent us
             // from rendering the game board.
-            gl::UseProgram(game.ui.board.sp);
-            game.update_ui();
+            gl::UseProgram(self.ui.board.sp);
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, game.ui.board.tex);
-            gl::BindVertexArray(game.ui.board.vao);
+            gl::BindTexture(gl::TEXTURE_2D, self.ui.board.tex);
+            gl::BindVertexArray(self.ui.board.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
-            /*
-            // TODO: Render the blocks instanced.
 
+            /*
             /* ------------------------------------------------------------------ */
             /* ---------------------- BEGIN TEXT RENDERING ---------------------- */
             /* ------------------------------------------------------------------ */
@@ -1170,8 +1099,111 @@ fn main() {
             /* ------------------------------------------------------------------ */
             /* ----------------------- END TEXT RENDERING ----------------------- */
             /* ------------------------------------------------------------------ */
-            // TODO: Render the googly eyes.
             */
+        }
+    }
+
+    #[inline(always)]
+    fn poll_events(&mut self) {
+        self.gl.glfw.poll_events();
+    }
+
+    #[inline(always)]
+    fn get_key(&self, key: Key) -> Action {
+        self.gl.window.get_key(key)
+    }
+}
+
+fn init_game() -> Game {
+    init_logger("googly-blocks.log");
+    info!("BEGIN LOG");
+    info!("build version: ??? ?? ???? ??:??:??");
+    let width = 896;
+    let height = 504;
+    let mut gl_context = init_gl(width, height);
+    let camera = load_camera(width as f32, height as f32);
+    let atlas = load_font_atlas();
+    let atlas_tex = send_to_gpu_font_texture(&atlas, gl::CLAMP_TO_EDGE).unwrap();
+    let background = load_background(&mut gl_context);
+
+    let (viewport_width, viewport_height) = gl_context.window.get_framebuffer_size();
+    let viewport_width = viewport_width as f32;
+    let viewport_height = viewport_height as f32;
+    let panel_width: f32 = 230.0;
+    let panel_height: f32 = 442.0;
+    let gui_scale_x = panel_width / viewport_width;
+    let gui_scale_y = panel_height / viewport_height;
+    let board_uniforms = BoardUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
+
+    let board = load_board(&mut gl_context, board_uniforms);
+    let score_board = create_textbox(&mut gl_context, "SCORE", atlas_tex, 0.1, 0.1);
+    let ui = UI {atlas: atlas, board: board, score_board: score_board };
+
+    Game {
+        gl: gl_context,
+        camera: camera,
+        ui: ui,
+        background: background,
+    }
+}
+
+fn main() {
+    let mut game = init_game();
+    unsafe {
+        // Enable depth testing.
+        gl::Enable(gl::DEPTH_TEST);
+        gl::DepthFunc(gl::LESS);
+        gl::Enable(gl::CULL_FACE);
+        gl::CullFace(gl::BACK);
+        gl::FrontFace(gl::CCW);
+        // Gray background.
+        gl::ClearColor(0.2, 0.2, 0.2, 1.0);
+        gl::Viewport(0, 0, game.gl.width as i32, game.gl.height as i32);
+    }
+
+    let atlas = load_font_atlas();
+
+    while !game.window_should_close() {
+        // Check input.
+        let elapsed_seconds = game.update_timers();
+
+        game.poll_events();
+        match game.get_key(Key::Escape) {
+            Action::Press | Action::Repeat => {
+                game.window_set_should_close(true);
+            }
+            _ => {}
+        }
+
+        // Update the game world.
+        game.update_fps_counter();
+
+        let (width, height) = game.get_framebuffer_size();
+        if (width != game.gl.width as i32) && (height != game.gl.height as i32) {
+            glfw_framebuffer_size_callback(
+                &mut game, width as u32, height as u32
+            );
+        }
+
+        // Render the results.
+        unsafe {
+            // Clear the screen.
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
+            gl::ClearColor(0.2, 0.2, 0.2, 1.0);
+            gl::Viewport(0, 0, game.gl.width as i32, game.gl.height as i32);
+
+            // Render the background.
+            game.update_background();
+            game.render_background();
+
+            // TODO: Render the UI completely.
+            game.update_ui();
+            game.render_ui();
+
+            // TODO: Render the blocks instanced.
+
+            // TODO: Render the googly eyes.
+            
         }
 
         // Send the results to the output.
