@@ -896,10 +896,10 @@ fn load_textbox(gl_state: Rc<RefCell<glh::GLState>>, spec: &TextBoxSpec) -> Text
         create_textbox_background(&mut *context, placement, spec.panel_width, spec.panel_height)
     };
     let label = create_textbox_buffer(
-        gl_state.clone(), spec.atlas.clone(), spec.atlas_tex, 0.1, 0.1, 64.0
+        gl_state.clone(), spec.atlas.clone(), spec.atlas_tex, 0.05, 0.1, 64.0
     );
     let content = create_textbox_buffer(
-        gl_state.clone(), spec.atlas.clone(), spec.atlas_tex, 0.1, 0.24, 64.0
+        gl_state.clone(), spec.atlas.clone(), spec.atlas_tex, 0.05, 0.24, 64.0
     );
 
     TextBox {
@@ -967,6 +967,48 @@ fn update_score_panel_content(game: &mut Game, content: &str) {
     let placement = panel.placement;
 
     panel.label.write(placement, "SCORE").unwrap();
+    panel.content.write(placement, content).unwrap();
+
+    let text_color_loc = unsafe { 
+        gl::GetUniformLocation(panel.label.buffer.sp, glh::gl_str("text_color").as_ptr())
+    };
+    assert!(text_color_loc > -1);
+    let text_color_loc = unsafe {
+        gl::GetUniformLocation(panel.content.buffer.sp, glh::gl_str("text_color").as_ptr())
+    };
+    assert!(text_color_loc > -1);
+
+    unsafe {
+        gl::UseProgram(panel.label.buffer.sp);
+        gl::Uniform4fv(text_color_loc, 1, HEADING_COLOR.as_ptr());
+        gl::UseProgram(panel.content.buffer.sp);
+        gl::Uniform4fv(text_color_loc, 1, TEXT_COLOR.as_ptr());
+    }
+}
+
+fn update_level_panel_background(game: &mut Game) {
+    let v_mat_gui_scale_loc = unsafe { 
+        gl::GetUniformLocation(game.ui.level_panel.background.sp, glh::gl_str("v_mat_gui_scale").as_ptr())
+    };
+    assert!(v_mat_gui_scale_loc > -1);
+            
+    let panel_width: f32 = 218.0;
+    let panel_height: f32 = 109.0;
+    let (viewport_width, viewport_height) = game.get_framebuffer_size();
+    let x_scale = panel_width / (viewport_width as f32);
+    let y_scale = panel_height / (viewport_height as f32);
+    let gui_scale = Matrix4::from_nonuniform_scale(x_scale, y_scale, 0.0);
+    unsafe {
+        gl::UseProgram(game.ui.level_panel.background.sp);
+        gl::UniformMatrix4fv(v_mat_gui_scale_loc, 1, gl::FALSE, gui_scale.as_ptr());
+    }
+}
+
+fn update_level_panel_content(game: &mut Game, content: &str) {
+    let panel = &mut game.ui.level_panel;
+    let placement = panel.placement;
+
+    panel.label.write(placement, "LEVEL").unwrap();
     panel.content.write(placement, content).unwrap();
 
     let text_color_loc = unsafe { 
@@ -1055,6 +1097,7 @@ fn init_gl(width: u32, height: u32) -> glh::GLState {
 struct UI {
     board: Board,
     score_panel: TextBox,
+    level_panel: TextBox,
 }
 
 struct Game {
@@ -1118,6 +1161,8 @@ impl Game {
         update_board_uniforms(self);
         update_score_panel_background(self);
         update_score_panel_content(self, "000000");
+        update_level_panel_background(self);
+        update_level_panel_content(self, "00");
     }
 
     #[inline(always)]
@@ -1150,6 +1195,30 @@ impl Game {
             gl::DrawArrays(gl::TRIANGLES, 0, 6 * 5);
             
             let content = &self.ui.score_panel.content;
+            gl::UseProgram(content.buffer.sp);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, content.buffer.tex);
+            gl::BindVertexArray(content.buffer.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 8);
+
+            let background = self.ui.level_panel.background;
+            gl::UseProgram(background.sp);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, background.tex);
+            gl::BindVertexArray(background.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6);
+            
+            let label = &self.ui.level_panel.label;
+            gl::UseProgram(label.buffer.sp);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, label.buffer.tex);
+            gl::BindVertexArray(label.buffer.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 5);
+            
+            let content = &self.ui.level_panel.content;
             gl::UseProgram(content.buffer.sp);
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
@@ -1219,17 +1288,33 @@ fn init_game() -> Game {
         load_board(&mut *context, board_uniforms)
     };
 
-    let textbox_spec = TextBoxSpec {
+    let score_panel_spec = TextBoxSpec {
         name: "SCORE",
         atlas: atlas.clone(),
         atlas_tex: atlas_tex,
-        pos_x: 0.25,
-        pos_y: 0.85,
+        pos_x: 0.28,
+        pos_y: 0.877,
         panel_width: 218,
         panel_height: 109,
     };
-    let score_panel = load_textbox(gl_context.clone(), &textbox_spec);
-    let ui = UI { board: board, score_panel: score_panel };
+    let score_panel = load_textbox(gl_context.clone(), &score_panel_spec);
+
+    let level_panel_spec = TextBoxSpec {
+        name: "LEVEL",
+        atlas: atlas.clone(),
+        atlas_tex: atlas_tex,
+        pos_x: -0.765,
+        pos_y: 0.877,
+        panel_width: 218,
+        panel_height: 109,
+    };
+    let level_panel = load_textbox(gl_context.clone(), &level_panel_spec);
+    
+    let ui = UI { 
+        board: board, 
+        score_panel: score_panel,
+        level_panel: level_panel,
+    };
 
     Game {
         gl: gl_context,
