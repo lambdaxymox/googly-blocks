@@ -916,12 +916,8 @@ fn update_score_panel_content(game: &mut Game) {
     let mut content = tb.content.clone();
     let viewport_width = game.gl.width;
     let viewport_height = game.gl.height;
-    label.write(
-        viewport_width, viewport_height, placement, "SCORE"
-    ).unwrap();
-    content.write(
-        viewport_width, viewport_height, placement, "DEADBEEF"
-    ).unwrap();
+    label.write(viewport_width, viewport_height, placement, "SCORE").unwrap();
+    content.write(viewport_width, viewport_height, placement, "DEADBEEF").unwrap();
 
     let text_color_loc = unsafe { 
         gl::GetUniformLocation(label.buffer.sp, glh::gl_str("text_color").as_ptr())
