@@ -923,12 +923,12 @@ fn update_score_panel_background(game: &mut Game) {
     }
 }
 
-fn update_score_panel_content(game: &mut Game) {
+fn update_score_panel_content(game: &mut Game, content: &str) {
     let panel = &mut game.ui.score_panel;
     let placement = panel.placement;
 
     panel.label.write(placement, "SCORE").unwrap();
-    panel.content.write(placement, "DEADBEEF").unwrap();
+    panel.content.write(placement, content).unwrap();
 
     let text_color_loc = unsafe { 
         gl::GetUniformLocation(panel.label.buffer.sp, glh::gl_str("text_color").as_ptr())
@@ -1078,7 +1078,7 @@ impl Game {
     fn update_ui(&mut self) {
         update_board_uniforms(self);
         update_score_panel_background(self);
-        update_score_panel_content(self);
+        update_score_panel_content(self, "DEADBEEF");
     }
 
     #[inline(always)]
