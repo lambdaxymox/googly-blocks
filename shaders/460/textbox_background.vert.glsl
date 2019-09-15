@@ -9,5 +9,5 @@ out vec2 tex_coord;
 
 void main() {
     tex_coord = v_tex;
-    gl_Position = v_mat_gui_scale * vec4 (v_pos, 1.0);
+    gl_Position = v_mat_trans * v_mat_gui_scale * vec4 (v_pos, 1.0);
 }

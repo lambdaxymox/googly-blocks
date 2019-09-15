@@ -474,8 +474,8 @@ struct TextBoxBackground {
 
 #[derive(Copy, Clone, Debug)]
 struct AbsolutePlacement {
-    pos_x: f32,
-    pos_y: f32,
+    x: f32,
+    y: f32,
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -543,9 +543,9 @@ impl TextBoxBuffer {
 
         let mut points = vec![0.0; 12 * st.len()];
         let mut texcoords = vec![0.0; 12 * st.len()];
-        let mut at_x = placement.pos_x + self.placement.offset_x;
+        let mut at_x = placement.x + self.placement.offset_x;
         //let end_at_x = 0.95;
-        let mut at_y = placement.pos_y - self.placement.offset_y;
+        let mut at_y = placement.y - self.placement.offset_y;
 
         for (i, ch_i) in st.chars().enumerate() {
             let metadata_i = atlas.glyph_metadata[&(ch_i as usize)];
@@ -640,7 +640,12 @@ fn send_to_gpu_shaders_textbox_buffer(game: &mut glh::GLState, source: ShaderSou
     send_to_gpu_shaders(game, source)
 }
 
-fn create_geometry_textbox_background() -> (ObjMesh, AbsolutePlacement) {
+struct TextBoxGeometry {
+    mesh: ObjMesh,
+    top_left: AbsolutePlacement,
+}
+
+fn create_geometry_textbox_background() -> TextBoxGeometry {
     let points: Vec<[GLfloat; 3]> = vec![
         [1.0, 1.0, 0.0], [-1.0,  1.0, 0.0], [-1.0, -1.0, 0.0],
         [1.0, 1.0, 0.0], [-1.0, -1.0, 0.0], [ 1.0, -1.0, 0.0]        
@@ -660,16 +665,26 @@ fn create_geometry_textbox_background() -> (ObjMesh, AbsolutePlacement) {
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0]
     ];
     let mesh = ObjMesh::new(points, tex_coords, normals);
-    let top_left = AbsolutePlacement { pos_x: -0.4862,  pos_y: 0.2431 };
+    let top_left = AbsolutePlacement { x: -1.0,  y: 1.0 };
 
-    (mesh, top_left)
+    TextBoxGeometry { mesh: mesh, top_left: top_left }
+}
+
+struct TextBoxGeometryHandle {
+    v_pos_vbo: GLuint, 
+    v_tex_vbo: GLuint,
+    vao: GLuint,
 }
 
 /// Send the textbox background geometry to the GPU.
-fn send_to_gpu_geometry_textbox_background(sp: GLuint, placement: AbsolutePlacement) -> (GLuint, GLuint, GLuint) {
-    let (mesh, top_left) = create_geometry_textbox_background();
+fn send_to_gpu_geometry_textbox_background(
+    sp: GLuint, 
+    placement: AbsolutePlacement, geometry: &TextBoxGeometry) -> TextBoxGeometryHandle {
+
+    let mesh = &geometry.mesh;
+    let top_left = geometry.top_left;
     let mat_scale = Matrix4::one();
-    let distance = cgmath::vec3((placement.pos_x - top_left.pos_x, placement.pos_y - top_left.pos_y, 0.0));
+    let distance = cgmath::vec3((placement.x - top_left.x, placement.y - top_left.y, 0.0));
     let mat_trans = Matrix4::from_translation(distance);
 
     let v_pos_loc = unsafe {
@@ -688,12 +703,12 @@ fn send_to_gpu_geometry_textbox_background(sp: GLuint, placement: AbsolutePlacem
         gl::GetUniformLocation(sp, glh::gl_str("v_mat_gui_scale").as_ptr())
     };
     assert!(v_mat_scale_loc > -1);
-    /*
+    
     let v_mat_trans_loc = unsafe { 
         gl::GetUniformLocation(sp, glh::gl_str("v_mat_trans").as_ptr())
     };
     assert!(v_mat_trans_loc > -1);
-    */
+    
 
     let mut v_pos_vbo = 0;
     unsafe {
@@ -741,10 +756,10 @@ fn send_to_gpu_geometry_textbox_background(sp: GLuint, placement: AbsolutePlacem
     unsafe {
         gl::UseProgram(sp);
         gl::UniformMatrix4fv(v_mat_scale_loc, 1, gl::FALSE, mat_scale.as_ptr());
-        //gl::UniformMatrix4fv(v_mat_trans_loc, 1, gl::FALSE, mat_trans.as_ptr());
+        gl::UniformMatrix4fv(v_mat_trans_loc, 1, gl::FALSE, mat_trans.as_ptr());
     }
 
-    (v_pos_vbo, v_tex_vbo, vao)
+    TextBoxGeometryHandle { v_pos_vbo, v_tex_vbo, vao }
 }
 
 /// Load the textbox background for the texture.
@@ -807,15 +822,16 @@ fn create_buffers_textbox_buffer(sp: GLuint) -> (GLuint, GLuint, GLuint) {
 fn create_textbox_background(game: &mut glh::GLState, placement: AbsolutePlacement) -> TextBoxBackground {
     let shader_source = create_shaders_textbox_background();
     let sp = send_to_gpu_shaders_textbox_background(game, shader_source);
-    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_geometry_textbox_background(sp, placement);
+    let geometry = create_geometry_textbox_background();
+    let handle = send_to_gpu_geometry_textbox_background(sp, placement, &geometry);
     let tex_image = create_texture_textbox_background();
     let tex = send_to_gpu_texture_textbox_background(&tex_image);
     
     TextBoxBackground {
         sp: sp,
-        v_pos_vbo: v_pos_vbo,
-        v_tex_vbo: v_tex_vbo,
-        vao: vao,
+        v_pos_vbo: handle.v_pos_vbo,
+        v_tex_vbo: handle.v_tex_vbo,
+        vao: handle.vao,
         tex: tex,
     }
 }
@@ -849,13 +865,13 @@ fn create_textbox_buffer(
     }
 }
 
-fn create_textbox(
+fn load_textbox(
     gl_state: Rc<RefCell<glh::GLState>>, 
     atlas: Rc<BitmapFontAtlas>,
     name: &str, atlas_tex: GLuint, pos_x: f32, pos_y: f32) -> TextBox {
     
     let name = String::from(name);
-    let placement = AbsolutePlacement { pos_x, pos_y };
+    let placement = AbsolutePlacement { x: pos_x, y: pos_y };
     let background = {
         let mut context = gl_state.borrow_mut();
         create_textbox_background(&mut *context, placement) 
@@ -1078,7 +1094,7 @@ impl Game {
     fn update_ui(&mut self) {
         update_board_uniforms(self);
         update_score_panel_background(self);
-        update_score_panel_content(self, "DEADBEEF");
+        update_score_panel_content(self, "000000");
     }
 
     #[inline(always)]
@@ -1179,7 +1195,7 @@ fn init_game() -> Game {
         let mut context = gl_context.borrow_mut();
         load_board(&mut *context, board_uniforms)
     };
-    let score_panel = create_textbox(gl_context.clone(), atlas.clone(), "SCORE", atlas_tex, 0.1, 0.1);
+    let score_panel = load_textbox(gl_context.clone(), atlas.clone(), "SCORE", atlas_tex, 0.25, 0.85);
     let ui = UI { board: board, score_panel: score_panel };
 
     Game {
