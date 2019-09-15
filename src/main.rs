@@ -487,17 +487,22 @@ struct RelativePlacement {
 // for when we actually render the text.
 #[derive(Clone)]
 struct TextBoxBuffer {
-    sp: GLuint,
-    tex: GLuint,
-    vao: GLuint,
-    v_pos_vbo: GLuint,
-    v_tex_vbo: GLuint,
+    buffer: GLTextBoxBuffer,
     placement: RelativePlacement,
     atlas: Rc<BitmapFontAtlas>,
     scale_px: f32,
 }
 
-impl TextBoxBuffer {
+#[derive(Clone)]
+struct GLTextBoxBuffer {
+    sp: GLuint,
+    tex: GLuint,
+    vao: GLuint,
+    v_pos_vbo: GLuint,
+    v_tex_vbo: GLuint,
+}
+
+impl GLTextBoxBuffer {
     fn write(&mut self, points: &[GLfloat], texcoords: &[GLfloat]) -> io::Result<usize> {
         unsafe {
             gl::BindBuffer(gl::ARRAY_BUFFER, self.v_pos_vbo);
@@ -743,20 +748,24 @@ fn create_textbox_background(game: &mut glh::GLState, placement: AbsolutePlaceme
 }
 
 fn create_textbox_buffer(
-    game: &mut glh::GLState, atlas: Rc<BitmapFontAtlas>, font_tex: GLuint, 
+    game: &mut glh::GLState, 
+    atlas: Rc<BitmapFontAtlas>, font_tex: GLuint, 
     offset_x: f32, offset_y: f32, scale_px: f32) -> TextBoxBuffer {
     
     let shader_source = create_shaders_textbox_buffer();
     let sp = send_to_gpu_shaders_textbox_buffer(game, shader_source);
     let (v_pos_vbo, v_tex_vbo, vao) = create_buffers_textbox_buffer(sp);
     let placement = RelativePlacement { offset_x, offset_y };
-
-    TextBoxBuffer {
+    let buffer = GLTextBoxBuffer {
         sp: sp,
         tex: font_tex,
         vao: vao,
         v_pos_vbo: v_pos_vbo,
         v_tex_vbo: v_tex_vbo,
+    };
+
+    TextBoxBuffer {
+        buffer: buffer,
         placement: placement,
         atlas: atlas,
         scale_px: scale_px,
@@ -875,7 +884,7 @@ fn text_to_vbo(
     }
 
     let point_count = 6 * st.len();
-    tb.write(&points, &texcoords)?;
+    tb.buffer.write(&points, &texcoords)?;
 
     Ok((st.len(), point_count))
 }
@@ -913,7 +922,7 @@ fn update_score_panel_content(game: &mut Game) {
     ).unwrap();
 
     let text_color_loc = unsafe { 
-        gl::GetUniformLocation(label.sp, glh::gl_str("text_color").as_ptr())
+        gl::GetUniformLocation(label.buffer.sp, glh::gl_str("text_color").as_ptr())
     };
     assert!(text_color_loc > -1);
     unsafe { 
@@ -921,7 +930,7 @@ fn update_score_panel_content(game: &mut Game) {
     }
 
     let text_color_loc = unsafe {
-        gl::GetUniformLocation(content.sp, glh::gl_str("text_color").as_ptr())
+        gl::GetUniformLocation(content.buffer.sp, glh::gl_str("text_color").as_ptr())
     };
     assert!(text_color_loc > -1);
     unsafe {
@@ -1080,19 +1089,19 @@ impl Game {
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
             
             let label = &self.ui.score_panel.label;
-            gl::UseProgram(label.sp);
+            gl::UseProgram(label.buffer.sp);
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, label.tex);
-            gl::BindVertexArray(label.vao);
+            gl::BindTexture(gl::TEXTURE_2D, label.buffer.tex);
+            gl::BindVertexArray(label.buffer.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6 * 5);
             
             let content = &self.ui.score_panel.content;
-            gl::UseProgram(content.sp);
+            gl::UseProgram(content.buffer.sp);
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, content.tex);
-            gl::BindVertexArray(content.vao);
+            gl::BindTexture(gl::TEXTURE_2D, content.buffer.tex);
+            gl::BindVertexArray(content.buffer.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6 * 8);
         }
     }
