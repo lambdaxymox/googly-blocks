@@ -517,26 +517,32 @@ impl GLTextBoxBuffer {
     }
 }
 
-// TODO: Place the texture image handle into the textbox element data structure
-// for when we actually render the text.
+
 #[derive(Clone)]
 struct TextBoxBuffer {
     buffer: GLTextBoxBuffer,
-    placement: RelativePlacement,
+    gl_state: Rc<RefCell<glh::GLState>>,
     atlas: Rc<BitmapFontAtlas>,
+    placement: RelativePlacement,
     scale_px: f32,
 }
 
 impl TextBoxBuffer {
     fn write(
         &mut self,
-        viewport_width: u32, viewport_height: u32,
+        //viewport_width: u32, viewport_height: u32,
         placement: AbsolutePlacement, st: &str) -> io::Result<(usize, usize)> {
     
         let atlas = &self.atlas;
         let scale_px = self.scale_px;
-        let height = viewport_height;
-        let width = viewport_width;
+        let height = {
+            let context = self.gl_state.borrow();
+            context.height
+        };
+        let width = {
+            let context = self.gl_state.borrow();
+            context.width
+        };
 
         let mut points = vec![0.0; 12 * st.len()];
         let mut texcoords = vec![0.0; 12 * st.len()];
@@ -818,12 +824,15 @@ fn create_textbox_background(game: &mut glh::GLState, placement: AbsolutePlaceme
 }
 
 fn create_textbox_buffer(
-    game: &mut glh::GLState, 
+    gl_state: Rc<RefCell<glh::GLState>>, 
     atlas: Rc<BitmapFontAtlas>, atlas_tex: GLuint, 
     offset_x: f32, offset_y: f32, scale_px: f32) -> TextBoxBuffer {
     
     let shader_source = create_shaders_textbox_buffer();
-    let sp = send_to_gpu_shaders_textbox_buffer(game, shader_source);
+    let sp = {
+        let mut context = gl_state.borrow_mut();
+        send_to_gpu_shaders_textbox_buffer(&mut *context, shader_source)
+    };
     let (v_pos_vbo, v_tex_vbo, vao) = create_buffers_textbox_buffer(sp);
     let placement = RelativePlacement { offset_x, offset_y };
     let buffer = GLTextBoxBuffer {
@@ -836,6 +845,7 @@ fn create_textbox_buffer(
 
     TextBoxBuffer {
         buffer: buffer,
+        gl_state: gl_state,
         placement: placement,
         atlas: atlas,
         scale_px: scale_px,
@@ -843,15 +853,18 @@ fn create_textbox_buffer(
 }
 
 fn create_textbox(
-    game: &mut glh::GLState, 
+    gl_state: Rc<RefCell<glh::GLState>>, 
     atlas: Rc<BitmapFontAtlas>,
     name: &str, atlas_tex: GLuint, pos_x: f32, pos_y: f32) -> TextBox {
     
     let name = String::from(name);
     let placement = AbsolutePlacement { pos_x, pos_y };
-    let background = create_textbox_background(game, placement);
-    let label = create_textbox_buffer(game, atlas.clone(), atlas_tex, 0.1, 0.1, 64.0);
-    let content = create_textbox_buffer(game, atlas.clone(), atlas_tex, 0.1, 0.24, 64.0);
+    let background = {
+        let mut context = gl_state.borrow_mut();
+        create_textbox_background(&mut *context, placement) 
+    };
+    let label = create_textbox_buffer(gl_state.clone(), atlas.clone(), atlas_tex, 0.1, 0.1, 64.0);
+    let content = create_textbox_buffer(gl_state.clone(), atlas.clone(), atlas_tex, 0.1, 0.24, 64.0);
 
     TextBox {
         name: name,
@@ -918,16 +931,9 @@ fn update_score_panel_content(game: &mut Game) {
     let placement = tb.placement;
     let mut label = tb.label.clone();
     let mut content = tb.content.clone();
-    let viewport_width = {
-        let context = game.gl.borrow();
-        context.width
-    };
-    let viewport_height = {
-        let context = game.gl.borrow();
-        context.height
-    };
-    label.write(viewport_width, viewport_height, placement, "SCORE").unwrap();
-    content.write(viewport_width, viewport_height, placement, "DEADBEEF").unwrap();
+
+    label.write(placement, "SCORE").unwrap();
+    content.write(placement, "DEADBEEF").unwrap();
 
     let text_color_loc = unsafe { 
         gl::GetUniformLocation(label.buffer.sp, glh::gl_str("text_color").as_ptr())
@@ -1163,7 +1169,7 @@ fn init_game() -> Game {
         load_background(&mut *context)
     };
     let (viewport_width, viewport_height) = {
-        let mut context = gl_context.borrow_mut();
+        let context = gl_context.borrow();
         context.window.get_framebuffer_size()
     };
     let viewport_width = viewport_width as f32;
@@ -1178,10 +1184,7 @@ fn init_game() -> Game {
         let mut context = gl_context.borrow_mut();
         load_board(&mut *context, board_uniforms)
     };
-    let score_panel = {
-        let mut context = gl_context.borrow_mut();
-        create_textbox(&mut *context, atlas.clone(), "SCORE", atlas_tex, 0.1, 0.1)
-    };
+    let score_panel = create_textbox(gl_context.clone(), atlas.clone(), "SCORE", atlas_tex, 0.1, 0.1);
     let ui = UI { board: board, score_panel: score_panel };
 
     Game {
