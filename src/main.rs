@@ -527,7 +527,6 @@ struct TextBoxBuffer {
 impl TextBoxBuffer {
     fn write(
         &mut self,
-        //viewport_width: u32, viewport_height: u32,
         placement: AbsolutePlacement, st: &str) -> io::Result<(usize, usize)> {
     
         let atlas = &self.atlas;
@@ -1034,23 +1033,6 @@ fn update_next_panel_content(game: &mut Game, content: &str) {
     update_panel_content(panel, "NEXT", content);
 }
 
-fn load_camera(width: f32, height: f32) -> PerspectiveFovCamera {
-    let near = 0.1;
-    let far = 100.0;
-    let fov = 67.0;
-    let aspect = width / height;
-    let frustum = FrustumFov::new(near, far, fov, aspect);
-
-    let cam_pos = math::vec3((0.0, 0.0, 1.0));
-    let fwd = math::vec4((0.0, 0.0, 1.0, 0.0));
-    let rgt = math::vec4((1.0, 0.0, 0.0, 0.0));
-    let up  = math::vec4((0.0, 1.0, 0.0, 0.0));
-    let axis = Vector3::new(0.0, 0.0, -1.0);
-    let attitude = CameraAttitude::new(cam_pos, fwd, rgt, up, axis);
-
-    PerspectiveFovCamera::new(frustum, attitude)
-}
-
 /// Load a file atlas.
 fn load_font_atlas() -> bmfa::BitmapFontAtlas {
     let arr: &'static [u8; 115559] = include_asset!("googly_blocks.bmfa");
@@ -1068,18 +1050,9 @@ fn load_font_atlas() -> bmfa::BitmapFontAtlas {
 /// whenever the size of the viewport changes.
 #[inline]
 fn glfw_framebuffer_size_callback(game: &mut Game, width: u32, height: u32) {
-    {
-        let mut context = game.gl.borrow_mut();
-        context.width = width;
-        context.height = height;
-    }
-
-    let aspect = width as f32 / height as f32;
-    let fov = game.camera.fov;
-    let near = game.camera.near;
-    let far = game.camera.far;
-    game.camera.aspect = aspect;
-    game.camera.proj_mat = math::perspective((fov, aspect, near, far));
+    let mut context = game.gl.borrow_mut();
+    context.width = width;
+    context.height = height;
 }
 
 /// Initialize the logger.
@@ -1111,7 +1084,6 @@ struct UI {
 struct Game {
     gl: Rc<RefCell<glh::GLState>>,
     atlas: Rc<BitmapFontAtlas>,
-    camera: PerspectiveFovCamera,
     ui: UI,
     background: Background,
 }
@@ -1350,7 +1322,6 @@ fn init_game() -> Game {
     let width = 896;
     let height = 504;
     let gl_context = Rc::new(RefCell::new(init_gl(width, height)));
-    let camera = load_camera(width as f32, height as f32);
     let atlas = Rc::new(load_font_atlas());
     let atlas_tex = send_to_gpu_font_texture(&atlas, gl::CLAMP_TO_EDGE).unwrap();
     let background = {
@@ -1441,7 +1412,6 @@ fn init_game() -> Game {
     Game {
         gl: gl_context,
         atlas: atlas,
-        camera: camera,
         ui: ui,
         background: background,
     }
