@@ -1409,7 +1409,7 @@ impl Game {
             gl::BindTexture(gl::TEXTURE_2D, label.buffer.tex);
             gl::BindVertexArray(label.buffer.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6 * 4);
-            /*
+
             let content = &self.ui.next_panel.content;
             gl::UseProgram(content.buffer.sp);
             gl::Disable(gl::DEPTH_TEST);
@@ -1417,7 +1417,6 @@ impl Game {
             gl::BindTexture(gl::TEXTURE_2D, content.buffer.tex);
             gl::BindVertexArray(content.buffer.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6 * 8);
-            */
         }
     }
 
