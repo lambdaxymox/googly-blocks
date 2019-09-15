@@ -36,6 +36,7 @@ use teximage2d::TexImage2D;
 use std::io;
 use std::mem;
 use std::ptr;
+use std::rc::Rc;
 
 // OpenGL extension constants.
 const GL_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FE;
@@ -484,7 +485,7 @@ struct RelativePlacement {
 
 // TODO: Place the texture image handle into the textbox element data structure
 // for when we actually render the text.
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone)]
 struct TextBoxBuffer {
     sp: GLuint,
     tex: GLuint,
@@ -492,6 +493,7 @@ struct TextBoxBuffer {
     v_pos_vbo: GLuint,
     v_tex_vbo: GLuint,
     placement: RelativePlacement,
+    atlas: Rc<BitmapFontAtlas>,
     scale_px: f32,
 }
 
@@ -516,7 +518,7 @@ impl TextBoxBuffer {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 struct TextBox {
     name: String,
     placement: AbsolutePlacement,
@@ -741,7 +743,7 @@ fn create_textbox_background(game: &mut glh::GLState, placement: AbsolutePlaceme
 }
 
 fn create_textbox_buffer(
-    game: &mut glh::GLState, font_tex: GLuint, 
+    game: &mut glh::GLState, atlas: Rc<BitmapFontAtlas>, font_tex: GLuint, 
     offset_x: f32, offset_y: f32, scale_px: f32) -> TextBoxBuffer {
     
     let shader_source = create_shaders_textbox_buffer();
@@ -756,19 +758,21 @@ fn create_textbox_buffer(
         v_pos_vbo: v_pos_vbo,
         v_tex_vbo: v_tex_vbo,
         placement: placement,
+        atlas: atlas,
         scale_px: scale_px,
     }
 }
 
 fn create_textbox(
     game: &mut glh::GLState, 
+    atlas: Rc<BitmapFontAtlas>,
     name: &str, font_tex: GLuint, pos_x: f32, pos_y: f32) -> TextBox {
     
     let name = String::from(name);
     let placement = AbsolutePlacement { pos_x, pos_y };
     let background = create_textbox_background(game, placement);
-    let label = create_textbox_buffer(game, font_tex, 0.1, 0.1, 64.0);
-    let content = create_textbox_buffer(game, font_tex, 0.1, 0.24, 64.0);
+    let label = create_textbox_buffer(game, atlas.clone(), font_tex, 0.1, 0.1, 64.0);
+    let content = create_textbox_buffer(game, atlas.clone(), font_tex, 0.1, 0.24, 64.0);
 
     TextBox {
         name: name,
@@ -813,10 +817,10 @@ fn send_to_gpu_font_texture(atlas: &BitmapFontAtlas, wrapping_mode: GLuint) -> R
 }
 
 fn text_to_vbo(
-    atlas: &BitmapFontAtlas, 
     viewport_width: u32, viewport_height: u32,
     placement: AbsolutePlacement, tb: &mut TextBoxBuffer, st: &str) -> io::Result<(usize, usize)> {
     
+    let atlas = &tb.atlas;
     let scale_px = tb.scale_px;
     let height = viewport_height;
     let width = viewport_width;
@@ -901,11 +905,9 @@ fn update_score_panel_content(game: &mut Game) {
     let viewport_width = game.gl.width;
     let viewport_height = game.gl.height;
     text_to_vbo(
-        &game.ui.atlas, 
         viewport_width, viewport_height, placement, &mut label, "SCORE"
     ).unwrap();
     text_to_vbo(
-        &game.ui.atlas, 
         viewport_width, viewport_height, placement, &mut content, "DEADBEEF"
     ).unwrap();
 
@@ -990,13 +992,13 @@ fn init_gl(width: u32, height: u32) -> glh::GLState {
 }
 
 struct UI {
-    atlas: Box<BitmapFontAtlas>,
     board: Board,
     score_panel: TextBox,
 }
 
 struct Game {
     gl: glh::GLState,
+    atlas: Rc<BitmapFontAtlas>,
     camera: PerspectiveFovCamera,
     ui: UI,
     background: Background,
@@ -1076,7 +1078,7 @@ impl Game {
             gl::BindVertexArray(background.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
             
-            let label = self.ui.score_panel.label;
+            let label = &self.ui.score_panel.label;
             gl::UseProgram(label.sp);
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
@@ -1084,7 +1086,7 @@ impl Game {
             gl::BindVertexArray(label.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6 * 5);
             
-            let content = self.ui.score_panel.content;
+            let content = &self.ui.score_panel.content;
             gl::UseProgram(content.sp);
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
@@ -1113,7 +1115,7 @@ fn init_game() -> Game {
     let height = 504;
     let mut gl_context = init_gl(width, height);
     let camera = load_camera(width as f32, height as f32);
-    let atlas = Box::new(load_font_atlas());
+    let atlas = Rc::new(load_font_atlas());
     let atlas_tex = send_to_gpu_font_texture(&atlas, gl::CLAMP_TO_EDGE).unwrap();
     let background = load_background(&mut gl_context);
 
@@ -1127,11 +1129,12 @@ fn init_game() -> Game {
     let board_uniforms = BoardUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
 
     let board = load_board(&mut gl_context, board_uniforms);
-    let score_panel = create_textbox(&mut gl_context, "SCORE", atlas_tex, 0.1, 0.1);
-    let ui = UI {atlas: atlas, board: board, score_panel: score_panel };
+    let score_panel = create_textbox(&mut gl_context, atlas.clone(), "SCORE", atlas_tex, 0.1, 0.1);
+    let ui = UI { board: board, score_panel: score_panel };
 
     Game {
         gl: gl_context,
+        atlas: atlas,
         camera: camera,
         ui: ui,
         background: background,
