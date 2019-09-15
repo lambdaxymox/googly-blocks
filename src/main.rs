@@ -934,15 +934,15 @@ fn update_score_panel_content(game: &mut Game) {
         gl::GetUniformLocation(panel.label.buffer.sp, glh::gl_str("text_color").as_ptr())
     };
     assert!(text_color_loc > -1);
-    unsafe { 
-        gl::Uniform4fv(text_color_loc, 1, HEADING_COLOR.as_ptr());
-    }
-
     let text_color_loc = unsafe {
         gl::GetUniformLocation(panel.content.buffer.sp, glh::gl_str("text_color").as_ptr())
     };
     assert!(text_color_loc > -1);
+
     unsafe {
+        gl::UseProgram(panel.label.buffer.sp);
+        gl::Uniform4fv(text_color_loc, 1, HEADING_COLOR.as_ptr());
+        gl::UseProgram(panel.content.buffer.sp);
         gl::Uniform4fv(text_color_loc, 1, TEXT_COLOR.as_ptr());
     }
 }
