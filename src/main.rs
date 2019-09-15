@@ -364,7 +364,7 @@ struct BoardUniforms {
     gui_scale_y: f32,
 }
 
-fn send_to_gpu_uniforms_board(game: &mut glh::GLState, sp: GLuint, uniforms: BoardUniforms) {
+fn send_to_gpu_uniforms_board(sp: GLuint, uniforms: BoardUniforms) {
     let trans_mat = Matrix4::one();
     let gui_scale_mat = Matrix4::from_nonuniform_scale(uniforms.gui_scale_x, uniforms.gui_scale_y, 0.0);
 
@@ -441,7 +441,7 @@ fn load_board(game: &mut glh::GLState, uniforms: BoardUniforms) -> Board {
     let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_geometry_board(sp, &mesh);
     let tex_image = create_textures_board();
     let tex = send_to_gpu_textures_board(&tex_image);
-    send_to_gpu_uniforms_board(game, sp, uniforms);
+    send_to_gpu_uniforms_board(sp, uniforms);
 
     Board {
         sp: sp,
@@ -459,10 +459,7 @@ fn update_board_uniforms(game: &mut Game) {
     let gui_scale_x = panel_width / (viewport_width as f32);
     let gui_scale_y = panel_height / (viewport_height as f32);
     let uniforms = BoardUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
-    {
-        let mut context = game.gl.borrow_mut();
-        send_to_gpu_uniforms_board(&mut *context, game.ui.board.sp, uniforms);
-    }
+    send_to_gpu_uniforms_board(game.ui.board.sp, uniforms);
 }
 
 
@@ -759,7 +756,7 @@ fn create_texture_textbox_background() -> TexImage2D {
 }
 
 /// Send the background image texture of a textbox to the GPU.
-fn send_to_gpu_texture_textbox_background(game: &mut glh::GLState, tex_image: &TexImage2D) -> GLuint {
+fn send_to_gpu_texture_textbox_background(tex_image: &TexImage2D) -> GLuint {
     send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()
 }
 
@@ -812,7 +809,7 @@ fn create_textbox_background(game: &mut glh::GLState, placement: AbsolutePlaceme
     let sp = send_to_gpu_shaders_textbox_background(game, shader_source);
     let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_geometry_textbox_background(sp, placement);
     let tex_image = create_texture_textbox_background();
-    let tex = send_to_gpu_texture_textbox_background(game, &tex_image);
+    let tex = send_to_gpu_texture_textbox_background(&tex_image);
     
     TextBoxBackground {
         sp: sp,
@@ -1160,7 +1157,7 @@ fn init_game() -> Game {
     info!("build version: ??? ?? ???? ??:??:??");
     let width = 896;
     let height = 504;
-    let mut gl_context = Rc::new(RefCell::new(init_gl(width, height)));
+    let gl_context = Rc::new(RefCell::new(init_gl(width, height)));
     let camera = load_camera(width as f32, height as f32);
     let atlas = Rc::new(load_font_atlas());
     let atlas_tex = send_to_gpu_font_texture(&atlas, gl::CLAMP_TO_EDGE).unwrap();
