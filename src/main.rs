@@ -37,6 +37,7 @@ use std::io;
 use std::mem;
 use std::ptr;
 use std::rc::Rc;
+use std::cell::RefCell;
 
 // OpenGL extension constants.
 const GL_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FE;
@@ -458,7 +459,10 @@ fn update_board_uniforms(game: &mut Game) {
     let gui_scale_x = panel_width / (viewport_width as f32);
     let gui_scale_y = panel_height / (viewport_height as f32);
     let uniforms = BoardUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
-    send_to_gpu_uniforms_board(&mut game.gl, game.ui.board.sp, uniforms);
+    {
+        let mut context = game.gl.borrow_mut();
+        send_to_gpu_uniforms_board(&mut *context, game.ui.board.sp, uniforms);
+    }
 }
 
 
@@ -914,8 +918,14 @@ fn update_score_panel_content(game: &mut Game) {
     let placement = tb.placement;
     let mut label = tb.label.clone();
     let mut content = tb.content.clone();
-    let viewport_width = game.gl.width;
-    let viewport_height = game.gl.height;
+    let viewport_width = {
+        let context = game.gl.borrow();
+        context.width
+    };
+    let viewport_height = {
+        let context = game.gl.borrow();
+        context.height
+    };
     label.write(viewport_width, viewport_height, placement, "SCORE").unwrap();
     content.write(viewport_width, viewport_height, placement, "DEADBEEF").unwrap();
 
@@ -971,10 +981,13 @@ fn load_font_atlas() -> bmfa::BitmapFontAtlas {
 /// whenever the size of the viewport changes.
 #[inline]
 fn glfw_framebuffer_size_callback(game: &mut Game, width: u32, height: u32) {
-    game.gl.width = width;
-    game.gl.height = height;
+    {
+        let mut context = game.gl.borrow_mut();
+        context.width = width;
+        context.height = height;
+    }
 
-    let aspect = game.gl.width as f32 / game.gl.height as f32;
+    let aspect = width as f32 / height as f32;
     let fov = game.camera.fov;
     let near = game.camera.near;
     let far = game.camera.far;
@@ -1005,7 +1018,7 @@ struct UI {
 }
 
 struct Game {
-    gl: glh::GLState,
+    gl: Rc<RefCell<glh::GLState>>,
     atlas: Rc<BitmapFontAtlas>,
     camera: PerspectiveFovCamera,
     ui: UI,
@@ -1015,32 +1028,34 @@ struct Game {
 impl Game {
     #[inline(always)]
     fn get_framebuffer_size(&self) -> (i32, i32) {
-        self.gl.window.get_framebuffer_size()
+        self.gl.borrow().window.get_framebuffer_size()
     }
 
     #[inline(always)]
     fn window_should_close(&self) -> bool {
-        self.gl.window.should_close()
+        self.gl.borrow().window.should_close()
     }
 
     #[inline(always)]
     fn window_set_should_close(&mut self, close: bool) {
-        self.gl.window.set_should_close(close);
+        self.gl.borrow_mut().window.set_should_close(close);
     }
 
     #[inline(always)]
     fn update_fps_counter(&mut self) {
-        glh::update_fps_counter(&mut self.gl);
+        let mut context = self.gl.borrow_mut();
+        glh::update_fps_counter(&mut *context);
     }
 
     #[inline(always)]
     fn update_timers(&mut self) -> f64 {
-        glh::update_timers(&mut self.gl)
+        let mut context = self.gl.borrow_mut();
+        glh::update_timers(&mut *context)
     }
 
     #[inline(always)]
     fn swap_buffers(&mut self) {
-        self.gl.window.swap_buffers();
+        self.gl.borrow_mut().window.swap_buffers();
     }
 
     #[inline(always)]
@@ -1106,12 +1121,30 @@ impl Game {
 
     #[inline(always)]
     fn poll_events(&mut self) {
-        self.gl.glfw.poll_events();
+        self.gl.borrow_mut().glfw.poll_events();
     }
 
     #[inline(always)]
     fn get_key(&self, key: Key) -> Action {
-        self.gl.window.get_key(key)
+        self.gl.borrow().window.get_key(key)
+    }
+
+    #[inline(always)]
+    fn update_framebuffer_size(&mut self) {
+        let (viewport_width, viewport_height) = self.get_framebuffer_size();
+        let width = {
+            let context = self.gl.borrow();
+            context.width as i32
+        };
+        let height = {
+            let context = self.gl.borrow();
+            context.height as i32
+        };
+        if (width != viewport_width) && (height != viewport_height) {
+            glfw_framebuffer_size_callback(
+                self, viewport_width as u32, viewport_height as u32
+            );
+        }
     }
 }
 
@@ -1121,13 +1154,18 @@ fn init_game() -> Game {
     info!("build version: ??? ?? ???? ??:??:??");
     let width = 896;
     let height = 504;
-    let mut gl_context = init_gl(width, height);
+    let mut gl_context = Rc::new(RefCell::new(init_gl(width, height)));
     let camera = load_camera(width as f32, height as f32);
     let atlas = Rc::new(load_font_atlas());
     let atlas_tex = send_to_gpu_font_texture(&atlas, gl::CLAMP_TO_EDGE).unwrap();
-    let background = load_background(&mut gl_context);
-
-    let (viewport_width, viewport_height) = gl_context.window.get_framebuffer_size();
+    let background = {
+        let mut context = gl_context.borrow_mut(); 
+        load_background(&mut *context)
+    };
+    let (viewport_width, viewport_height) = {
+        let mut context = gl_context.borrow_mut();
+        context.window.get_framebuffer_size()
+    };
     let viewport_width = viewport_width as f32;
     let viewport_height = viewport_height as f32;
     let panel_width: f32 = 230.0;
@@ -1136,8 +1174,14 @@ fn init_game() -> Game {
     let gui_scale_y = panel_height / viewport_height;
     let board_uniforms = BoardUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
 
-    let board = load_board(&mut gl_context, board_uniforms);
-    let score_panel = create_textbox(&mut gl_context, atlas.clone(), "SCORE", atlas_tex, 0.1, 0.1);
+    let board = {
+        let mut context = gl_context.borrow_mut();
+        load_board(&mut *context, board_uniforms)
+    };
+    let score_panel = {
+        let mut context = gl_context.borrow_mut();
+        create_textbox(&mut *context, atlas.clone(), "SCORE", atlas_tex, 0.1, 0.1)
+    };
     let ui = UI { board: board, score_panel: score_panel };
 
     Game {
@@ -1160,7 +1204,15 @@ fn main() {
         gl::FrontFace(gl::CCW);
         // Gray background.
         gl::ClearColor(0.2, 0.2, 0.2, 1.0);
-        gl::Viewport(0, 0, game.gl.width as i32, game.gl.height as i32);
+        let width = {
+            let context = game.gl.borrow();
+            context.width as i32
+        };
+        let height = {
+            let context = game.gl.borrow();
+            context.height as i32
+        };
+        gl::Viewport(0, 0, width, height);
     }
 
     let atlas = load_font_atlas();
@@ -1179,20 +1231,22 @@ fn main() {
 
         // Update the game world.
         game.update_fps_counter();
-
-        let (width, height) = game.get_framebuffer_size();
-        if (width != game.gl.width as i32) && (height != game.gl.height as i32) {
-            glfw_framebuffer_size_callback(
-                &mut game, width as u32, height as u32
-            );
-        }
+        game.update_framebuffer_size();
 
         // Render the results.
         unsafe {
             // Clear the screen.
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
             gl::ClearColor(0.2, 0.2, 0.2, 1.0);
-            gl::Viewport(0, 0, game.gl.width as i32, game.gl.height as i32);
+            let width = {
+                let context = game.gl.borrow();
+                context.width as i32
+            };
+            let height = {
+                let context = game.gl.borrow();
+                context.height as i32
+            };
+            gl::Viewport(0, 0, width, height);
 
             // Render the background.
             game.update_background();
