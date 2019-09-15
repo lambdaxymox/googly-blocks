@@ -567,7 +567,7 @@ fn send_to_gpu_shaders_textbox_buffer(game: &mut glh::GLState, source: ShaderSou
     send_to_gpu_shaders(game, source)
 }
 
-fn create_textbox_background_mesh() -> (ObjMesh, AbsolutePlacement) {
+fn create_geometry_textbox_background() -> (ObjMesh, AbsolutePlacement) {
     let points: Vec<[GLfloat; 3]> = vec![
         [1.0, 1.0, 0.0], [-1.0,  1.0, 0.0], [-1.0, -1.0, 0.0],
         [1.0, 1.0, 0.0], [-1.0, -1.0, 0.0], [ 1.0, -1.0, 0.0]        
@@ -594,7 +594,7 @@ fn create_textbox_background_mesh() -> (ObjMesh, AbsolutePlacement) {
 
 /// Send the textbox background geometry to the GPU.
 fn send_to_gpu_geometry_textbox_background(sp: GLuint, placement: AbsolutePlacement) -> (GLuint, GLuint, GLuint) {
-    let (mesh, top_left) = create_textbox_background_mesh();
+    let (mesh, top_left) = create_geometry_textbox_background();
     let mat_scale = Matrix4::one();
     let distance = cgmath::vec3((placement.pos_x - top_left.pos_x, placement.pos_y - top_left.pos_y, 0.0));
     let mat_trans = Matrix4::from_translation(distance);
