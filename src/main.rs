@@ -961,10 +961,10 @@ fn update_panel_background(panel: &mut TextBox, viewport_width: u32, viewport_he
     }    
 }
 
-fn update_panel_content(panel: &mut TextBox, content: &str) {
+fn update_panel_content(panel: &mut TextBox, label: &str, content: &str) {
     let placement = panel.placement;
 
-    panel.label.write(placement, "LINES").unwrap();
+    panel.label.write(placement, label).unwrap();
     panel.content.write(placement, content).unwrap();
 
     let text_color_loc = unsafe { 
@@ -983,24 +983,7 @@ fn update_panel_content(panel: &mut TextBox, content: &str) {
         gl::Uniform4fv(text_color_loc, 1, TEXT_COLOR.as_ptr());
     }
 }
-/*
- *
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- */
+
 fn update_score_panel_background(game: &mut Game) {
     let (viewport_width, viewport_height) = game.get_framebuffer_size();
     update_panel_background(&mut game.ui.score_panel, viewport_width as u32, viewport_height as u32);
@@ -1008,26 +991,7 @@ fn update_score_panel_background(game: &mut Game) {
 
 fn update_score_panel_content(game: &mut Game, content: &str) {
     let panel = &mut game.ui.score_panel;
-    let placement = panel.placement;
-
-    panel.label.write(placement, "SCORE").unwrap();
-    panel.content.write(placement, content).unwrap();
-
-    let text_color_loc = unsafe { 
-        gl::GetUniformLocation(panel.label.buffer.sp, glh::gl_str("text_color").as_ptr())
-    };
-    assert!(text_color_loc > -1);
-    let text_color_loc = unsafe {
-        gl::GetUniformLocation(panel.content.buffer.sp, glh::gl_str("text_color").as_ptr())
-    };
-    assert!(text_color_loc > -1);
-
-    unsafe {
-        gl::UseProgram(panel.label.buffer.sp);
-        gl::Uniform4fv(text_color_loc, 1, HEADING_COLOR.as_ptr());
-        gl::UseProgram(panel.content.buffer.sp);
-        gl::Uniform4fv(text_color_loc, 1, TEXT_COLOR.as_ptr());
-    }
+    update_panel_content(panel, "SCORE", content);
 }
 
 fn update_level_panel_background(game: &mut Game) {
@@ -1037,26 +1001,7 @@ fn update_level_panel_background(game: &mut Game) {
 
 fn update_level_panel_content(game: &mut Game, content: &str) {
     let panel = &mut game.ui.level_panel;
-    let placement = panel.placement;
-
-    panel.label.write(placement, "LEVEL").unwrap();
-    panel.content.write(placement, content).unwrap();
-
-    let text_color_loc = unsafe { 
-        gl::GetUniformLocation(panel.label.buffer.sp, glh::gl_str("text_color").as_ptr())
-    };
-    assert!(text_color_loc > -1);
-    let text_color_loc = unsafe {
-        gl::GetUniformLocation(panel.content.buffer.sp, glh::gl_str("text_color").as_ptr())
-    };
-    assert!(text_color_loc > -1);
-
-    unsafe {
-        gl::UseProgram(panel.label.buffer.sp);
-        gl::Uniform4fv(text_color_loc, 1, HEADING_COLOR.as_ptr());
-        gl::UseProgram(panel.content.buffer.sp);
-        gl::Uniform4fv(text_color_loc, 1, TEXT_COLOR.as_ptr());
-    }
+    update_panel_content(panel, "LEVEL", content);
 }
 
 fn update_line_panel_background(game: &mut Game) {
@@ -1066,26 +1011,7 @@ fn update_line_panel_background(game: &mut Game) {
 
 fn update_line_panel_content(game: &mut Game, content: &str) {
     let panel = &mut game.ui.line_panel;
-    let placement = panel.placement;
-
-    panel.label.write(placement, "LINES").unwrap();
-    panel.content.write(placement, content).unwrap();
-
-    let text_color_loc = unsafe { 
-        gl::GetUniformLocation(panel.label.buffer.sp, glh::gl_str("text_color").as_ptr())
-    };
-    assert!(text_color_loc > -1);
-    let text_color_loc = unsafe {
-        gl::GetUniformLocation(panel.content.buffer.sp, glh::gl_str("text_color").as_ptr())
-    };
-    assert!(text_color_loc > -1);
-
-    unsafe {
-        gl::UseProgram(panel.label.buffer.sp);
-        gl::Uniform4fv(text_color_loc, 1, HEADING_COLOR.as_ptr());
-        gl::UseProgram(panel.content.buffer.sp);
-        gl::Uniform4fv(text_color_loc, 1, TEXT_COLOR.as_ptr());
-    }
+    update_panel_content(panel, "LINES", content);
 }
 
 fn update_tetris_panel_background(game: &mut Game) {
@@ -1095,26 +1021,7 @@ fn update_tetris_panel_background(game: &mut Game) {
 
 fn update_tetris_panel_content(game: &mut Game, content: &str) {
     let panel = &mut game.ui.tetris_panel;
-    let placement = panel.placement;
-
-    panel.label.write(placement, "TETRISES").unwrap();
-    panel.content.write(placement, content).unwrap();
-
-    let text_color_loc = unsafe { 
-        gl::GetUniformLocation(panel.label.buffer.sp, glh::gl_str("text_color").as_ptr())
-    };
-    assert!(text_color_loc > -1);
-    let text_color_loc = unsafe {
-        gl::GetUniformLocation(panel.content.buffer.sp, glh::gl_str("text_color").as_ptr())
-    };
-    assert!(text_color_loc > -1);
-
-    unsafe {
-        gl::UseProgram(panel.label.buffer.sp);
-        gl::Uniform4fv(text_color_loc, 1, HEADING_COLOR.as_ptr());
-        gl::UseProgram(panel.content.buffer.sp);
-        gl::Uniform4fv(text_color_loc, 1, TEXT_COLOR.as_ptr());
-    }
+    update_panel_content(panel, "TETRISES", content);
 }
 
 fn update_next_panel_background(game: &mut Game) {
@@ -1124,45 +1031,9 @@ fn update_next_panel_background(game: &mut Game) {
 
 fn update_next_panel_content(game: &mut Game, content: &str) {
     let panel = &mut game.ui.next_panel;
-    let placement = panel.placement;
-
-    panel.label.write(placement, "NEXT").unwrap();
-    panel.content.write(placement, content).unwrap();
-
-    let text_color_loc = unsafe { 
-        gl::GetUniformLocation(panel.label.buffer.sp, glh::gl_str("text_color").as_ptr())
-    };
-    assert!(text_color_loc > -1);
-    let text_color_loc = unsafe {
-        gl::GetUniformLocation(panel.content.buffer.sp, glh::gl_str("text_color").as_ptr())
-    };
-    assert!(text_color_loc > -1);
-
-    unsafe {
-        gl::UseProgram(panel.label.buffer.sp);
-        gl::Uniform4fv(text_color_loc, 1, HEADING_COLOR.as_ptr());
-        gl::UseProgram(panel.content.buffer.sp);
-        gl::Uniform4fv(text_color_loc, 1, TEXT_COLOR.as_ptr());
-    }
+    update_panel_content(panel, "NEXT", content);
 }
-/*
- *
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- */
+
 fn load_camera(width: f32, height: f32) -> PerspectiveFovCamera {
     let near = 0.1;
     let far = 100.0;
