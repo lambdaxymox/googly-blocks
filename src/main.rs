@@ -924,16 +924,16 @@ fn update_score_panel_uniforms(game: &mut Game) {
 }
 
 fn update_score_panel_content(game: &mut Game) {
-    let tb = game.ui.score_panel.clone();
-    let placement = tb.placement;
-    let mut label = tb.label.clone();
-    let mut content = tb.content.clone();
+    let panel = &mut game.ui.score_panel;
+    let placement = panel.placement;
+    //let mut label = &tb.label;
+    //let mut content = &tb.content;
 
-    label.write(placement, "SCORE").unwrap();
-    content.write(placement, "DEADBEEF").unwrap();
+    panel.label.write(placement, "SCORE").unwrap();
+    panel.content.write(placement, "DEADBEEF").unwrap();
 
     let text_color_loc = unsafe { 
-        gl::GetUniformLocation(label.buffer.sp, glh::gl_str("text_color").as_ptr())
+        gl::GetUniformLocation(panel.label.buffer.sp, glh::gl_str("text_color").as_ptr())
     };
     assert!(text_color_loc > -1);
     unsafe { 
@@ -941,7 +941,7 @@ fn update_score_panel_content(game: &mut Game) {
     }
 
     let text_color_loc = unsafe {
-        gl::GetUniformLocation(content.buffer.sp, glh::gl_str("text_color").as_ptr())
+        gl::GetUniformLocation(panel.content.buffer.sp, glh::gl_str("text_color").as_ptr())
     };
     assert!(text_color_loc > -1);
     unsafe {
