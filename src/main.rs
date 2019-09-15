@@ -817,8 +817,9 @@ fn send_to_gpu_font_texture(atlas: &BitmapFontAtlas, wrapping_mode: GLuint) -> R
 }
 
 fn text_to_vbo(
+    tb: &mut TextBoxBuffer,
     viewport_width: u32, viewport_height: u32,
-    placement: AbsolutePlacement, tb: &mut TextBoxBuffer, st: &str) -> io::Result<(usize, usize)> {
+    placement: AbsolutePlacement, st: &str) -> io::Result<(usize, usize)> {
     
     let atlas = &tb.atlas;
     let scale_px = tb.scale_px;
@@ -905,10 +906,10 @@ fn update_score_panel_content(game: &mut Game) {
     let viewport_width = game.gl.width;
     let viewport_height = game.gl.height;
     text_to_vbo(
-        viewport_width, viewport_height, placement, &mut label, "SCORE"
+        &mut label, viewport_width, viewport_height, placement, "SCORE"
     ).unwrap();
     text_to_vbo(
-        viewport_width, viewport_height, placement, &mut content, "DEADBEEF"
+        &mut content, viewport_width, viewport_height, placement, "DEADBEEF"
     ).unwrap();
 
     let text_color_loc = unsafe { 
