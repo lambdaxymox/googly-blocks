@@ -819,13 +819,23 @@ fn create_buffers_textbox_buffer(sp: GLuint) -> (GLuint, GLuint, GLuint) {
     (v_pos_vbo, v_tex_vbo, vao)
 }
 
-fn create_textbox_background(game: &mut glh::GLState, placement: AbsolutePlacement) -> TextBoxBackground {
+fn create_textbox_background(
+    gl_state: &mut glh::GLState, 
+    placement: AbsolutePlacement, panel_width: usize, panel_height: usize) -> TextBoxBackground {
+    
     let shader_source = create_shaders_textbox_background();
-    let sp = send_to_gpu_shaders_textbox_background(game, shader_source);
-    let geometry = create_geometry_textbox_background();
-    // TODO: Specify the height, in pixels, of the textbox background texture.
-    // Then get the viewport dimensions. Then calculate the ratios to get the new
-    // top left corner in world space for the UI. This is the placement we send to he GPU.
+    let sp = send_to_gpu_shaders_textbox_background(gl_state, shader_source);
+    let mut geometry = create_geometry_textbox_background();
+
+    let viewport_width = gl_state.width;
+    let viewport_height = gl_state.height;
+    let panel_scale_x = panel_width as f32 / viewport_width as f32;
+    let panel_scale_y = panel_height as f32 / viewport_height as f32;
+    let pos_x = panel_scale_x * geometry.top_left.x;
+    let pos_y = panel_scale_y * geometry.top_left.y;
+    geometry.top_left.x = pos_x;
+    geometry.top_left.y = pos_y;
+
     let handle = send_to_gpu_geometry_textbox_background(sp, placement, &geometry);
     let tex_image = create_texture_textbox_background();
     let tex = send_to_gpu_texture_textbox_background(&tex_image);
@@ -874,8 +884,8 @@ struct TextBoxSpec {
     atlas_tex: GLuint,
     pos_x: f32,
     pos_y: f32,
-    panel_width: f32,
-    panel_height: f32,    
+    panel_width: usize,
+    panel_height: usize,    
 }
 
 fn load_textbox(gl_state: Rc<RefCell<glh::GLState>>, spec: &TextBoxSpec) -> TextBox {
@@ -883,7 +893,7 @@ fn load_textbox(gl_state: Rc<RefCell<glh::GLState>>, spec: &TextBoxSpec) -> Text
     let placement = AbsolutePlacement { x: spec.pos_x, y: spec.pos_y };
     let background = {
         let mut context = gl_state.borrow_mut();
-        create_textbox_background(&mut *context, placement)
+        create_textbox_background(&mut *context, placement, spec.panel_width, spec.panel_height)
     };
     let label = create_textbox_buffer(
         gl_state.clone(), spec.atlas.clone(), spec.atlas_tex, 0.1, 0.1, 64.0
@@ -1215,8 +1225,8 @@ fn init_game() -> Game {
         atlas_tex: atlas_tex,
         pos_x: 0.25,
         pos_y: 0.85,
-        panel_width: 218.0,
-        panel_height: 109.0,
+        panel_width: 218,
+        panel_height: 109,
     };
     let score_panel = load_textbox(gl_context.clone(), &textbox_spec);
     let ui = UI { board: board, score_panel: score_panel };
