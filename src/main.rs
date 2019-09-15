@@ -905,7 +905,7 @@ fn send_to_gpu_font_texture(atlas: &BitmapFontAtlas, wrapping_mode: GLuint) -> R
     Ok(tex)
 }
 
-fn update_score_panel_uniforms(game: &mut Game) {
+fn update_score_panel_background(game: &mut Game) {
     let v_mat_gui_scale_loc = unsafe { 
         gl::GetUniformLocation(game.ui.score_panel.background.sp, glh::gl_str("v_mat_gui_scale").as_ptr())
     };
@@ -926,8 +926,6 @@ fn update_score_panel_uniforms(game: &mut Game) {
 fn update_score_panel_content(game: &mut Game) {
     let panel = &mut game.ui.score_panel;
     let placement = panel.placement;
-    //let mut label = &tb.label;
-    //let mut content = &tb.content;
 
     panel.label.write(placement, "SCORE").unwrap();
     panel.content.write(placement, "DEADBEEF").unwrap();
@@ -1079,7 +1077,7 @@ impl Game {
     #[inline(always)]
     fn update_ui(&mut self) {
         update_board_uniforms(self);
-        update_score_panel_uniforms(self);
+        update_score_panel_background(self);
         update_score_panel_content(self);
     }
 
