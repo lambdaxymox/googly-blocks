@@ -823,6 +823,9 @@ fn create_textbox_background(game: &mut glh::GLState, placement: AbsolutePlaceme
     let shader_source = create_shaders_textbox_background();
     let sp = send_to_gpu_shaders_textbox_background(game, shader_source);
     let geometry = create_geometry_textbox_background();
+    // TODO: Specify the height, in pixels, of the textbox background texture.
+    // Then get the viewport dimensions. Then calculate the ratios to get the new
+    // top left corner in world space for the UI. This is the placement we send to he GPU.
     let handle = send_to_gpu_geometry_textbox_background(sp, placement, &geometry);
     let tex_image = create_texture_textbox_background();
     let tex = send_to_gpu_texture_textbox_background(&tex_image);
@@ -865,19 +868,29 @@ fn create_textbox_buffer(
     }
 }
 
-fn load_textbox(
-    gl_state: Rc<RefCell<glh::GLState>>, 
+struct TextBoxSpec {
+    name: &'static str,
     atlas: Rc<BitmapFontAtlas>,
-    name: &str, atlas_tex: GLuint, pos_x: f32, pos_y: f32) -> TextBox {
-    
-    let name = String::from(name);
-    let placement = AbsolutePlacement { x: pos_x, y: pos_y };
+    atlas_tex: GLuint,
+    pos_x: f32,
+    pos_y: f32,
+    panel_width: f32,
+    panel_height: f32,    
+}
+
+fn load_textbox(gl_state: Rc<RefCell<glh::GLState>>, spec: &TextBoxSpec) -> TextBox {
+    let name = String::from(spec.name);
+    let placement = AbsolutePlacement { x: spec.pos_x, y: spec.pos_y };
     let background = {
         let mut context = gl_state.borrow_mut();
-        create_textbox_background(&mut *context, placement) 
+        create_textbox_background(&mut *context, placement)
     };
-    let label = create_textbox_buffer(gl_state.clone(), atlas.clone(), atlas_tex, 0.1, 0.1, 64.0);
-    let content = create_textbox_buffer(gl_state.clone(), atlas.clone(), atlas_tex, 0.1, 0.24, 64.0);
+    let label = create_textbox_buffer(
+        gl_state.clone(), spec.atlas.clone(), spec.atlas_tex, 0.1, 0.1, 64.0
+    );
+    let content = create_textbox_buffer(
+        gl_state.clone(), spec.atlas.clone(), spec.atlas_tex, 0.1, 0.24, 64.0
+    );
 
     TextBox {
         name: name,
@@ -1195,7 +1208,17 @@ fn init_game() -> Game {
         let mut context = gl_context.borrow_mut();
         load_board(&mut *context, board_uniforms)
     };
-    let score_panel = load_textbox(gl_context.clone(), atlas.clone(), "SCORE", atlas_tex, 0.25, 0.85);
+
+    let textbox_spec = TextBoxSpec {
+        name: "SCORE",
+        atlas: atlas.clone(),
+        atlas_tex: atlas_tex,
+        pos_x: 0.25,
+        pos_y: 0.85,
+        panel_width: 218.0,
+        panel_height: 109.0,
+    };
+    let score_panel = load_textbox(gl_context.clone(), &textbox_spec);
     let ui = UI { board: board, score_panel: score_panel };
 
     Game {
