@@ -749,7 +749,7 @@ fn create_textbox_background(game: &mut glh::GLState, placement: AbsolutePlaceme
 
 fn create_textbox_buffer(
     game: &mut glh::GLState, 
-    atlas: Rc<BitmapFontAtlas>, font_tex: GLuint, 
+    atlas: Rc<BitmapFontAtlas>, atlas_tex: GLuint, 
     offset_x: f32, offset_y: f32, scale_px: f32) -> TextBoxBuffer {
     
     let shader_source = create_shaders_textbox_buffer();
@@ -758,7 +758,7 @@ fn create_textbox_buffer(
     let placement = RelativePlacement { offset_x, offset_y };
     let buffer = GLTextBoxBuffer {
         sp: sp,
-        tex: font_tex,
+        tex: atlas_tex,
         vao: vao,
         v_pos_vbo: v_pos_vbo,
         v_tex_vbo: v_tex_vbo,
@@ -775,13 +775,13 @@ fn create_textbox_buffer(
 fn create_textbox(
     game: &mut glh::GLState, 
     atlas: Rc<BitmapFontAtlas>,
-    name: &str, font_tex: GLuint, pos_x: f32, pos_y: f32) -> TextBox {
+    name: &str, atlas_tex: GLuint, pos_x: f32, pos_y: f32) -> TextBox {
     
     let name = String::from(name);
     let placement = AbsolutePlacement { pos_x, pos_y };
     let background = create_textbox_background(game, placement);
-    let label = create_textbox_buffer(game, atlas.clone(), font_tex, 0.1, 0.1, 64.0);
-    let content = create_textbox_buffer(game, atlas.clone(), font_tex, 0.1, 0.24, 64.0);
+    let label = create_textbox_buffer(game, atlas.clone(), atlas_tex, 0.1, 0.1, 64.0);
+    let content = create_textbox_buffer(game, atlas.clone(), atlas_tex, 0.1, 0.24, 64.0);
 
     TextBox {
         name: name,
