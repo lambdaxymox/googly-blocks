@@ -944,7 +944,27 @@ fn send_to_gpu_font_texture(atlas: &BitmapFontAtlas, wrapping_mode: GLuint) -> R
     Ok(tex)
 }
 
+fn update_panel_background(panel: &mut TextBox, viewport_width: u32, viewport_height: u32) {
+    let v_mat_gui_scale_loc = unsafe { 
+        gl::GetUniformLocation(panel.background.sp, glh::gl_str("v_mat_gui_scale").as_ptr())
+    };
+    assert!(v_mat_gui_scale_loc > -1);
+            
+    let panel_width: f32 = 218.0;
+    let panel_height: f32 = 109.0;
+    let x_scale = panel_width / (viewport_width as f32);
+    let y_scale = panel_height / (viewport_height as f32);
+    let gui_scale = Matrix4::from_nonuniform_scale(x_scale, y_scale, 0.0);
+    unsafe {
+        gl::UseProgram(panel.background.sp);
+        gl::UniformMatrix4fv(v_mat_gui_scale_loc, 1, gl::FALSE, gui_scale.as_ptr());
+    }    
+}
+
 fn update_score_panel_background(game: &mut Game) {
+    let (viewport_width, viewport_height) = game.get_framebuffer_size();
+    update_panel_background(&mut game.ui.score_panel, viewport_width as u32, viewport_height as u32);
+    /*
     let v_mat_gui_scale_loc = unsafe { 
         gl::GetUniformLocation(game.ui.score_panel.background.sp, glh::gl_str("v_mat_gui_scale").as_ptr())
     };
@@ -952,7 +972,7 @@ fn update_score_panel_background(game: &mut Game) {
             
     let panel_width: f32 = 218.0;
     let panel_height: f32 = 109.0;
-    let (viewport_width, viewport_height) = game.get_framebuffer_size();
+    
     let x_scale = panel_width / (viewport_width as f32);
     let y_scale = panel_height / (viewport_height as f32);
     let gui_scale = Matrix4::from_nonuniform_scale(x_scale, y_scale, 0.0);
@@ -960,6 +980,7 @@ fn update_score_panel_background(game: &mut Game) {
         gl::UseProgram(game.ui.score_panel.background.sp);
         gl::UniformMatrix4fv(v_mat_gui_scale_loc, 1, gl::FALSE, gui_scale.as_ptr());
     }
+    */
 }
 
 fn update_score_panel_content(game: &mut Game, content: &str) {
@@ -1028,6 +1049,76 @@ fn update_level_panel_content(game: &mut Game, content: &str) {
     }
 }
 
+fn update_line_panel_background(game: &mut Game) {
+    let v_mat_gui_scale_loc = unsafe { 
+        gl::GetUniformLocation(game.ui.line_panel.background.sp, glh::gl_str("v_mat_gui_scale").as_ptr())
+    };
+    assert!(v_mat_gui_scale_loc > -1);
+            
+    let panel_width: f32 = 218.0;
+    let panel_height: f32 = 109.0;
+    let (viewport_width, viewport_height) = game.get_framebuffer_size();
+    let x_scale = panel_width / (viewport_width as f32);
+    let y_scale = panel_height / (viewport_height as f32);
+    let gui_scale = Matrix4::from_nonuniform_scale(x_scale, y_scale, 0.0);
+    unsafe {
+        gl::UseProgram(game.ui.line_panel.background.sp);
+        gl::UniformMatrix4fv(v_mat_gui_scale_loc, 1, gl::FALSE, gui_scale.as_ptr());
+    }
+}
+
+fn update_line_panel_content(game: &mut Game, content: &str) {
+    let panel = &mut game.ui.line_panel;
+    let placement = panel.placement;
+
+    panel.label.write(placement, "LINES").unwrap();
+    panel.content.write(placement, content).unwrap();
+
+    let text_color_loc = unsafe { 
+        gl::GetUniformLocation(panel.label.buffer.sp, glh::gl_str("text_color").as_ptr())
+    };
+    assert!(text_color_loc > -1);
+    let text_color_loc = unsafe {
+        gl::GetUniformLocation(panel.content.buffer.sp, glh::gl_str("text_color").as_ptr())
+    };
+    assert!(text_color_loc > -1);
+
+    unsafe {
+        gl::UseProgram(panel.label.buffer.sp);
+        gl::Uniform4fv(text_color_loc, 1, HEADING_COLOR.as_ptr());
+        gl::UseProgram(panel.content.buffer.sp);
+        gl::Uniform4fv(text_color_loc, 1, TEXT_COLOR.as_ptr());
+    }
+}
+
+fn update_tetris_panel_background(game: &mut Game) {
+    let (viewport_width, viewport_height) = game.get_framebuffer_size();
+    update_panel_background(&mut game.ui.tetris_panel, viewport_width as u32, viewport_height as u32);
+}
+
+fn update_tetris_panel_content(game: &mut Game, content: &str) {
+    let panel = &mut game.ui.tetris_panel;
+    let placement = panel.placement;
+
+    panel.label.write(placement, "LINES").unwrap();
+    panel.content.write(placement, content).unwrap();
+
+    let text_color_loc = unsafe { 
+        gl::GetUniformLocation(panel.label.buffer.sp, glh::gl_str("text_color").as_ptr())
+    };
+    assert!(text_color_loc > -1);
+    let text_color_loc = unsafe {
+        gl::GetUniformLocation(panel.content.buffer.sp, glh::gl_str("text_color").as_ptr())
+    };
+    assert!(text_color_loc > -1);
+
+    unsafe {
+        gl::UseProgram(panel.label.buffer.sp);
+        gl::Uniform4fv(text_color_loc, 1, HEADING_COLOR.as_ptr());
+        gl::UseProgram(panel.content.buffer.sp);
+        gl::Uniform4fv(text_color_loc, 1, TEXT_COLOR.as_ptr());
+    }
+}
 
 fn load_camera(width: f32, height: f32) -> PerspectiveFovCamera {
     let near = 0.1;
@@ -1098,6 +1189,8 @@ struct UI {
     board: Board,
     score_panel: TextBox,
     level_panel: TextBox,
+    line_panel: TextBox,
+    tetris_panel: TextBox,
 }
 
 struct Game {
@@ -1163,6 +1256,10 @@ impl Game {
         update_score_panel_content(self, "000000");
         update_level_panel_background(self);
         update_level_panel_content(self, "00");
+        update_line_panel_background(self);
+        update_line_panel_content(self, "000");
+        update_tetris_panel_background(self);
+        update_tetris_panel_content(self, "000");
     }
 
     #[inline(always)]
@@ -1219,6 +1316,54 @@ impl Game {
             gl::DrawArrays(gl::TRIANGLES, 0, 6 * 5);
             
             let content = &self.ui.level_panel.content;
+            gl::UseProgram(content.buffer.sp);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, content.buffer.tex);
+            gl::BindVertexArray(content.buffer.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 8);
+
+            let background = self.ui.line_panel.background;
+            gl::UseProgram(background.sp);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, background.tex);
+            gl::BindVertexArray(background.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6);
+            
+            let label = &self.ui.line_panel.label;
+            gl::UseProgram(label.buffer.sp);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, label.buffer.tex);
+            gl::BindVertexArray(label.buffer.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 5);
+            
+            let content = &self.ui.line_panel.content;
+            gl::UseProgram(content.buffer.sp);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, content.buffer.tex);
+            gl::BindVertexArray(content.buffer.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 8);
+
+            let background = self.ui.tetris_panel.background;
+            gl::UseProgram(background.sp);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, background.tex);
+            gl::BindVertexArray(background.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6);
+            
+            let label = &self.ui.tetris_panel.label;
+            gl::UseProgram(label.buffer.sp);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, label.buffer.tex);
+            gl::BindVertexArray(label.buffer.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 5);
+            
+            let content = &self.ui.tetris_panel.content;
             gl::UseProgram(content.buffer.sp);
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
@@ -1309,11 +1454,35 @@ fn init_game() -> Game {
         panel_height: 109,
     };
     let level_panel = load_textbox(gl_context.clone(), &level_panel_spec);
+
+    let line_panel_spec = TextBoxSpec {
+        name: "LINES",
+        atlas: atlas.clone(),
+        atlas_tex: atlas_tex,
+        pos_x: -0.765,
+        pos_y: 0.415,
+        panel_width: 218,
+        panel_height: 109,
+    };
+    let line_panel = load_textbox(gl_context.clone(), &line_panel_spec);
+
+    let tetris_panel_spec = TextBoxSpec {
+        name: "TETRISES",
+        atlas: atlas.clone(),
+        atlas_tex: atlas_tex,
+        pos_x: -0.765,
+        pos_y: -0.047,
+        panel_width: 218,
+        panel_height: 109,
+    };
+    let tetris_panel = load_textbox(gl_context.clone(), &tetris_panel_spec);
     
     let ui = UI { 
         board: board, 
         score_panel: score_panel,
         level_panel: level_panel,
+        line_panel: line_panel,
+        tetris_panel: tetris_panel,
     };
 
     Game {
