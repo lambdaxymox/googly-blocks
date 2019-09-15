@@ -991,21 +991,8 @@ fn update_score_panel_content(game: &mut Game, content: &str) {
 }
 
 fn update_level_panel_background(game: &mut Game) {
-    let v_mat_gui_scale_loc = unsafe { 
-        gl::GetUniformLocation(game.ui.level_panel.background.sp, glh::gl_str("v_mat_gui_scale").as_ptr())
-    };
-    assert!(v_mat_gui_scale_loc > -1);
-            
-    let panel_width: f32 = 218.0;
-    let panel_height: f32 = 109.0;
     let (viewport_width, viewport_height) = game.get_framebuffer_size();
-    let x_scale = panel_width / (viewport_width as f32);
-    let y_scale = panel_height / (viewport_height as f32);
-    let gui_scale = Matrix4::from_nonuniform_scale(x_scale, y_scale, 0.0);
-    unsafe {
-        gl::UseProgram(game.ui.level_panel.background.sp);
-        gl::UniformMatrix4fv(v_mat_gui_scale_loc, 1, gl::FALSE, gui_scale.as_ptr());
-    }
+    update_panel_background(&mut game.ui.level_panel, viewport_width as u32, viewport_height as u32);
 }
 
 fn update_level_panel_content(game: &mut Game, content: &str) {
@@ -1033,21 +1020,8 @@ fn update_level_panel_content(game: &mut Game, content: &str) {
 }
 
 fn update_line_panel_background(game: &mut Game) {
-    let v_mat_gui_scale_loc = unsafe { 
-        gl::GetUniformLocation(game.ui.line_panel.background.sp, glh::gl_str("v_mat_gui_scale").as_ptr())
-    };
-    assert!(v_mat_gui_scale_loc > -1);
-            
-    let panel_width: f32 = 218.0;
-    let panel_height: f32 = 109.0;
     let (viewport_width, viewport_height) = game.get_framebuffer_size();
-    let x_scale = panel_width / (viewport_width as f32);
-    let y_scale = panel_height / (viewport_height as f32);
-    let gui_scale = Matrix4::from_nonuniform_scale(x_scale, y_scale, 0.0);
-    unsafe {
-        gl::UseProgram(game.ui.line_panel.background.sp);
-        gl::UniformMatrix4fv(v_mat_gui_scale_loc, 1, gl::FALSE, gui_scale.as_ptr());
-    }
+    update_panel_background(&mut game.ui.line_panel, viewport_width as u32, viewport_height as u32);
 }
 
 fn update_line_panel_content(game: &mut Game, content: &str) {
