@@ -100,14 +100,6 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "cgcamera"
-version = "0.2.5"
-source = "git+https://github.com/lambdaxymox/cgcamera#8e367fb0e8c7873cb2c94daaf298ddfcdecc0d56"
-dependencies = [
- "lean_cgmath 0.6.3 (git+https://github.com/lambdaxymox/lean-cgmath)",
-]
-
-[[package]]
 name = "chrono"
 version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -296,10 +288,9 @@ dependencies = [
 
 [[package]]
 name = "googly-blocks"
-version = "0.1.71"
+version = "0.1.72"
 dependencies = [
  "bmfa 0.3.6 (git+https://github.com/lambdaxymox/bmfa)",
- "cgcamera 0.2.5 (git+https://github.com/lambdaxymox/cgcamera)",
  "file_logger 0.4.5 (git+https://github.com/lambdaxymox/file-logger)",
  "gl_generator 0.13.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "glfw 0.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1011,7 +1002,6 @@ dependencies = [
 "checksum c2-chacha 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "7d64d04786e0f528460fc884753cf8dddcc466be308f6026f8e355c41a0e4101"
 "checksum cc 1.0.41 (registry+https://github.com/rust-lang/crates.io-index)" = "8dae9c4b8fedcae85592ba623c4fd08cfdab3e3b72d6df780c6ead964a69bfff"
 "checksum cfg-if 0.1.9 (registry+https://github.com/rust-lang/crates.io-index)" = "b486ce3ccf7ffd79fdeb678eac06a9e6c09fc88d33836340becb8fffe87c5e33"
-"checksum cgcamera 0.2.5 (git+https://github.com/lambdaxymox/cgcamera)" = "<none>"
 "checksum chrono 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)" = "27429a03ca54100bf6bdc726c09adc46a74187ac93f9ce96dc7aaa9594ebf707"
 "checksum cloudabi 0.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "ddfc5b9aa5d4507acaf872de71051dfd0e309860e88966e1051e462a077aac4f"
 "checksum cmake 0.1.42 (registry+https://github.com/rust-lang/crates.io-index)" = "81fb25b677f8bf1eb325017cb6bb8452f87969db0fedb4f757b297bee78a7c62"

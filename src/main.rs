@@ -4,7 +4,6 @@ extern crate cgmath;
 extern crate mini_obj;
 extern crate toml;
 extern crate log;
-extern crate cgcamera;
 extern crate file_logger;
 extern crate teximage2d;
 
@@ -18,9 +17,7 @@ mod macros;
 
 mod gl_help;
 
-use cgcamera::{
-    FrustumFov, CameraAttitude, PerspectiveFovCamera
-};
+
 use gl_help as glh;
 use cgmath as math;
 use mini_obj as mesh;
