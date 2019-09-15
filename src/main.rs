@@ -1215,8 +1215,6 @@ fn main() {
         gl::Viewport(0, 0, width, height);
     }
 
-    let atlas = load_font_atlas();
-
     while !game.window_should_close() {
         // Check input.
         let elapsed_seconds = game.update_timers();
