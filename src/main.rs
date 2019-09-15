@@ -960,6 +960,29 @@ fn update_panel_background(panel: &mut TextBox, viewport_width: u32, viewport_he
         gl::UniformMatrix4fv(v_mat_gui_scale_loc, 1, gl::FALSE, gui_scale.as_ptr());
     }    
 }
+
+fn update_panel_content(panel: &mut TextBox, content: &str) {
+    let placement = panel.placement;
+
+    panel.label.write(placement, "LINES").unwrap();
+    panel.content.write(placement, content).unwrap();
+
+    let text_color_loc = unsafe { 
+        gl::GetUniformLocation(panel.label.buffer.sp, glh::gl_str("text_color").as_ptr())
+    };
+    assert!(text_color_loc > -1);
+    let text_color_loc = unsafe {
+        gl::GetUniformLocation(panel.content.buffer.sp, glh::gl_str("text_color").as_ptr())
+    };
+    assert!(text_color_loc > -1);
+
+    unsafe {
+        gl::UseProgram(panel.label.buffer.sp);
+        gl::Uniform4fv(text_color_loc, 1, HEADING_COLOR.as_ptr());
+        gl::UseProgram(panel.content.buffer.sp);
+        gl::Uniform4fv(text_color_loc, 1, TEXT_COLOR.as_ptr());
+    }
+}
 /*
  *
  * 
@@ -1360,7 +1383,7 @@ impl Game {
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, label.buffer.tex);
             gl::BindVertexArray(label.buffer.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 4);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 5);
             
             let content = &self.ui.line_panel.content;
             gl::UseProgram(content.buffer.sp);
@@ -1368,7 +1391,7 @@ impl Game {
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, content.buffer.tex);
             gl::BindVertexArray(content.buffer.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 3);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 4);
 
             let background = self.ui.tetris_panel.background;
             gl::UseProgram(background.sp);
