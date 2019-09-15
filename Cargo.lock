@@ -288,7 +288,7 @@ dependencies = [
 
 [[package]]
 name = "googly-blocks"
-version = "0.1.72"
+version = "0.1.73"
 dependencies = [
  "bmfa 0.3.6 (git+https://github.com/lambdaxymox/bmfa)",
  "file_logger 0.4.5 (git+https://github.com/lambdaxymox/file-logger)",
