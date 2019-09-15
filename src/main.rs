@@ -483,16 +483,6 @@ struct RelativePlacement {
     offset_y: f32,
 }
 
-// TODO: Place the texture image handle into the textbox element data structure
-// for when we actually render the text.
-#[derive(Clone)]
-struct TextBoxBuffer {
-    buffer: GLTextBoxBuffer,
-    placement: RelativePlacement,
-    atlas: Rc<BitmapFontAtlas>,
-    scale_px: f32,
-}
-
 #[derive(Clone)]
 struct GLTextBoxBuffer {
     sp: GLuint,
@@ -520,6 +510,82 @@ impl GLTextBoxBuffer {
         let bytes_written = mem::size_of::<GLfloat>() * (points.len() + texcoords.len());
 
         Ok(bytes_written)
+    }
+}
+
+// TODO: Place the texture image handle into the textbox element data structure
+// for when we actually render the text.
+#[derive(Clone)]
+struct TextBoxBuffer {
+    buffer: GLTextBoxBuffer,
+    placement: RelativePlacement,
+    atlas: Rc<BitmapFontAtlas>,
+    scale_px: f32,
+}
+
+impl TextBoxBuffer {
+    fn write(
+        &mut self,
+        viewport_width: u32, viewport_height: u32,
+        placement: AbsolutePlacement, st: &str) -> io::Result<(usize, usize)> {
+    
+        let atlas = &self.atlas;
+        let scale_px = self.scale_px;
+        let height = viewport_height;
+        let width = viewport_width;
+
+        let mut points = vec![0.0; 12 * st.len()];
+        let mut texcoords = vec![0.0; 12 * st.len()];
+        let mut at_x = placement.pos_x + self.placement.offset_x;
+        //let end_at_x = 0.95;
+        let mut at_y = placement.pos_y - self.placement.offset_y;
+
+        for (i, ch_i) in st.chars().enumerate() {
+            let metadata_i = atlas.glyph_metadata[&(ch_i as usize)];
+            let atlas_col = metadata_i.column;
+            let atlas_row = metadata_i.row;
+
+            let s = (atlas_col as f32) * (1.0 / (atlas.columns as f32));
+            let t = ((atlas_row + 1) as f32) * (1.0 / (atlas.rows as f32));
+
+            let x_pos = at_x;
+            let y_pos = at_y - (scale_px / (height as f32)) * metadata_i.y_offset;
+
+            at_x += metadata_i.width * (scale_px / width as f32);
+
+            points[12 * i]     = x_pos;
+            points[12 * i + 1] = y_pos;
+            points[12 * i + 2] = x_pos;
+            points[12 * i + 3] = y_pos - scale_px / (height as f32);
+            points[12 * i + 4] = x_pos + scale_px / (width as f32);
+            points[12 * i + 5] = y_pos - scale_px / (height as f32);
+
+            points[12 * i + 6]  = x_pos + scale_px / (width as f32);
+            points[12 * i + 7]  = y_pos - scale_px / (height as f32);
+            points[12 * i + 8]  = x_pos + scale_px / (width as f32);
+            points[12 * i + 9]  = y_pos;
+            points[12 * i + 10] = x_pos;
+            points[12 * i + 11] = y_pos;
+
+            texcoords[12 * i]     = s;
+            texcoords[12 * i + 1] = 1.0 - t + 1.0 / (atlas.rows as f32);
+            texcoords[12 * i + 2] = s;
+            texcoords[12 * i + 3] = 1.0 - t;
+            texcoords[12 * i + 4] = s + 1.0 / (atlas.columns as f32);
+            texcoords[12 * i + 5] = 1.0 - t;
+
+            texcoords[12 * i + 6]  = s + 1.0 / (atlas.columns as f32);
+            texcoords[12 * i + 7]  = 1.0 - t;
+            texcoords[12 * i + 8]  = s + 1.0 / (atlas.columns as f32);
+            texcoords[12 * i + 9]  = 1.0 - t + 1.0 / (atlas.rows as f32);
+            texcoords[12 * i + 10] = s;
+            texcoords[12 * i + 11] = 1.0 - t + 1.0 / (atlas.rows as f32);
+        }
+
+        let point_count = 6 * st.len();
+        self.buffer.write(&points, &texcoords)?;
+
+        Ok((st.len(), point_count))
     }
 }
 
@@ -825,70 +891,6 @@ fn send_to_gpu_font_texture(atlas: &BitmapFontAtlas, wrapping_mode: GLuint) -> R
     Ok(tex)
 }
 
-fn text_to_vbo(
-    tb: &mut TextBoxBuffer,
-    viewport_width: u32, viewport_height: u32,
-    placement: AbsolutePlacement, st: &str) -> io::Result<(usize, usize)> {
-    
-    let atlas = &tb.atlas;
-    let scale_px = tb.scale_px;
-    let height = viewport_height;
-    let width = viewport_width;
-
-    let mut points = vec![0.0; 12 * st.len()];
-    let mut texcoords = vec![0.0; 12 * st.len()];
-    let mut at_x = placement.pos_x + tb.placement.offset_x;
-    //let end_at_x = 0.95;
-    let mut at_y = placement.pos_y - tb.placement.offset_y;
-
-    for (i, ch_i) in st.chars().enumerate() {
-        let metadata_i = atlas.glyph_metadata[&(ch_i as usize)];
-        let atlas_col = metadata_i.column;
-        let atlas_row = metadata_i.row;
-
-        let s = (atlas_col as f32) * (1.0 / (atlas.columns as f32));
-        let t = ((atlas_row + 1) as f32) * (1.0 / (atlas.rows as f32));
-
-        let x_pos = at_x;
-        let y_pos = at_y - (scale_px / (height as f32)) * metadata_i.y_offset;
-
-        at_x += metadata_i.width * (scale_px / width as f32);
-
-        points[12 * i]     = x_pos;
-        points[12 * i + 1] = y_pos;
-        points[12 * i + 2] = x_pos;
-        points[12 * i + 3] = y_pos - scale_px / (height as f32);
-        points[12 * i + 4] = x_pos + scale_px / (width as f32);
-        points[12 * i + 5] = y_pos - scale_px / (height as f32);
-
-        points[12 * i + 6]  = x_pos + scale_px / (width as f32);
-        points[12 * i + 7]  = y_pos - scale_px / (height as f32);
-        points[12 * i + 8]  = x_pos + scale_px / (width as f32);
-        points[12 * i + 9]  = y_pos;
-        points[12 * i + 10] = x_pos;
-        points[12 * i + 11] = y_pos;
-
-        texcoords[12 * i]     = s;
-        texcoords[12 * i + 1] = 1.0 - t + 1.0 / (atlas.rows as f32);
-        texcoords[12 * i + 2] = s;
-        texcoords[12 * i + 3] = 1.0 - t;
-        texcoords[12 * i + 4] = s + 1.0 / (atlas.columns as f32);
-        texcoords[12 * i + 5] = 1.0 - t;
-
-        texcoords[12 * i + 6]  = s + 1.0 / (atlas.columns as f32);
-        texcoords[12 * i + 7]  = 1.0 - t;
-        texcoords[12 * i + 8]  = s + 1.0 / (atlas.columns as f32);
-        texcoords[12 * i + 9]  = 1.0 - t + 1.0 / (atlas.rows as f32);
-        texcoords[12 * i + 10] = s;
-        texcoords[12 * i + 11] = 1.0 - t + 1.0 / (atlas.rows as f32);
-    }
-
-    let point_count = 6 * st.len();
-    tb.buffer.write(&points, &texcoords)?;
-
-    Ok((st.len(), point_count))
-}
-
 fn update_score_panel_uniforms(game: &mut Game) {
     let v_mat_gui_scale_loc = unsafe { 
         gl::GetUniformLocation(game.ui.score_panel.background.sp, glh::gl_str("v_mat_gui_scale").as_ptr())
@@ -914,11 +916,11 @@ fn update_score_panel_content(game: &mut Game) {
     let mut content = tb.content.clone();
     let viewport_width = game.gl.width;
     let viewport_height = game.gl.height;
-    text_to_vbo(
-        &mut label, viewport_width, viewport_height, placement, "SCORE"
+    label.write(
+        viewport_width, viewport_height, placement, "SCORE"
     ).unwrap();
-    text_to_vbo(
-        &mut content, viewport_width, viewport_height, placement, "DEADBEEF"
+    content.write(
+        viewport_width, viewport_height, placement, "DEADBEEF"
     ).unwrap();
 
     let text_color_loc = unsafe { 
