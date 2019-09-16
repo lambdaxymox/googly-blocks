@@ -337,10 +337,17 @@ fn send_to_gpu_geometry_board(sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuint, GL
 
     (v_pos_vbo, v_tex_vbo, vao)
 }
-
+/*
 fn create_textures_board() -> TexImage2D {
     let arr: &'static [u8; 4826] = include_asset!("board.png");
     let asset = to_vec(&arr[0], 4826);
+
+    teximage2d::load_from_memory(&asset).unwrap()
+}
+*/
+fn create_textures_board() -> TexImage2D {
+    let arr: &'static [u8; 31235] = include_asset!("ui_panel.png");
+    let asset = to_vec(&arr[0], 31235);
 
     teximage2d::load_from_memory(&asset).unwrap()
 }
@@ -444,8 +451,8 @@ fn load_board(game: &mut glh::GLState, uniforms: BoardUniforms) -> Board {
 }
 
 fn update_board_uniforms(game: &mut Game) {
-    let panel_width: f32 = 230.0;
-    let panel_height: f32 = 442.0;
+    let panel_width: f32 = 642.0;
+    let panel_height: f32 = 504.0;
     let (viewport_width, viewport_height) = game.get_framebuffer_size();
     let gui_scale_x = panel_width / (viewport_width as f32);
     let gui_scale_y = panel_height / (viewport_height as f32);
@@ -1124,6 +1131,7 @@ impl Game {
     #[inline(always)]
     fn update_ui(&mut self) {
         update_board_uniforms(self);
+        /*
         update_score_panel_background(self);
         update_score_panel_content(self, "000000");
         update_level_panel_background(self);
@@ -1134,6 +1142,7 @@ impl Game {
         update_tetris_panel_content(self, "000");
         update_next_panel_background(self);
         update_next_panel_content(self, "DEADBEEF");
+        */
     }
 
     #[inline(always)]
@@ -1148,7 +1157,7 @@ impl Game {
             gl::BindTexture(gl::TEXTURE_2D, self.ui.board.tex);
             gl::BindVertexArray(self.ui.board.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
-
+            /*
             let background = self.ui.score_panel.background;
             gl::UseProgram(background.sp);
             gl::Disable(gl::DEPTH_TEST);
@@ -1268,6 +1277,7 @@ impl Game {
             gl::BindTexture(gl::TEXTURE_2D, content.buffer.tex);
             gl::BindVertexArray(content.buffer.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6 * 8);
+            */
         }
     }
 
@@ -1319,8 +1329,8 @@ fn init_game() -> Game {
     };
     let viewport_width = viewport_width as f32;
     let viewport_height = viewport_height as f32;
-    let panel_width: f32 = 230.0;
-    let panel_height: f32 = 442.0;
+    let panel_width: f32 = 642.0;
+    let panel_height: f32 = 504.0;
     let gui_scale_x = panel_width / viewport_width;
     let gui_scale_y = panel_height / viewport_height;
     let board_uniforms = BoardUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
