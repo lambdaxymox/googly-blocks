@@ -96,13 +96,13 @@ struct ShaderSource {
 
 #[inline]
 fn create_shaders_background() -> ShaderSource {
-    let vert_source = include_shader!("background.vert.glsl");
+    let vert_source = include_shader!("background_panel.vert.glsl");
     let frag_source = include_shader!("background.frag.glsl");
 
     ShaderSource { 
-        vert_name: "background.vert.glsl",
+        vert_name: "background_panel.vert.glsl",
         vert_source: vert_source,
-        frag_name: "background.frag.glsl",
+        frag_name: "background_panel.frag.glsl",
         frag_source: frag_source,
     }
 }
