@@ -349,12 +349,20 @@ fn send_to_gpu_textures_ui_panel(tex_image: &TexImage2D) -> GLuint {
     send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()
 }
 
+#[derive(Copy, Clone)]
+struct UIPanelSpec {
+    height: usize,
+    width: usize,
+}
+
 struct UIPanel {
     sp: GLuint,
     v_pos_vbo: GLuint,
     v_tex_vbo: GLuint,
     vao: GLuint,
     tex: GLuint,
+    height: usize,
+    width: usize,
 }
 
 #[derive(Copy, Clone)]
@@ -425,7 +433,7 @@ fn send_to_gpu_uniforms_ui_panel(sp: GLuint, uniforms: UIPanelUniforms) {
     }
 }
 
-fn load_ui_panel(game: &mut glh::GLState, uniforms: UIPanelUniforms) -> UIPanel {
+fn load_ui_panel(game: &mut glh::GLState, spec: UIPanelSpec, uniforms: UIPanelUniforms) -> UIPanel {
     let shader_source = create_shaders_ui_panel();
     let sp = send_to_gpu_shaders_ui_panel(game, shader_source);
     let mesh = create_geometry_ui_panel();
@@ -440,12 +448,14 @@ fn load_ui_panel(game: &mut glh::GLState, uniforms: UIPanelUniforms) -> UIPanel 
         v_tex_vbo: v_tex_vbo,
         vao: vao,
         tex: tex,
+        height: spec.height,
+        width: spec.width,
     }
 }
 
 fn update_ui_panel_uniforms(game: &mut Game) {
-    let panel_width: f32 = 642.0;
-    let panel_height: f32 = 504.0;
+    let panel_width = game.ui.panel.width as f32;
+    let panel_height = game.ui.panel.height as f32;
     let (viewport_width, viewport_height) = game.get_framebuffer_size();
     let gui_scale_x = panel_width / (viewport_width as f32);
     let gui_scale_y = panel_height / (viewport_height as f32);
@@ -1028,35 +1038,6 @@ fn load_font_atlas() -> bmfa::BitmapFontAtlas {
     atlas
 }
 
-
-/// The GLFW frame buffer size callback function. This is normally set using
-/// the GLFW `glfwSetFramebufferSizeCallback` function, but instead we explicitly
-/// handle window resizing in our state updates on the application side. Run this function
-/// whenever the size of the viewport changes.
-#[inline]
-fn glfw_framebuffer_size_callback(game: &mut Game, width: u32, height: u32) {
-    let mut context = game.gl.borrow_mut();
-    context.width = width;
-    context.height = height;
-}
-
-/// Initialize the logger.
-fn init_logger(log_file: &str) {
-    file_logger::init(log_file).expect("Failed to initialize logger.");
-}
-
-/// Create and OpenGL context.
-fn init_gl(width: u32, height: u32) -> glh::GLState {
-    let gl_state = match glh::start_gl(width, height) {
-        Ok(val) => val,
-        Err(e) => {
-            panic!("Failed to Initialize OpenGL context. Got error: {}", e);
-        }
-    };
-
-    gl_state
-}
-
 struct UI {
     panel: UIPanel,
     score_panel: TextBox,
@@ -1304,6 +1285,34 @@ impl Game {
     }
 }
 
+/// The GLFW frame buffer size callback function. This is normally set using
+/// the GLFW `glfwSetFramebufferSizeCallback` function, but instead we explicitly
+/// handle window resizing in our state updates on the application side. Run this function
+/// whenever the size of the viewport changes.
+#[inline]
+fn glfw_framebuffer_size_callback(game: &mut Game, width: u32, height: u32) {
+    let mut context = game.gl.borrow_mut();
+    context.width = width;
+    context.height = height;
+}
+
+/// Initialize the logger.
+fn init_logger(log_file: &str) {
+    file_logger::init(log_file).expect("Failed to initialize logger.");
+}
+
+/// Create and OpenGL context.
+fn init_gl(width: u32, height: u32) -> glh::GLState {
+    let gl_state = match glh::start_gl(width, height) {
+        Ok(val) => val,
+        Err(e) => {
+            panic!("Failed to Initialize OpenGL context. Got error: {}", e);
+        }
+    };
+
+    gl_state
+}
+
 fn init_game() -> Game {
     init_logger("googly-blocks.log");
     info!("BEGIN LOG");
@@ -1323,15 +1332,16 @@ fn init_game() -> Game {
     };
     let viewport_width = viewport_width as f32;
     let viewport_height = viewport_height as f32;
-    let panel_width: f32 = 642.0;
-    let panel_height: f32 = 504.0;
-    let gui_scale_x = panel_width / viewport_width;
-    let gui_scale_y = panel_height / viewport_height;
+    let panel_width = 642;
+    let panel_height = 504;
+    let gui_scale_x = (panel_width as f32) / viewport_width;
+    let gui_scale_y = (panel_height as f32) / viewport_height;
+    let ui_panel_spec = UIPanelSpec { height: panel_height, width: panel_width };
     let ui_panel_uniforms = UIPanelUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
 
     let ui_panel = {
         let mut context = gl_context.borrow_mut();
-        load_ui_panel(&mut *context, ui_panel_uniforms)
+        load_ui_panel(&mut *context, ui_panel_spec, ui_panel_uniforms)
     };
 
     let score_panel_spec = TextBoxSpec {
