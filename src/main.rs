@@ -97,7 +97,7 @@ struct ShaderSource {
 #[inline]
 fn create_shaders_background() -> ShaderSource {
     let vert_source = include_shader!("background_panel.vert.glsl");
-    let frag_source = include_shader!("background.frag.glsl");
+    let frag_source = include_shader!("background_panel.frag.glsl");
 
     ShaderSource { 
         vert_name: "background_panel.vert.glsl",
@@ -1018,56 +1018,6 @@ fn update_panel_content(panel: &mut TextBox, label: &str, content: &str) {
     }
 }
 
-fn update_score_panel_background(game: &mut Game) {
-    let (viewport_width, viewport_height) = game.get_framebuffer_size();
-    update_panel_background(&mut game.ui.score_panel, viewport_width as u32, viewport_height as u32);
-}
-
-fn update_score_panel_content(game: &mut Game, content: &str) {
-    let panel = &mut game.ui.score_panel;
-    update_panel_content(panel, "SCORE", content);
-}
-
-fn update_level_panel_background(game: &mut Game) {
-    let (viewport_width, viewport_height) = game.get_framebuffer_size();
-    update_panel_background(&mut game.ui.level_panel, viewport_width as u32, viewport_height as u32);
-}
-
-fn update_level_panel_content(game: &mut Game, content: &str) {
-    let panel = &mut game.ui.level_panel;
-    update_panel_content(panel, "LEVEL", content);
-}
-
-fn update_line_panel_background(game: &mut Game) {
-    let (viewport_width, viewport_height) = game.get_framebuffer_size();
-    update_panel_background(&mut game.ui.line_panel, viewport_width as u32, viewport_height as u32);
-}
-
-fn update_line_panel_content(game: &mut Game, content: &str) {
-    let panel = &mut game.ui.line_panel;
-    update_panel_content(panel, "LINES", content);
-}
-
-fn update_tetris_panel_background(game: &mut Game) {
-    let (viewport_width, viewport_height) = game.get_framebuffer_size();
-    update_panel_background(&mut game.ui.tetris_panel, viewport_width as u32, viewport_height as u32);
-}
-
-fn update_tetris_panel_content(game: &mut Game, content: &str) {
-    let panel = &mut game.ui.tetris_panel;
-    update_panel_content(panel, "TETRISES", content);
-}
-
-fn update_next_panel_background(game: &mut Game) {
-    let (viewport_width, viewport_height) = game.get_framebuffer_size();
-    update_panel_background(&mut game.ui.next_panel, viewport_width as u32, viewport_height as u32);
-}
-
-fn update_next_panel_content(game: &mut Game, content: &str) {
-    let panel = &mut game.ui.next_panel;
-    update_panel_content(panel, "NEXT", content);
-}
-
 /// Load a file atlas.
 fn load_font_atlas() -> bmfa::BitmapFontAtlas {
     let arr: &'static [u8; 115559] = include_asset!("googly_blocks.bmfa");
@@ -1080,11 +1030,6 @@ fn load_font_atlas() -> bmfa::BitmapFontAtlas {
 
 struct UI {
     panel: UIPanel,
-    score_panel: TextBox,
-    level_panel: TextBox,
-    line_panel: TextBox,
-    tetris_panel: TextBox,
-    next_panel: TextBox,
 }
 
 struct Game {
@@ -1146,19 +1091,6 @@ impl Game {
     #[inline(always)]
     fn update_ui(&mut self) {
         update_ui_panel_uniforms(self);
-        /*
-        update_board_uniforms(self);
-        update_score_panel_background(self);
-        update_score_panel_content(self, "000000");
-        update_level_panel_background(self);
-        update_level_panel_content(self, "00");
-        update_line_panel_background(self);
-        update_line_panel_content(self, "000");
-        update_tetris_panel_background(self);
-        update_tetris_panel_content(self, "000");
-        update_next_panel_background(self);
-        update_next_panel_content(self, "DEADBEEF");
-        */
     }
 
     #[inline(always)]
@@ -1173,127 +1105,6 @@ impl Game {
             gl::BindTexture(gl::TEXTURE_2D, self.ui.panel.tex);
             gl::BindVertexArray(self.ui.panel.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
-            /*
-            let background = self.ui.score_panel.background;
-            gl::UseProgram(background.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, background.tex);
-            gl::BindVertexArray(background.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6);
-            
-            let label = &self.ui.score_panel.label;
-            gl::UseProgram(label.buffer.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, label.buffer.tex);
-            gl::BindVertexArray(label.buffer.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 5);
-            
-            let content = &self.ui.score_panel.content;
-            gl::UseProgram(content.buffer.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, content.buffer.tex);
-            gl::BindVertexArray(content.buffer.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 8);
-
-            let background = self.ui.level_panel.background;
-            gl::UseProgram(background.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, background.tex);
-            gl::BindVertexArray(background.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6);
-            
-            let label = &self.ui.level_panel.label;
-            gl::UseProgram(label.buffer.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, label.buffer.tex);
-            gl::BindVertexArray(label.buffer.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 5);
-            
-            let content = &self.ui.level_panel.content;
-            gl::UseProgram(content.buffer.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, content.buffer.tex);
-            gl::BindVertexArray(content.buffer.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 8);
-
-            let background = self.ui.line_panel.background;
-            gl::UseProgram(background.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, background.tex);
-            gl::BindVertexArray(background.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6);
-            
-            let label = &self.ui.line_panel.label;
-            gl::UseProgram(label.buffer.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, label.buffer.tex);
-            gl::BindVertexArray(label.buffer.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 5);
-            
-            let content = &self.ui.line_panel.content;
-            gl::UseProgram(content.buffer.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, content.buffer.tex);
-            gl::BindVertexArray(content.buffer.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 4);
-
-            let background = self.ui.tetris_panel.background;
-            gl::UseProgram(background.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, background.tex);
-            gl::BindVertexArray(background.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6);
-            
-            let label = &self.ui.tetris_panel.label;
-            gl::UseProgram(label.buffer.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, label.buffer.tex);
-            gl::BindVertexArray(label.buffer.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 8);
-            
-            let content = &self.ui.tetris_panel.content;
-            gl::UseProgram(content.buffer.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, content.buffer.tex);
-            gl::BindVertexArray(content.buffer.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 3);
-            
-            let background = self.ui.next_panel.background;
-            gl::UseProgram(background.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, background.tex);
-            gl::BindVertexArray(background.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6);
-            
-            let label = &self.ui.next_panel.label;
-            gl::UseProgram(label.buffer.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, label.buffer.tex);
-            gl::BindVertexArray(label.buffer.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 4);
-
-            let content = &self.ui.next_panel.content;
-            gl::UseProgram(content.buffer.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, content.buffer.tex);
-            gl::BindVertexArray(content.buffer.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6 * 8);
-            */
         }
     }
 
@@ -1387,69 +1198,9 @@ fn init_game() -> Game {
         let mut context = gl_context.borrow_mut();
         load_ui_panel(&mut *context, ui_panel_spec, ui_panel_uniforms)
     };
-
-    let score_panel_spec = TextBoxSpec {
-        name: "SCORE",
-        atlas: atlas.clone(),
-        atlas_tex: atlas_tex,
-        pos_x: 0.28,
-        pos_y: 0.877,
-        panel_width: 218,
-        panel_height: 109,
-    };
-    let score_panel = load_textbox(gl_context.clone(), &score_panel_spec);
-
-    let level_panel_spec = TextBoxSpec {
-        name: "LEVEL",
-        atlas: atlas.clone(),
-        atlas_tex: atlas_tex,
-        pos_x: -0.765,
-        pos_y: 0.877,
-        panel_width: 218,
-        panel_height: 109,
-    };
-    let level_panel = load_textbox(gl_context.clone(), &level_panel_spec);
-
-    let line_panel_spec = TextBoxSpec {
-        name: "LINES",
-        atlas: atlas.clone(),
-        atlas_tex: atlas_tex,
-        pos_x: -0.765,
-        pos_y: 0.415,
-        panel_width: 218,
-        panel_height: 109,
-    };
-    let line_panel = load_textbox(gl_context.clone(), &line_panel_spec);
-
-    let tetris_panel_spec = TextBoxSpec {
-        name: "TETRISES",
-        atlas: atlas.clone(),
-        atlas_tex: atlas_tex,
-        pos_x: -0.765,
-        pos_y: -0.047,
-        panel_width: 218,
-        panel_height: 109,
-    };
-    let tetris_panel = load_textbox(gl_context.clone(), &tetris_panel_spec);
-
-    let next_panel_spec = TextBoxSpec {
-        name: "NEXT",
-        atlas: atlas.clone(),
-        atlas_tex: atlas_tex,
-        pos_x: 0.28,
-        pos_y: 0.415,
-        panel_width: 218,
-        panel_height: 109,
-    };
-    let next_panel = load_textbox(gl_context.clone(), &next_panel_spec);
     
     let ui = UI { 
         panel: ui_panel, 
-        score_panel: score_panel,
-        level_panel: level_panel,
-        line_panel: line_panel,
-        tetris_panel: tetris_panel,
-        next_panel: next_panel,
     };
 
     Game {
