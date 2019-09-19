@@ -239,7 +239,7 @@ struct BackgroundPanelSpec {
 }
 
 #[derive(Copy, Clone)]
-struct Background {
+struct BackgroundPanel {
     sp: GLuint,
     v_pos_vbo: GLuint,
     v_tex_vbo: GLuint,
@@ -249,7 +249,7 @@ struct Background {
     width: usize,
 }
 
-fn load_background(game: &mut glh::GLState, spec: BackgroundPanelSpec) -> Background {
+fn load_background(game: &mut glh::GLState, spec: BackgroundPanelSpec) -> BackgroundPanel {
     let shader_source = create_shaders_background();
     let mesh = create_geometry_background();
     let tex_image = create_textures_background();
@@ -257,7 +257,7 @@ fn load_background(game: &mut glh::GLState, spec: BackgroundPanelSpec) -> Backgr
     let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_geometry_background(sp, &mesh);
     let tex = send_to_gpu_textures_background(&tex_image);
 
-    Background {
+    BackgroundPanel {
         sp: sp,
         v_pos_vbo: v_pos_vbo,
         v_tex_vbo: v_tex_vbo,
@@ -1091,7 +1091,7 @@ struct Game {
     gl: Rc<RefCell<glh::GLState>>,
     atlas: Rc<BitmapFontAtlas>,
     ui: UI,
-    background: Background,
+    background: BackgroundPanel,
 }
 
 impl Game {
