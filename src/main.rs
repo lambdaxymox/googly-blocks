@@ -337,14 +337,7 @@ fn send_to_gpu_geometry_ui_panel(sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuint,
 
     (v_pos_vbo, v_tex_vbo, vao)
 }
-/*
-fn create_textures_board() -> TexImage2D {
-    let arr: &'static [u8; 4826] = include_asset!("board.png");
-    let asset = to_vec(&arr[0], 4826);
 
-    teximage2d::load_from_memory(&asset).unwrap()
-}
-*/
 fn create_textures_ui_panel() -> TexImage2D {
     let arr: &'static [u8; 31235] = include_asset!("ui_panel.png");
     let asset = to_vec(&arr[0], 31235);
@@ -355,112 +348,6 @@ fn create_textures_ui_panel() -> TexImage2D {
 fn send_to_gpu_textures_ui_panel(tex_image: &TexImage2D) -> GLuint {
     send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()
 }
-
-#[derive(Copy, Clone)]
-struct BoardUniforms {
-    gui_scale_x: f32,
-    gui_scale_y: f32,
-}
-/*
-fn send_to_gpu_uniforms_board(sp: GLuint, uniforms: BoardUniforms) {
-    let trans_mat = Matrix4::one();
-    let gui_scale_mat = Matrix4::from_nonuniform_scale(uniforms.gui_scale_x, uniforms.gui_scale_y, 0.0);
-
-    let ubo_index = unsafe {
-        gl::GetUniformBlockIndex(sp, glh::gl_str("Matrices").as_ptr())
-    };
-    assert!(ubo_index != gl::INVALID_INDEX);
-
-    let mut ubo_size = 0;
-    unsafe {
-        gl::GetActiveUniformBlockiv(
-            sp, ubo_index, gl::UNIFORM_BLOCK_DATA_SIZE, &mut ubo_size
-        );
-    }
-    assert!(ubo_size > 0);
-
-    let mut indices = [0; 2];
-    let mut sizes = [0; 2];
-    let mut offsets = [0; 2];
-    let mut types = [0; 2];
-    unsafe {
-        gl::GetActiveUniformBlockiv(
-            sp, ubo_index,
-            gl::UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indices.as_mut_ptr()
-        );
-        gl::GetActiveUniformsiv(
-            sp, 2, indices.as_ptr() as *const u32,
-            gl::UNIFORM_OFFSET, offsets.as_mut_ptr()
-        );
-        gl::GetActiveUniformsiv(
-            sp, 2, indices.as_ptr() as *const u32,
-            gl::UNIFORM_SIZE, sizes.as_mut_ptr()
-        );
-        gl::GetActiveUniformsiv(
-            sp, 2, indices.as_ptr() as *const u32,
-            gl::UNIFORM_TYPE, types.as_mut_ptr()
-        );
-    }
-
-    // Copy the uniform block data into a buffer to be passed to the GPU.
-    let mut buffer = vec![0 as u8; ubo_size as usize];
-    unsafe {
-        ptr::copy(&trans_mat, mem::transmute(&mut buffer[offsets[1] as usize]), 1);
-        ptr::copy(&gui_scale_mat, mem::transmute(&mut buffer[offsets[0] as usize]), 1);
-    }
-
-    let mut ubo = 0;
-    unsafe {
-        gl::GenBuffers(1, &mut ubo);
-    }
-    assert!(ubo > 0);
-    unsafe {
-        gl::BindBuffer(gl::UNIFORM_BUFFER, ubo);
-        gl::BufferData(
-            gl::UNIFORM_BUFFER, ubo_size as GLsizeiptr,
-            buffer.as_ptr() as *const GLvoid, gl::STATIC_DRAW
-        );
-        gl::BindBufferBase(gl::UNIFORM_BUFFER, ubo_index, ubo);
-    }
-}
-*/
-/*
-struct Board {
-    sp: GLuint,
-    v_pos_vbo: GLuint,
-    v_tex_vbo: GLuint,
-    vao: GLuint,
-    tex: GLuint,
-}
-
-fn load_board(game: &mut glh::GLState, uniforms: BoardUniforms) -> Board {
-    let shader_source = create_shaders_board();
-    let sp = send_to_gpu_shaders_board(game, shader_source);
-    let mesh = create_geometry_board();
-    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_geometry_board(sp, &mesh);
-    let tex_image = create_textures_board();
-    let tex = send_to_gpu_textures_board(&tex_image);
-    send_to_gpu_uniforms_board(sp, uniforms);
-
-    Board {
-        sp: sp,
-        v_pos_vbo: v_pos_vbo,
-        v_tex_vbo: v_tex_vbo,
-        vao: vao,
-        tex: tex,
-    }
-}
-
-fn update_board_uniforms(game: &mut Game) {
-    let panel_width: f32 = 642.0;
-    let panel_height: f32 = 504.0;
-    let (viewport_width, viewport_height) = game.get_framebuffer_size();
-    let gui_scale_x = panel_width / (viewport_width as f32);
-    let gui_scale_y = panel_height / (viewport_height as f32);
-    let uniforms = BoardUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
-    send_to_gpu_uniforms_board(game.ui.board.sp, uniforms);
-}
-*/
 
 struct UIPanel {
     sp: GLuint,
