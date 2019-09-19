@@ -212,15 +212,44 @@ fn send_to_gpu_textures_background(tex_image: &TexImage2D) -> GLuint {
 }
 
 #[derive(Copy, Clone)]
+struct BackgroundPanelUniforms { 
+    gui_scale_x: f32,
+    gui_scale_y: f32,
+}
+
+fn send_to_gpu_uniforms_background_panel(sp: GLuint, uniforms: BackgroundPanelUniforms) {
+    let gui_scale_mat = Matrix4::from_nonuniform_scale(
+        uniforms.gui_scale_x, uniforms.gui_scale_y, 0.0
+    );
+
+    let m_gui_scale_loc = unsafe {
+        gl::GetUniformLocation(sp, glh::gl_str("m_gui_scale").as_ptr())
+    };
+    assert!(m_gui_scale_loc > -1);
+    unsafe {
+        gl::UseProgram(sp);
+        gl::UniformMatrix4fv(m_gui_scale_loc, 1, gl::FALSE, gui_scale_mat.as_ptr());
+    }
+}
+
+#[derive(Copy, Clone)]
+struct BackgroundPanelSpec { 
+    height: usize, 
+    width: usize, 
+}
+
+#[derive(Copy, Clone)]
 struct Background {
     sp: GLuint,
     v_pos_vbo: GLuint,
     v_tex_vbo: GLuint,
     vao: GLuint,
     tex: GLuint,
+    height: usize,
+    width: usize,
 }
 
-fn load_background(game: &mut glh::GLState) -> Background {
+fn load_background(game: &mut glh::GLState, spec: BackgroundPanelSpec) -> Background {
     let shader_source = create_shaders_background();
     let mesh = create_geometry_background();
     let tex_image = create_textures_background();
@@ -234,11 +263,22 @@ fn load_background(game: &mut glh::GLState) -> Background {
         v_tex_vbo: v_tex_vbo,
         vao: vao,
         tex: tex,
+        height: spec.height,
+        width: spec.width,
     }
 }
 
+fn update_uniforms_background_panel(game: &mut Game) {
+    let panel_width = game.background.width as f32;
+    let panel_height = game.background.height as f32;
+    let (viewport_width, viewport_height) = game.get_framebuffer_size();
+    let gui_scale_x = panel_width / (viewport_width as f32);
+    let gui_scale_y = panel_height / (viewport_height as f32);
+    let uniforms = BackgroundPanelUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
+    send_to_gpu_uniforms_background_panel(game.background.sp, uniforms);
+}
 
-#[inline]
+
 fn create_shaders_ui_panel() -> ShaderSource {
     let vert_source = include_shader!("ui_panel.vert.glsl");
     let frag_source = include_shader!("ui_panel.frag.glsl");
@@ -1089,6 +1129,7 @@ impl Game {
 
     #[inline(always)]
     fn update_background(&mut self) {
+        update_uniforms_background_panel(self);
     }
 
     #[inline(always)]
@@ -1322,9 +1363,12 @@ fn init_game() -> Game {
     let gl_context = Rc::new(RefCell::new(init_gl(width, height)));
     let atlas = Rc::new(load_font_atlas());
     let atlas_tex = send_to_gpu_font_texture(&atlas, gl::CLAMP_TO_EDGE).unwrap();
+    let background_panel_height = height as usize;
+    let background_panel_width = width as usize;
+    let background_panel_spec = BackgroundPanelSpec { height: background_panel_height, width: background_panel_width };
     let background = {
         let mut context = gl_context.borrow_mut(); 
-        load_background(&mut *context)
+        load_background(&mut *context, background_panel_spec)
     };
     let (viewport_width, viewport_height) = {
         let context = gl_context.borrow();
