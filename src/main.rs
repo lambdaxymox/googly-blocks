@@ -503,7 +503,7 @@ fn update_ui_panel_uniforms(game: &mut Game) {
     send_to_gpu_uniforms_ui_panel(game.ui.panel.sp, uniforms);    
 }
 
-
+/*
 #[derive(Copy, Clone, Debug)]
 struct TextBoxBackground {
     sp: GLuint,
@@ -944,7 +944,7 @@ fn load_textbox(gl_state: Rc<RefCell<glh::GLState>>, spec: &TextBoxSpec) -> Text
         content: content,
     }
 }
-
+*/
 /// Load texture image into the GPU.
 fn send_to_gpu_font_texture(atlas: &BitmapFontAtlas, wrapping_mode: GLuint) -> Result<GLuint, String> {
     let mut tex = 0;
@@ -977,7 +977,7 @@ fn send_to_gpu_font_texture(atlas: &BitmapFontAtlas, wrapping_mode: GLuint) -> R
 
     Ok(tex)
 }
-
+/*
 fn update_panel_background(panel: &mut TextBox, viewport_width: u32, viewport_height: u32) {
     let v_mat_gui_scale_loc = unsafe { 
         gl::GetUniformLocation(panel.background.sp, glh::gl_str("v_mat_gui_scale").as_ptr())
@@ -1017,7 +1017,7 @@ fn update_panel_content(panel: &mut TextBox, label: &str, content: &str) {
         gl::Uniform4fv(text_color_loc, 1, TEXT_COLOR.as_ptr());
     }
 }
-
+*/
 /// Load a file atlas.
 fn load_font_atlas() -> bmfa::BitmapFontAtlas {
     let arr: &'static [u8; 115559] = include_asset!("googly_blocks.bmfa");
