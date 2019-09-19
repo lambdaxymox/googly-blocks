@@ -239,19 +239,19 @@ fn load_background(game: &mut glh::GLState) -> Background {
 
 
 #[inline]
-fn create_shaders_board() -> ShaderSource {
-    let vert_source = include_shader!("board.vert.glsl");
-    let frag_source = include_shader!("board.frag.glsl");
+fn create_shaders_ui_panel() -> ShaderSource {
+    let vert_source = include_shader!("ui_panel.vert.glsl");
+    let frag_source = include_shader!("ui_panel.frag.glsl");
 
     ShaderSource { 
-        vert_name: "board.vert.glsl",
+        vert_name: "ui_panel.vert.glsl",
         vert_source: vert_source, 
-        frag_name: "board.frag.glsl",
+        frag_name: "ui_panel.frag.glsl",
         frag_source: frag_source 
     }
 }
 
-fn send_to_gpu_shaders_board(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+fn send_to_gpu_shaders_ui_panel(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
     let mut vert_reader = io::Cursor::new(source.vert_source);
     let mut frag_reader = io::Cursor::new(source.frag_source);
     let sp = glh::create_program_from_reader(
@@ -264,7 +264,7 @@ fn send_to_gpu_shaders_board(game: &mut glh::GLState, source: ShaderSource) -> G
     sp
 }
 
-fn create_geometry_board() -> ObjMesh {
+fn create_geometry_ui_panel() -> ObjMesh {
     let points: Vec<[GLfloat; 3]> = vec![
         [1.0, 1.0, 0.0], [-1.0, -1.0, 0.0], [ 1.0, -1.0, 0.0],
         [1.0, 1.0, 0.0], [-1.0,  1.0, 0.0], [-1.0, -1.0, 0.0]
@@ -281,7 +281,7 @@ fn create_geometry_board() -> ObjMesh {
     ObjMesh::new(points, tex_coords, normals)
 }
 
-fn send_to_gpu_geometry_board(sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuint, GLuint) {
+fn send_to_gpu_geometry_ui_panel(sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuint, GLuint) {
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
     };
@@ -345,14 +345,14 @@ fn create_textures_board() -> TexImage2D {
     teximage2d::load_from_memory(&asset).unwrap()
 }
 */
-fn create_textures_board() -> TexImage2D {
+fn create_textures_ui_panel() -> TexImage2D {
     let arr: &'static [u8; 31235] = include_asset!("ui_panel.png");
     let asset = to_vec(&arr[0], 31235);
 
     teximage2d::load_from_memory(&asset).unwrap()
 }
 
-fn send_to_gpu_textures_board(tex_image: &TexImage2D) -> GLuint {
+fn send_to_gpu_textures_ui_panel(tex_image: &TexImage2D) -> GLuint {
     send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()
 }
 
@@ -361,7 +361,7 @@ struct BoardUniforms {
     gui_scale_x: f32,
     gui_scale_y: f32,
 }
-
+/*
 fn send_to_gpu_uniforms_board(sp: GLuint, uniforms: BoardUniforms) {
     let trans_mat = Matrix4::one();
     let gui_scale_mat = Matrix4::from_nonuniform_scale(uniforms.gui_scale_x, uniforms.gui_scale_y, 0.0);
@@ -423,7 +423,8 @@ fn send_to_gpu_uniforms_board(sp: GLuint, uniforms: BoardUniforms) {
         gl::BindBufferBase(gl::UNIFORM_BUFFER, ubo_index, ubo);
     }
 }
-
+*/
+/*
 struct Board {
     sp: GLuint,
     v_pos_vbo: GLuint,
@@ -458,6 +459,111 @@ fn update_board_uniforms(game: &mut Game) {
     let gui_scale_y = panel_height / (viewport_height as f32);
     let uniforms = BoardUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
     send_to_gpu_uniforms_board(game.ui.board.sp, uniforms);
+}
+*/
+
+struct UIPanel {
+    sp: GLuint,
+    v_pos_vbo: GLuint,
+    v_tex_vbo: GLuint,
+    vao: GLuint,
+    tex: GLuint,
+}
+
+#[derive(Copy, Clone)]
+struct UIPanelUniforms {
+    gui_scale_x: f32,
+    gui_scale_y: f32,
+}
+
+fn send_to_gpu_uniforms_ui_panel(sp: GLuint, uniforms: UIPanelUniforms) {
+    let trans_mat = Matrix4::one();
+    let gui_scale_mat = Matrix4::from_nonuniform_scale(uniforms.gui_scale_x, uniforms.gui_scale_y, 0.0);
+
+    let ubo_index = unsafe {
+        gl::GetUniformBlockIndex(sp, glh::gl_str("Matrices").as_ptr())
+    };
+    assert!(ubo_index != gl::INVALID_INDEX);
+
+    let mut ubo_size = 0;
+    unsafe {
+        gl::GetActiveUniformBlockiv(
+            sp, ubo_index, gl::UNIFORM_BLOCK_DATA_SIZE, &mut ubo_size
+        );
+    }
+    assert!(ubo_size > 0);
+
+    let mut indices = [0; 2];
+    let mut sizes = [0; 2];
+    let mut offsets = [0; 2];
+    let mut types = [0; 2];
+    unsafe {
+        gl::GetActiveUniformBlockiv(
+            sp, ubo_index,
+            gl::UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indices.as_mut_ptr()
+        );
+        gl::GetActiveUniformsiv(
+            sp, 2, indices.as_ptr() as *const u32,
+            gl::UNIFORM_OFFSET, offsets.as_mut_ptr()
+        );
+        gl::GetActiveUniformsiv(
+            sp, 2, indices.as_ptr() as *const u32,
+            gl::UNIFORM_SIZE, sizes.as_mut_ptr()
+        );
+        gl::GetActiveUniformsiv(
+            sp, 2, indices.as_ptr() as *const u32,
+            gl::UNIFORM_TYPE, types.as_mut_ptr()
+        );
+    }
+
+    // Copy the uniform block data into a buffer to be passed to the GPU.
+    let mut buffer = vec![0 as u8; ubo_size as usize];
+    unsafe {
+        ptr::copy(&trans_mat, mem::transmute(&mut buffer[offsets[1] as usize]), 1);
+        ptr::copy(&gui_scale_mat, mem::transmute(&mut buffer[offsets[0] as usize]), 1);
+    }
+
+    let mut ubo = 0;
+    unsafe {
+        gl::GenBuffers(1, &mut ubo);
+    }
+    assert!(ubo > 0);
+    unsafe {
+        gl::BindBuffer(gl::UNIFORM_BUFFER, ubo);
+        gl::BufferData(
+            gl::UNIFORM_BUFFER, ubo_size as GLsizeiptr,
+            buffer.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+        );
+        gl::BindBufferBase(gl::UNIFORM_BUFFER, ubo_index, ubo);
+    }
+}
+
+fn load_ui_panel(game: &mut glh::GLState, uniforms: UIPanelUniforms) -> UIPanel {
+    let shader_source = create_shaders_ui_panel();
+    let sp = send_to_gpu_shaders_ui_panel(game, shader_source);
+    let mesh = create_geometry_ui_panel();
+    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_geometry_ui_panel(sp, &mesh);
+    let tex_image = create_textures_ui_panel();
+    let tex = send_to_gpu_textures_ui_panel(&tex_image);
+    send_to_gpu_uniforms_ui_panel(sp, uniforms);
+
+    UIPanel {
+        sp: sp,
+        v_pos_vbo: v_pos_vbo,
+        v_tex_vbo: v_tex_vbo,
+        vao: vao,
+        tex: tex,
+    }
+}
+
+fn update_ui_panel_uniforms(game: &mut Game) {
+    let panel_width: f32 = 642.0;
+    let panel_height: f32 = 504.0;
+    let (viewport_width, viewport_height) = game.get_framebuffer_size();
+    let gui_scale_x = panel_width / (viewport_width as f32);
+    let gui_scale_y = panel_height / (viewport_height as f32);
+    let uniforms = UIPanelUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
+    send_to_gpu_uniforms_ui_panel(game.ui.panel.sp, uniforms);    
 }
 
 
@@ -1065,7 +1171,7 @@ fn init_gl(width: u32, height: u32) -> glh::GLState {
 }
 
 struct UI {
-    board: Board,
+    panel: UIPanel,
     score_panel: TextBox,
     level_panel: TextBox,
     line_panel: TextBox,
@@ -1130,8 +1236,9 @@ impl Game {
 
     #[inline(always)]
     fn update_ui(&mut self) {
-        update_board_uniforms(self);
+        update_ui_panel_uniforms(self);
         /*
+        update_board_uniforms(self);
         update_score_panel_background(self);
         update_score_panel_content(self, "000000");
         update_level_panel_background(self);
@@ -1151,11 +1258,11 @@ impl Game {
             // Render the game board. We turn off depth testing to do so since this is
             // a 2D scene using 3D abstractions. Otherwise Z-Buffering would prevent us
             // from rendering the game board.
-            gl::UseProgram(self.ui.board.sp);
+            gl::UseProgram(self.ui.panel.sp);
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, self.ui.board.tex);
-            gl::BindVertexArray(self.ui.board.vao);
+            gl::BindTexture(gl::TEXTURE_2D, self.ui.panel.tex);
+            gl::BindVertexArray(self.ui.panel.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
             /*
             let background = self.ui.score_panel.background;
@@ -1333,11 +1440,11 @@ fn init_game() -> Game {
     let panel_height: f32 = 504.0;
     let gui_scale_x = panel_width / viewport_width;
     let gui_scale_y = panel_height / viewport_height;
-    let board_uniforms = BoardUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
+    let ui_panel_uniforms = UIPanelUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
 
-    let board = {
+    let ui_panel = {
         let mut context = gl_context.borrow_mut();
-        load_board(&mut *context, board_uniforms)
+        load_ui_panel(&mut *context, ui_panel_uniforms)
     };
 
     let score_panel_spec = TextBoxSpec {
@@ -1396,7 +1503,7 @@ fn init_game() -> Game {
     let next_panel = load_textbox(gl_context.clone(), &next_panel_spec);
     
     let ui = UI { 
-        board: board, 
+        panel: ui_panel, 
         score_panel: score_panel,
         level_panel: level_panel,
         line_panel: line_panel,
