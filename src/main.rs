@@ -561,8 +561,8 @@ impl TextBuffer {
     }
 
     fn clear(&mut self) {
-        self.points = vec![];
-        self.tex_coords = vec![];
+        self.points.clear();
+        self.tex_coords.clear();
     }
 
     fn write(&mut self, st: &[u8], placement: AbsolutePlacement) -> io::Result<(usize, usize)> {
