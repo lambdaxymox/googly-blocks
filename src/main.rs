@@ -42,7 +42,7 @@ const GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FF;
 
 // Green.
 const TEXT_COLOR: [f32; 4] = [
-    0_f32 / 255_f32, 204_f32 / 255_f32, 0_f32 / 255_f32, 255_f32 / 255_f32
+    38_f32 / 255_f32, 239_f32 / 255_f32, 29_f32 / 255_f32, 255_f32 / 255_f32
 ];
 
 
@@ -582,7 +582,6 @@ impl TextBuffer {
         let mut tex_coords = vec![0.0; 12 * st.len()];
         // END TODO.
         let mut at_x = placement.x;
-        //let end_at_x = 0.95;
         let mut at_y = placement.y;
 
         for (i, ch_i) in st.iter().enumerate() {
@@ -628,11 +627,12 @@ impl TextBuffer {
         }
 
         // TODO: Optimize this.
-        self.points = points;
-        self.tex_coords = tex_coords;
+        //self.points = points;
+        //self.tex_coords = tex_coords;
+        self.points.append(&mut points);
+        self.tex_coords.append(&mut tex_coords);
         // END TODO.
         let point_count = 6 * st.len();
-        //self.buffer.write(&points, &texcoords)?;
 
         Ok((st.len(), point_count))
     }
@@ -1119,10 +1119,10 @@ fn init_game() -> Game {
     let text_panel_uniforms = TextPanelUniforms { text_color: TEXT_COLOR };
     let text_panel_spec = TextPanelSpec {
         atlas: atlas.clone(),
-        score_placement: AbsolutePlacement { x: 0.3, y: 0.1 },
-        level_placement: AbsolutePlacement { x: 0.3, y: -0.1 },
-        lines_placement: AbsolutePlacement { x: 0.3, y: -0.2 },
-        tetrises_placement: AbsolutePlacement { x: 0.3, y: -0.3 },
+        score_placement: AbsolutePlacement { x: 0.46, y: 0.11 },
+        level_placement: AbsolutePlacement { x: 0.50, y: -0.21 },
+        lines_placement: AbsolutePlacement { x: 0.50, y: -0.54 },
+        tetrises_placement: AbsolutePlacement { x: 0.50, y: -0.87 },
         scale_px: 48.0,
     };
     let text_panel = load_text_panel(gl_context.clone(), &text_panel_spec, text_panel_uniforms);
