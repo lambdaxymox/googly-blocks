@@ -30,7 +30,6 @@ use math::{Array, One, Matrix4, Vector3};
 use mesh::ObjMesh;
 use teximage2d::TexImage2D;
 
-use std::fmt::Write;
 use std::io;
 use std::mem;
 use std::ptr;
