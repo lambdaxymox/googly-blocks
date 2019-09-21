@@ -16,6 +16,7 @@ mod gl {
 mod macros;
 
 mod gl_help;
+mod ring_buffer;
 
 
 use gl_help as glh;
@@ -28,8 +29,10 @@ use gl::types::{GLfloat, GLint, GLuint, GLvoid, GLsizeiptr};
 use log::{info};
 use math::{Array, One, Matrix4, Vector3};
 use mesh::ObjMesh;
+use ring_buffer::RingBuffer;
 use teximage2d::TexImage2D;
 
+use std::fmt::Write;
 use std::io;
 use std::mem;
 use std::ptr;
@@ -494,13 +497,361 @@ fn load_ui_panel(game: &mut glh::GLState, spec: UIPanelSpec, uniforms: UIPanelUn
 }
 
 fn update_ui_panel_uniforms(game: &mut Game) {
-    let panel_width = game.ui.panel.width as f32;
-    let panel_height = game.ui.panel.height as f32;
+    let panel_width = game.ui.ui_panel.width as f32;
+    let panel_height = game.ui.ui_panel.height as f32;
     let (viewport_width, viewport_height) = game.get_framebuffer_size();
     let gui_scale_x = panel_width / (viewport_width as f32);
     let gui_scale_y = panel_height / (viewport_height as f32);
     let uniforms = UIPanelUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
-    send_to_gpu_uniforms_ui_panel(game.ui.panel.sp, uniforms);    
+    send_to_gpu_uniforms_ui_panel(game.ui.ui_panel.sp, uniforms);    
+}
+
+
+#[derive(Copy, Clone, Debug)]
+struct GLTextBuffer {
+    sp: GLuint,
+    v_pos_vbo: GLuint,
+    v_tex_vbo: GLuint,
+    vao: GLuint,
+    tex: GLuint,
+}
+
+impl GLTextBuffer {
+    fn write(&mut self, points: &[GLfloat], texcoords: &[GLfloat]) -> io::Result<usize> {
+        unsafe {
+            gl::BindBuffer(gl::ARRAY_BUFFER, self.v_pos_vbo);
+            gl::BufferData(
+                gl::ARRAY_BUFFER, (mem::size_of::<GLfloat>() * points.len()) as GLsizeiptr,
+                points.as_ptr() as *const GLvoid, gl::DYNAMIC_DRAW
+            );
+            gl::BindBuffer(gl::ARRAY_BUFFER, self.v_tex_vbo);
+            gl::BufferData(
+                gl::ARRAY_BUFFER, (mem::size_of::<GLfloat>() * texcoords.len()) as GLsizeiptr,
+                texcoords.as_ptr() as *const GLvoid, gl::DYNAMIC_DRAW
+            );
+        }
+
+        let bytes_written = mem::size_of::<GLfloat>() * (points.len() + texcoords.len());
+
+        Ok(bytes_written)
+    }
+}
+
+struct TextBuffer {
+    points: Vec<f32>,
+    tex_coords: Vec<f32>,
+    gl_state: Rc<RefCell<glh::GLState>>,
+    atlas: Rc<BitmapFontAtlas>,
+    buffer: GLTextBuffer,
+    scale_px: f32,
+}
+
+impl TextBuffer {
+    fn new(
+        gl_state: Rc<RefCell<glh::GLState>>, 
+        atlas: Rc<BitmapFontAtlas>, 
+        buffer: GLTextBuffer, scale_px: f32) -> TextBuffer {
+
+        TextBuffer {
+            points: vec![],
+            tex_coords: vec![],
+            gl_state: gl_state,
+            atlas: atlas,
+            buffer: buffer,
+            scale_px: scale_px,
+        }
+    }
+
+    fn clear(&mut self) {
+        self.points = vec![];
+        self.tex_coords = vec![];
+    }
+
+    fn write(&mut self, st: &[u8], placement: AbsolutePlacement) -> io::Result<(usize, usize)> {
+        let atlas = &self.atlas;
+        let scale_px = self.scale_px;
+        let height = {
+            let context = self.gl_state.borrow();
+            context.height
+        };
+        let width = {
+            let context = self.gl_state.borrow();
+            context.width
+        };
+
+        // TODO: Optimize this.
+        let mut points = vec![0.0; 12 * st.len()];
+        let mut tex_coords = vec![0.0; 12 * st.len()];
+        // END TODO.
+        let mut at_x = placement.x;
+        //let end_at_x = 0.95;
+        let mut at_y = placement.y;
+
+        for (i, ch_i) in st.iter().enumerate() {
+            let metadata_i = atlas.glyph_metadata[&(*ch_i as usize)];
+            let atlas_col = metadata_i.column;
+            let atlas_row = metadata_i.row;
+
+            let s = (atlas_col as f32) * (1.0 / (atlas.columns as f32));
+            let t = ((atlas_row + 1) as f32) * (1.0 / (atlas.rows as f32));
+
+            let x_pos = at_x;
+            let y_pos = at_y - (scale_px / (height as f32)) * metadata_i.y_offset;
+
+            at_x += metadata_i.width * (scale_px / width as f32);
+
+            points[12 * i]     = x_pos;
+            points[12 * i + 1] = y_pos;
+            points[12 * i + 2] = x_pos;
+            points[12 * i + 3] = y_pos - scale_px / (height as f32);
+            points[12 * i + 4] = x_pos + scale_px / (width as f32);
+            points[12 * i + 5] = y_pos - scale_px / (height as f32);
+
+            points[12 * i + 6]  = x_pos + scale_px / (width as f32);
+            points[12 * i + 7]  = y_pos - scale_px / (height as f32);
+            points[12 * i + 8]  = x_pos + scale_px / (width as f32);
+            points[12 * i + 9]  = y_pos;
+            points[12 * i + 10] = x_pos;
+            points[12 * i + 11] = y_pos;
+
+            tex_coords[12 * i]     = s;
+            tex_coords[12 * i + 1] = 1.0 - t + 1.0 / (atlas.rows as f32);
+            tex_coords[12 * i + 2] = s;
+            tex_coords[12 * i + 3] = 1.0 - t;
+            tex_coords[12 * i + 4] = s + 1.0 / (atlas.columns as f32);
+            tex_coords[12 * i + 5] = 1.0 - t;
+
+            tex_coords[12 * i + 6]  = s + 1.0 / (atlas.columns as f32);
+            tex_coords[12 * i + 7]  = 1.0 - t;
+            tex_coords[12 * i + 8]  = s + 1.0 / (atlas.columns as f32);
+            tex_coords[12 * i + 9]  = 1.0 - t + 1.0 / (atlas.rows as f32);
+            tex_coords[12 * i + 10] = s;
+            tex_coords[12 * i + 11] = 1.0 - t + 1.0 / (atlas.rows as f32);
+        }
+
+        // TODO: Optimize this.
+        self.points = points;
+        self.tex_coords = tex_coords;
+        // END TODO.
+        let point_count = 6 * st.len();
+        //self.buffer.write(&points, &texcoords)?;
+
+        Ok((st.len(), point_count))
+    }
+
+    fn send_to_gpu(&mut self) -> io::Result<(usize, usize)> {
+        self.buffer.write(&self.points, &self.tex_coords)?;
+        let points_written = self.points.len();
+        let tex_coords_written = self.tex_coords.len();
+        
+        Ok((points_written, tex_coords_written))
+    }
+}
+
+
+#[derive(Copy, Clone, Debug)]
+struct TextPanelUniforms {
+    text_color: [f32; 4],
+}
+
+struct TextPanelSpec {
+    atlas: Rc<BitmapFontAtlas>,
+    score_placement: AbsolutePlacement,
+    lines_placement: AbsolutePlacement,
+    level_placement: AbsolutePlacement,
+    tetrises_placement: AbsolutePlacement,
+    scale_px: f32,
+}
+
+#[derive(Copy, Clone, Debug)]
+struct AbsolutePlacement {
+    x: f32,
+    y: f32,
+}
+
+struct TextElement7 {
+    content: [u8; 7],
+    placement: AbsolutePlacement,
+}
+
+struct TextElement4 {
+    content: [u8; 4],
+    placement: AbsolutePlacement,
+}
+
+struct TextPanel {
+    buffer: TextBuffer,
+    score: TextElement7,
+    level: TextElement4,
+    tetrises: TextElement4,
+    lines: TextElement4,
+}
+
+impl TextPanel {
+    fn update_panel(&mut self) {
+        self.buffer.clear();
+        self.buffer.write(&self.score.content, self.score.placement);
+        self.buffer.write(&self.level.content, self.level.placement);
+        self.buffer.write(&self.tetrises.content, self.tetrises.placement);
+        self.buffer.write(&self.lines.content, self.lines.placement);
+    }
+
+    fn update_score(&mut self, score: usize) {
+        let d0 = score % 10;
+        let d1 = ((score % 100) - d0) / 10;
+        let d2 = ((score % 1000) - d1) / 100;
+        let d3 = ((score % 10000) - d2) / 1000;
+        let d4 = ((score % 100000) - d3) / 10000;
+        let d5 = ((score % 1000000) - d4) / 100000;
+        let d6 = ((score % 10000000) - d5) / 100000;
+        self.score.content[0] = d6 as u8 + 0x30;
+        self.score.content[1] = d5 as u8 + 0x30;
+        self.score.content[2] = d4 as u8 + 0x30;
+        self.score.content[3] = d3 as u8 + 0x30;
+        self.score.content[4] = d2 as u8 + 0x30;
+        self.score.content[5] = d1 as u8 + 0x30;
+        self.score.content[6] = d0 as u8 + 0x30;
+    }
+
+    fn update_level(&mut self, level: usize) {
+        let d0 = level % 10;
+        let d1 = ((level % 100) - d0) / 10;
+        let d2 = ((level % 1000) - d1) / 100;
+        let d3 = ((level % 10000) - d2) / 1000;
+        self.level.content[0] = d3 as u8 + 0x30;
+        self.level.content[1] = d2 as u8 + 0x30;
+        self.level.content[2] = d1 as u8 + 0x30;
+        self.level.content[3] = d0 as u8 + 0x30;
+    }
+
+    fn update_lines(&mut self, lines: usize) {
+        let d0 = lines % 10;
+        let d1 = ((lines % 100) - d0) / 10;
+        let d2 = ((lines % 1000) - d1) / 100;
+        let d3 = ((lines % 10000) - d2) / 1000;
+        self.lines.content[0] = d3 as u8 + 0x30;
+        self.lines.content[1] = d2 as u8 + 0x30;
+        self.lines.content[2] = d1 as u8 + 0x30;
+        self.lines.content[3] = d0 as u8 + 0x30;
+    }
+
+    fn update_tetrises(&mut self, tetrises: usize) {
+        let d0 = tetrises % 10;
+        let d1 = ((tetrises % 100) - d0) / 10;
+        let d2 = ((tetrises % 1000) - d1) / 100;
+        let d3 = ((tetrises % 10000) - d2) / 1000;
+        self.tetrises.content[0] = d3 as u8 + 0x30;
+        self.tetrises.content[1] = d2 as u8 + 0x30;
+        self.tetrises.content[2] = d1 as u8 + 0x30;
+        self.tetrises.content[3] = d0 as u8 + 0x30;
+    }
+}
+
+/// Set up the geometry for rendering title screen text.
+fn create_buffers_text_buffer(sp: GLuint) -> (GLuint, GLuint, GLuint) {
+    let v_pos_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+    };
+    assert!(v_pos_loc > -1);
+    let v_pos_loc = v_pos_loc as u32;
+
+    let v_tex_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+    };
+    assert!(v_tex_loc > -1);
+    let v_tex_loc = v_tex_loc as u32;
+    
+    let mut v_pos_vbo = 0;
+    unsafe {
+        gl::GenBuffers(1, &mut v_pos_vbo);
+    }
+    assert!(v_pos_vbo > 0);
+
+    let mut v_tex_vbo = 0;
+    unsafe {
+        gl::GenBuffers(1, &mut v_tex_vbo);
+    }
+    assert!(v_tex_vbo > 0);
+
+    let mut vao = 0;
+    unsafe {
+        gl::GenVertexArrays(1, &mut vao);
+    }
+    assert!(vao > 0);
+    unsafe {
+        gl::BindVertexArray(vao);
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
+        gl::VertexAttribPointer(v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(v_pos_loc);
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
+        gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(v_tex_loc);
+    }
+
+    (v_pos_vbo, v_tex_vbo, vao)
+}
+
+/// Load the shaders for a textbox buffer.
+fn create_shaders_text_buffer() -> ShaderSource {
+    let vert_source = include_shader!("text_panel.vert.glsl");
+    let frag_source = include_shader!("text_panel.frag.glsl");
+
+    ShaderSource { 
+        vert_name: "text_panel.vert.glsl",
+        vert_source: vert_source,
+        frag_name: "text_panel.frag.glsl",
+        frag_source: frag_source,
+    }    
+}
+
+/// Send the shaders for a textbox buffer to the GPU.
+fn send_to_gpu_shaders_text_buffer(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+    send_to_gpu_shaders(game, source)
+}
+
+fn create_text_buffer(
+    gl_state: Rc<RefCell<glh::GLState>>, 
+    atlas: Rc<BitmapFontAtlas>, scale_px: f32) -> TextBuffer {
+    
+    let atlas_tex = send_to_gpu_font_texture(&atlas, gl::CLAMP_TO_EDGE).unwrap();
+    let shader_source = create_shaders_text_buffer();
+    let sp = {
+        let mut context = gl_state.borrow_mut();
+        send_to_gpu_shaders_text_buffer(&mut *context, shader_source)
+    };
+    let (v_pos_vbo, v_tex_vbo, vao) = create_buffers_text_buffer(sp);
+    let buffer = GLTextBuffer {
+        sp: sp,
+        tex: atlas_tex,
+        vao: vao,
+        v_pos_vbo: v_pos_vbo,
+        v_tex_vbo: v_tex_vbo,
+    };
+
+    TextBuffer {
+        points: vec![],
+        tex_coords: vec![],
+        gl_state: gl_state,
+        atlas: atlas,
+        buffer: buffer,
+        scale_px: scale_px,
+    }
+}
+
+fn load_text_panel(gl_state: Rc<RefCell<glh::GLState>>, spec: &TextPanelSpec, uniforms: TextPanelUniforms) -> TextPanel {
+    let buffer = create_text_buffer(gl_state, spec.atlas.clone(), spec.scale_px);
+    let score = TextElement7 { content: [0; 7], placement: spec.score_placement };
+    let lines =  TextElement4 { content: [0; 4], placement: spec.lines_placement };
+    let level =  TextElement4 { content: [0; 4], placement: spec.level_placement };
+    let tetrises =  TextElement4 { content: [0; 4], placement: spec.tetrises_placement };
+
+    TextPanel {
+        buffer: buffer,
+        score: score,
+        level: level,
+        tetrises: tetrises,
+        lines: lines,
+    }
 }
 
 /*
@@ -1029,7 +1380,26 @@ fn load_font_atlas() -> bmfa::BitmapFontAtlas {
 }
 
 struct UI {
-    panel: UIPanel,
+    ui_panel: UIPanel,
+    text_panel: TextPanel,
+}
+
+impl UI {
+    fn update_score(&mut self, score: usize) {
+        self.text_panel.update_score(score);
+    }
+
+    fn update_lines(&mut self, lines: usize) {
+        self.text_panel.update_lines(lines);
+    }
+
+    fn update_level(&mut self, level: usize) {
+        self.text_panel.update_level(level);
+    }
+
+    fn update_tetrises(&mut self, tetrises: usize) {
+        self.text_panel.update_tetrises(tetrises);
+    }
 }
 
 struct Game {
@@ -1037,6 +1407,10 @@ struct Game {
     atlas: Rc<BitmapFontAtlas>,
     ui: UI,
     background: BackgroundPanel,
+    score: usize,
+    level: usize,
+    lines: usize,
+    tetrises: usize,
 }
 
 impl Game {
@@ -1099,11 +1473,11 @@ impl Game {
             // Render the game board. We turn off depth testing to do so since this is
             // a 2D scene using 3D abstractions. Otherwise Z-Buffering would prevent us
             // from rendering the game board.
-            gl::UseProgram(self.ui.panel.sp);
+            gl::UseProgram(self.ui.ui_panel.sp);
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, self.ui.panel.tex);
-            gl::BindVertexArray(self.ui.panel.vao);
+            gl::BindTexture(gl::TEXTURE_2D, self.ui.ui_panel.tex);
+            gl::BindVertexArray(self.ui.ui_panel.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
         }
     }
@@ -1173,7 +1547,7 @@ fn init_game() -> Game {
     let height = 504;
     let gl_context = Rc::new(RefCell::new(init_gl(width, height)));
     let atlas = Rc::new(load_font_atlas());
-    let atlas_tex = send_to_gpu_font_texture(&atlas, gl::CLAMP_TO_EDGE).unwrap();
+
     let background_panel_height = height as usize;
     let background_panel_width = width as usize;
     let background_panel_spec = BackgroundPanelSpec { height: background_panel_height, width: background_panel_width };
@@ -1191,16 +1565,28 @@ fn init_game() -> Game {
     let panel_height = 504;
     let gui_scale_x = (panel_width as f32) / viewport_width;
     let gui_scale_y = (panel_height as f32) / viewport_height;
+
     let ui_panel_spec = UIPanelSpec { height: panel_height, width: panel_width };
     let ui_panel_uniforms = UIPanelUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
-
     let ui_panel = {
         let mut context = gl_context.borrow_mut();
         load_ui_panel(&mut *context, ui_panel_spec, ui_panel_uniforms)
     };
     
+    let text_panel_uniforms = TextPanelUniforms { text_color: TEXT_COLOR };
+    let text_panel_spec = TextPanelSpec {
+        atlas: atlas.clone(),
+        score_placement: AbsolutePlacement { x: 0.5, y: 0.1 },
+        level_placement: AbsolutePlacement { x: 0.5, y: -0.1 },
+        lines_placement: AbsolutePlacement { x: 0.5, y: -0.2 },
+        tetrises_placement: AbsolutePlacement { x: 0.5, y: -0.3 },
+        scale_px: 48.0,
+    };
+    let text_panel = load_text_panel(gl_context.clone(), &text_panel_spec, text_panel_uniforms);
+    
     let ui = UI { 
-        panel: ui_panel, 
+        ui_panel: ui_panel,
+        text_panel: text_panel,
     };
 
     Game {
@@ -1208,6 +1594,10 @@ fn init_game() -> Game {
         atlas: atlas,
         ui: ui,
         background: background,
+        score: 0,
+        level: 0,
+        lines: 0,
+        tetrises: 0,
     }
 }
 
