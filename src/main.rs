@@ -408,6 +408,7 @@ struct UIPanel {
     width: usize,
 }
 
+
 #[derive(Copy, Clone)]
 struct UIPanelUniforms {
     gui_scale_x: f32,
@@ -690,10 +691,10 @@ struct TextPanel {
 impl TextPanel {
     fn update_panel(&mut self) {
         self.buffer.clear();
-        self.buffer.write(&self.score.content, self.score.placement);
-        self.buffer.write(&self.level.content, self.level.placement);
-        self.buffer.write(&self.tetrises.content, self.tetrises.placement);
-        self.buffer.write(&self.lines.content, self.lines.placement);
+        self.buffer.write(&self.score.content, self.score.placement).unwrap();
+        self.buffer.write(&self.level.content, self.level.placement).unwrap();
+        self.buffer.write(&self.tetrises.content, self.tetrises.placement).unwrap();
+        self.buffer.write(&self.lines.content, self.lines.placement).unwrap();
     }
 
     fn update_score(&mut self, score: usize) {
@@ -828,14 +829,7 @@ fn create_text_buffer(
         v_tex_vbo: v_tex_vbo,
     };
 
-    TextBuffer {
-        points: vec![],
-        tex_coords: vec![],
-        gl_state: gl_state,
-        atlas: atlas,
-        buffer: buffer,
-        scale_px: scale_px,
-    }
+    TextBuffer::new(gl_state, atlas, buffer, scale_px)
 }
 
 fn load_text_panel(gl_state: Rc<RefCell<glh::GLState>>, spec: &TextPanelSpec, uniforms: TextPanelUniforms) -> TextPanel {
@@ -1385,6 +1379,10 @@ struct UI {
 }
 
 impl UI {
+    fn update_panel(&mut self) {
+        self.text_panel.update_panel();
+    }
+
     fn update_score(&mut self, score: usize) {
         self.text_panel.update_score(score);
     }
@@ -1465,6 +1463,11 @@ impl Game {
     #[inline(always)]
     fn update_ui(&mut self) {
         update_ui_panel_uniforms(self);
+        self.ui.update_score(self.score);
+        self.ui.update_lines(self.lines);
+        self.ui.update_level(self.level);
+        self.ui.update_tetrises(self.tetrises);
+        self.ui.update_panel();
     }
 
     #[inline(always)]
@@ -1478,6 +1481,13 @@ impl Game {
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, self.ui.ui_panel.tex);
             gl::BindVertexArray(self.ui.ui_panel.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6);
+
+            gl::UseProgram(self.ui.text_panel.buffer.buffer.sp);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, self.ui.text_panel.buffer.buffer.tex);
+            gl::BindVertexArray(self.ui.text_panel.buffer.buffer.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
         }
     }
