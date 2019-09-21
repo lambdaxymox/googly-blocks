@@ -568,17 +568,17 @@ impl TextBuffer {
     fn write(&mut self, st: &[u8], placement: AbsolutePlacement) -> io::Result<(usize, usize)> {
         let atlas = &self.atlas;
         let scale_px = self.scale_px;
-        let height = {
+        let viewport_height: f32 = {
             let context = self.gl_state.borrow();
-            context.height
+            context.height as f32
         };
-        let width = {
+        let viewport_width: f32 = {
             let context = self.gl_state.borrow();
-            context.width
+            context.width as f32
         };
 
         // TODO: Optimize this.
-        let mut points = vec![0.0; 12 * st.len()];
+        //let mut points = vec![0.0; 12 * st.len()];
         let mut tex_coords = vec![0.0; 12 * st.len()];
         // END TODO.
         let mut at_x = placement.x;
@@ -588,47 +588,82 @@ impl TextBuffer {
             let metadata_i = atlas.glyph_metadata[&(*ch_i as usize)];
             let atlas_col = metadata_i.column;
             let atlas_row = metadata_i.row;
+            let atlas_rows = atlas.rows as f32;
+            let atlas_columns = atlas.columns as f32;
 
-            let s = (atlas_col as f32) * (1.0 / (atlas.columns as f32));
-            let t = ((atlas_row + 1) as f32) * (1.0 / (atlas.rows as f32));
+            let s = (atlas_col as f32) * (1.0 / atlas_columns);
+            let t = ((atlas_row + 1) as f32) * (1.0 / atlas_rows);
 
             let x_pos = at_x;
-            let y_pos = at_y - (scale_px / (height as f32)) * metadata_i.y_offset;
+            let y_pos = at_y - (scale_px / viewport_height) * metadata_i.y_offset;
 
-            at_x += metadata_i.width * (scale_px / width as f32);
+            at_x += metadata_i.width * (scale_px / viewport_width);
 
+
+            self.points.push(x_pos);
+            self.points.push(y_pos);
+            self.points.push(x_pos);
+            self.points.push(y_pos - scale_px / viewport_height);
+            self.points.push(x_pos + scale_px / viewport_width);
+            self.points.push(y_pos - scale_px / viewport_height);
+            /*
             points[12 * i]     = x_pos;
             points[12 * i + 1] = y_pos;
             points[12 * i + 2] = x_pos;
             points[12 * i + 3] = y_pos - scale_px / (height as f32);
             points[12 * i + 4] = x_pos + scale_px / (width as f32);
             points[12 * i + 5] = y_pos - scale_px / (height as f32);
+            */
 
+            self.points.push(x_pos + scale_px / viewport_width);
+            self.points.push(y_pos - scale_px / viewport_height);
+            self.points.push(x_pos + scale_px / viewport_width);
+            self.points.push(y_pos);
+            self.points.push(x_pos);
+            self.points.push(y_pos);
+            /*
             points[12 * i + 6]  = x_pos + scale_px / (width as f32);
             points[12 * i + 7]  = y_pos - scale_px / (height as f32);
             points[12 * i + 8]  = x_pos + scale_px / (width as f32);
             points[12 * i + 9]  = y_pos;
             points[12 * i + 10] = x_pos;
             points[12 * i + 11] = y_pos;
-
+            */
+            /*
+            self.tex_coords.push(s);
+            self.tex_coords.push(1.0 - t + 1.0 / (atlas.rows as f32));
+            self.tex_coords.push(s);
+            self.tex_coords.push(1.0 - t);
+            self.tex_coords.push(s + 1.0 / (atlas.columns as f32));
+            self.tex_coords.push(1.0 - t);            
+            */
             tex_coords[12 * i]     = s;
-            tex_coords[12 * i + 1] = 1.0 - t + 1.0 / (atlas.rows as f32);
+            tex_coords[12 * i + 1] = 1.0 - t + 1.0 / atlas_rows;
             tex_coords[12 * i + 2] = s;
             tex_coords[12 * i + 3] = 1.0 - t;
-            tex_coords[12 * i + 4] = s + 1.0 / (atlas.columns as f32);
+            tex_coords[12 * i + 4] = s + 1.0 / atlas_columns;
             tex_coords[12 * i + 5] = 1.0 - t;
-
-            tex_coords[12 * i + 6]  = s + 1.0 / (atlas.columns as f32);
+            
+            /*
+            self.tex_coords.push(s + 1.0 / (atlas.columns as f32));
+            self.tex_coords.push(1.0 - t);
+            self.tex_coords.push(s + 1.0 / (atlas.columns as f32));
+            self.tex_coords.push(1.0 - t + 1.0 / (atlas.rows as f32));
+            self.tex_coords.push(s);
+            self.tex_coords.push(1.0 - t + 1.0 / (atlas.rows as f32));
+            */
+            tex_coords[12 * i + 6]  = s + 1.0 / atlas_columns;
             tex_coords[12 * i + 7]  = 1.0 - t;
-            tex_coords[12 * i + 8]  = s + 1.0 / (atlas.columns as f32);
-            tex_coords[12 * i + 9]  = 1.0 - t + 1.0 / (atlas.rows as f32);
+            tex_coords[12 * i + 8]  = s + 1.0 / atlas_columns;
+            tex_coords[12 * i + 9]  = 1.0 - t + 1.0 / atlas_rows;
             tex_coords[12 * i + 10] = s;
-            tex_coords[12 * i + 11] = 1.0 - t + 1.0 / (atlas.rows as f32);
+            tex_coords[12 * i + 11] = 1.0 - t + 1.0 / atlas_rows;
+            
         }
 
-        self.points.append(&mut points);
+        //self.points.append(&mut points);
         self.tex_coords.append(&mut tex_coords);
-        
+
         let point_count = 6 * st.len();
 
         Ok((st.len(), point_count))
