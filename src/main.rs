@@ -626,12 +626,9 @@ impl TextBuffer {
             tex_coords[12 * i + 11] = 1.0 - t + 1.0 / (atlas.rows as f32);
         }
 
-        // TODO: Optimize this.
-        //self.points = points;
-        //self.tex_coords = tex_coords;
         self.points.append(&mut points);
         self.tex_coords.append(&mut tex_coords);
-        // END TODO.
+        
         let point_count = 6 * st.len();
 
         Ok((st.len(), point_count))
