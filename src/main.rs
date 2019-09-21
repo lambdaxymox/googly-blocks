@@ -702,7 +702,7 @@ impl TextPanel {
         let d3 = ((score % 10000) - d2) / 1000;
         let d4 = ((score % 100000) - d3) / 10000;
         let d5 = ((score % 1000000) - d4) / 100000;
-        let d6 = ((score % 10000000) - d5) / 100000;
+        let d6 = ((score % 10000000) - d5) / 1000000;
         self.score.content[0] = d6 as u8 + 0x30;
         self.score.content[1] = d5 as u8 + 0x30;
         self.score.content[2] = d4 as u8 + 0x30;
