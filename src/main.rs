@@ -692,6 +692,7 @@ impl TextPanel {
         self.buffer.write(&self.level.content, self.level.placement).unwrap();
         self.buffer.write(&self.tetrises.content, self.tetrises.placement).unwrap();
         self.buffer.write(&self.lines.content, self.lines.placement).unwrap();
+        self.buffer.send_to_gpu();
     }
 
     fn update_score(&mut self, score: usize) {
