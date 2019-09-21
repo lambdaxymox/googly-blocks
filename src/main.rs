@@ -826,7 +826,7 @@ fn send_to_gpu_uniforms_text_buffer(sp: GLuint, uniforms: TextPanelUniforms) {
 
 fn create_text_buffer(
     gl_state: Rc<RefCell<glh::GLState>>, 
-    atlas: Rc<BitmapFontAtlas>, scale_px: f32) -> TextBuffer {
+    atlas: Rc<BitmapFontAtlas>, scale_px: f32, uniforms: TextPanelUniforms) -> TextBuffer {
     
     let atlas_tex = send_to_gpu_font_texture(&atlas, gl::CLAMP_TO_EDGE).unwrap();
     let shader_source = create_shaders_text_buffer();
@@ -835,6 +835,8 @@ fn create_text_buffer(
         send_to_gpu_shaders_text_buffer(&mut *context, shader_source)
     };
     let (v_pos_vbo, v_tex_vbo, vao) = create_buffers_text_buffer(sp);
+    send_to_gpu_uniforms_text_buffer(sp, uniforms);
+    
     let buffer = GLTextBuffer {
         sp: sp,
         tex: atlas_tex,
@@ -847,7 +849,7 @@ fn create_text_buffer(
 }
 
 fn load_text_panel(gl_state: Rc<RefCell<glh::GLState>>, spec: &TextPanelSpec, uniforms: TextPanelUniforms) -> TextPanel {
-    let buffer = create_text_buffer(gl_state, spec.atlas.clone(), spec.scale_px);
+    let buffer = create_text_buffer(gl_state, spec.atlas.clone(), spec.scale_px, uniforms);
     let score = TextElement7 { content: [0; 7], placement: spec.score_placement };
     let lines =  TextElement4 { content: [0; 4], placement: spec.lines_placement };
     let level =  TextElement4 { content: [0; 4], placement: spec.level_placement };
