@@ -41,6 +41,7 @@ use std::cell::RefCell;
 const GL_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FE;
 const GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FF;
 
+// Green.
 const TEXT_COLOR: [f32; 4] = [
     0_f32 / 255_f32, 204_f32 / 255_f32, 0_f32 / 255_f32, 255_f32 / 255_f32
 ];
@@ -808,6 +809,21 @@ fn send_to_gpu_shaders_text_buffer(game: &mut glh::GLState, source: ShaderSource
     send_to_gpu_shaders(game, source)
 }
 
+fn send_to_gpu_uniforms_text_buffer(sp: GLuint, uniforms: TextPanelUniforms) {
+    let text_color_loc = unsafe {
+        gl::GetUniformLocation(sp, glh::gl_str("text_color").as_ptr())
+    };
+    assert!(text_color_loc > -1);
+    unsafe {
+        gl::UseProgram(sp);
+        gl::Uniform4f(
+            text_color_loc,
+            uniforms.text_color[0], uniforms.text_color[1], 
+            uniforms.text_color[2], uniforms.text_color[3]
+        );
+    }
+}
+
 fn create_text_buffer(
     gl_state: Rc<RefCell<glh::GLState>>, 
     atlas: Rc<BitmapFontAtlas>, scale_px: f32) -> TextBuffer {
@@ -1004,7 +1020,7 @@ impl Game {
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, self.ui.text_panel.buffer.buffer.tex);
             gl::BindVertexArray(self.ui.text_panel.buffer.buffer.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6);
+            gl::DrawArrays(gl::TRIANGLES, 0, 19 * 6);
         }
     }
 
@@ -1102,10 +1118,10 @@ fn init_game() -> Game {
     let text_panel_uniforms = TextPanelUniforms { text_color: TEXT_COLOR };
     let text_panel_spec = TextPanelSpec {
         atlas: atlas.clone(),
-        score_placement: AbsolutePlacement { x: 0.5, y: 0.1 },
-        level_placement: AbsolutePlacement { x: 0.5, y: -0.1 },
-        lines_placement: AbsolutePlacement { x: 0.5, y: -0.2 },
-        tetrises_placement: AbsolutePlacement { x: 0.5, y: -0.3 },
+        score_placement: AbsolutePlacement { x: 0.3, y: 0.1 },
+        level_placement: AbsolutePlacement { x: 0.3, y: -0.1 },
+        lines_placement: AbsolutePlacement { x: 0.3, y: -0.2 },
+        tetrises_placement: AbsolutePlacement { x: 0.3, y: -0.3 },
         scale_px: 48.0,
     };
     let text_panel = load_text_panel(gl_context.clone(), &text_panel_spec, text_panel_uniforms);
