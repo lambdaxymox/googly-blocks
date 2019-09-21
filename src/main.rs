@@ -41,7 +41,6 @@ use std::cell::RefCell;
 const GL_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FE;
 const GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FF;
 
-const HEADING_COLOR: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
 const TEXT_COLOR: [f32; 4] = [
     0_f32 / 255_f32, 204_f32 / 255_f32, 0_f32 / 255_f32, 255_f32 / 255_f32
 ];
