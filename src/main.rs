@@ -16,7 +16,6 @@ mod gl {
 mod macros;
 
 mod gl_help;
-mod ring_buffer;
 
 
 use gl_help as glh;
@@ -29,7 +28,6 @@ use gl::types::{GLfloat, GLint, GLuint, GLvoid, GLsizeiptr};
 use log::{info};
 use math::{Array, One, Matrix4, Vector3};
 use mesh::ObjMesh;
-use ring_buffer::RingBuffer;
 use teximage2d::TexImage2D;
 
 use std::fmt::Write;
