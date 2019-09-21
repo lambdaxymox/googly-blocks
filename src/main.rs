@@ -582,7 +582,7 @@ impl TextBuffer {
         let mut tex_coords = vec![0.0; 12 * st.len()];
         // END TODO.
         let mut at_x = placement.x;
-        let mut at_y = placement.y;
+        let at_y = placement.y;
 
         for (i, ch_i) in st.iter().enumerate() {
             let metadata_i = atlas.glyph_metadata[&(*ch_i as usize)];
