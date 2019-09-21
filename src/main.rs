@@ -74,7 +74,7 @@ fn send_to_gpu_texture(tex_data: &TexImage2D, wrapping_mode: GLuint) -> Result<G
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR_MIPMAP_LINEAR as GLint);
     }
-    assert!(tex > 0);
+    debug_assert!(tex > 0);
 
     let mut max_aniso = 0.0;
     unsafe {
@@ -116,7 +116,7 @@ fn send_to_gpu_shaders(game: &mut glh::GLState, source: ShaderSource) -> GLuint 
         &mut vert_reader, source.vert_name,
         &mut frag_reader, source.frag_name
     ).unwrap();
-    assert!(sp > 0);
+    debug_assert!(sp > 0);
 
     sp
 }
@@ -147,18 +147,18 @@ fn send_to_gpu_geometry_background(sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuin
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
     };
-    assert!(v_pos_loc > -1);
+    debug_assert!(v_pos_loc > -1);
     let v_pos_loc = v_pos_loc as u32;
 
     let v_tex_loc = unsafe { gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr()) };
-    assert!(v_tex_loc > -1);
+    debug_assert!(v_tex_loc > -1);
     let v_tex_loc = v_tex_loc as u32;
 
     let mut v_pos_vbo = 0;
     unsafe {
         gl::GenBuffers(1, &mut v_pos_vbo);
     }
-    assert!(v_pos_vbo > 0);
+    debug_assert!(v_pos_vbo > 0);
     unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
         gl::BufferData(
@@ -172,7 +172,7 @@ fn send_to_gpu_geometry_background(sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuin
     unsafe {
         gl::GenBuffers(1, &mut v_tex_vbo);
     }
-    assert!(v_tex_vbo > 0);
+    debug_assert!(v_tex_vbo > 0);
     unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
         gl::BufferData(
@@ -186,7 +186,7 @@ fn send_to_gpu_geometry_background(sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuin
     unsafe {
         gl::GenVertexArrays(1, &mut vao);
     }
-    assert!(vao > 0);
+    debug_assert!(vao > 0);
     unsafe {
         gl::BindVertexArray(vao);
         gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
@@ -226,7 +226,7 @@ fn send_to_gpu_uniforms_background_panel(sp: GLuint, uniforms: BackgroundPanelUn
     let m_gui_scale_loc = unsafe {
         gl::GetUniformLocation(sp, glh::gl_str("m_gui_scale").as_ptr())
     };
-    assert!(m_gui_scale_loc > -1);
+    debug_assert!(m_gui_scale_loc > -1);
     unsafe {
         gl::UseProgram(sp);
         gl::UniformMatrix4fv(m_gui_scale_loc, 1, gl::FALSE, gui_scale_mat.as_ptr());
@@ -300,7 +300,7 @@ fn send_to_gpu_shaders_ui_panel(game: &mut glh::GLState, source: ShaderSource) -
         &mut vert_reader, source.vert_name,
         &mut frag_reader, source.frag_name,
     ).unwrap();
-    assert!(sp > 0);
+    debug_assert!(sp > 0);
 
     sp
 }
@@ -326,18 +326,18 @@ fn send_to_gpu_geometry_ui_panel(sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuint,
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
     };
-    assert!(v_pos_loc > -1);
+    debug_assert!(v_pos_loc > -1);
     let v_pos_loc = v_pos_loc as u32;
 
     let v_tex_loc = unsafe { gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr()) };
-    assert!(v_tex_loc > -1);
+    debug_assert!(v_tex_loc > -1);
     let v_tex_loc = v_tex_loc as u32;
 
     let mut v_pos_vbo = 0;
     unsafe {
         gl::GenBuffers(1, &mut v_pos_vbo);
     }
-    assert!(v_pos_vbo > 0);
+    debug_assert!(v_pos_vbo > 0);
     unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
         gl::BufferData(
@@ -351,7 +351,7 @@ fn send_to_gpu_geometry_ui_panel(sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuint,
     unsafe {
         gl::GenBuffers(1, &mut v_tex_vbo);
     }
-    assert!(v_tex_vbo > 0);
+    debug_assert!(v_tex_vbo > 0);
     unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
         gl::BufferData(
@@ -365,7 +365,7 @@ fn send_to_gpu_geometry_ui_panel(sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuint,
     unsafe {
         gl::GenVertexArrays(1, &mut vao);
     }
-    assert!(vao > 0);
+    debug_assert!(vao > 0);
     unsafe {
         gl::BindVertexArray(vao);
         gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
@@ -420,7 +420,7 @@ fn send_to_gpu_uniforms_ui_panel(sp: GLuint, uniforms: UIPanelUniforms) {
     let ubo_index = unsafe {
         gl::GetUniformBlockIndex(sp, glh::gl_str("Matrices").as_ptr())
     };
-    assert!(ubo_index != gl::INVALID_INDEX);
+    debug_assert!(ubo_index != gl::INVALID_INDEX);
 
     let mut ubo_size = 0;
     unsafe {
@@ -428,7 +428,7 @@ fn send_to_gpu_uniforms_ui_panel(sp: GLuint, uniforms: UIPanelUniforms) {
             sp, ubo_index, gl::UNIFORM_BLOCK_DATA_SIZE, &mut ubo_size
         );
     }
-    assert!(ubo_size > 0);
+    debug_assert!(ubo_size > 0);
 
     let mut indices = [0; 2];
     let mut sizes = [0; 2];
@@ -464,7 +464,7 @@ fn send_to_gpu_uniforms_ui_panel(sp: GLuint, uniforms: UIPanelUniforms) {
     unsafe {
         gl::GenBuffers(1, &mut ubo);
     }
-    assert!(ubo > 0);
+    debug_assert!(ubo > 0);
     unsafe {
         gl::BindBuffer(gl::UNIFORM_BUFFER, ubo);
         gl::BufferData(
@@ -752,32 +752,32 @@ fn create_buffers_text_buffer(sp: GLuint) -> (GLuint, GLuint, GLuint) {
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
     };
-    assert!(v_pos_loc > -1);
+    debug_assert!(v_pos_loc > -1);
     let v_pos_loc = v_pos_loc as u32;
 
     let v_tex_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
     };
-    assert!(v_tex_loc > -1);
+    debug_assert!(v_tex_loc > -1);
     let v_tex_loc = v_tex_loc as u32;
     
     let mut v_pos_vbo = 0;
     unsafe {
         gl::GenBuffers(1, &mut v_pos_vbo);
     }
-    assert!(v_pos_vbo > 0);
+    debug_assert!(v_pos_vbo > 0);
 
     let mut v_tex_vbo = 0;
     unsafe {
         gl::GenBuffers(1, &mut v_tex_vbo);
     }
-    assert!(v_tex_vbo > 0);
+    debug_assert!(v_tex_vbo > 0);
 
     let mut vao = 0;
     unsafe {
         gl::GenVertexArrays(1, &mut vao);
     }
-    assert!(vao > 0);
+    debug_assert!(vao > 0);
     unsafe {
         gl::BindVertexArray(vao);
         gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
@@ -813,7 +813,7 @@ fn send_to_gpu_uniforms_text_buffer(sp: GLuint, uniforms: TextPanelUniforms) {
     let text_color_loc = unsafe {
         gl::GetUniformLocation(sp, glh::gl_str("text_color").as_ptr())
     };
-    assert!(text_color_loc > -1);
+    debug_assert!(text_color_loc > -1);
     unsafe {
         gl::UseProgram(sp);
         gl::Uniform4f(
@@ -868,7 +868,7 @@ fn send_to_gpu_font_texture(atlas: &BitmapFontAtlas, wrapping_mode: GLuint) -> R
     unsafe {
         gl::GenTextures(1, &mut tex);
     }
-    assert!(tex > 0);
+    debug_assert!(tex > 0);
 
     unsafe {
         gl::ActiveTexture(gl::TEXTURE0);
