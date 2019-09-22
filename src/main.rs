@@ -603,7 +603,6 @@ impl TextBuffer {
 
             at_x += metadata_i.width * (scale_px / viewport_width);
 
-
             self.points.push(x_pos);
             self.points.push(y_pos);
             self.points.push(x_pos);
@@ -659,6 +658,13 @@ struct TextPanelSpec {
     lines_placement: AbsolutePlacement,
     level_placement: AbsolutePlacement,
     tetrises_placement: AbsolutePlacement,
+    t_placement: AbsolutePlacement,
+    j_placement: AbsolutePlacement,
+    z_placement: AbsolutePlacement,
+    o_placement: AbsolutePlacement,
+    s_placement: AbsolutePlacement,
+    l_placement: AbsolutePlacement,
+    i_placement: AbsolutePlacement,
     scale_px: f32,
 }
 
@@ -684,6 +690,13 @@ struct TextPanel {
     level: TextElement4,
     tetrises: TextElement4,
     lines: TextElement4,
+    t_pieces: TextElement4,
+    j_pieces: TextElement4,
+    z_pieces: TextElement4,
+    o_pieces: TextElement4,
+    s_pieces: TextElement4,
+    l_pieces: TextElement4,
+    i_pieces: TextElement4,
 }
 
 impl TextPanel {
@@ -693,6 +706,13 @@ impl TextPanel {
         self.buffer.write(&self.level.content, self.level.placement).unwrap();
         self.buffer.write(&self.tetrises.content, self.tetrises.placement).unwrap();
         self.buffer.write(&self.lines.content, self.lines.placement).unwrap();
+        self.buffer.write(&self.t_pieces.content, self.t_pieces.placement).unwrap();
+        self.buffer.write(&self.j_pieces.content, self.j_pieces.placement).unwrap();
+        self.buffer.write(&self.z_pieces.content, self.z_pieces.placement).unwrap();
+        self.buffer.write(&self.o_pieces.content, self.o_pieces.placement).unwrap();
+        self.buffer.write(&self.s_pieces.content, self.s_pieces.placement).unwrap();
+        self.buffer.write(&self.l_pieces.content, self.l_pieces.placement).unwrap();
+        self.buffer.write(&self.i_pieces.content, self.i_pieces.placement).unwrap();
         self.buffer.send_to_gpu().unwrap();
     }
 
@@ -744,6 +764,93 @@ impl TextPanel {
         self.tetrises.content[1] = d2 as u8 + 0x30;
         self.tetrises.content[2] = d1 as u8 + 0x30;
         self.tetrises.content[3] = d0 as u8 + 0x30;
+    }
+
+    fn update_t_pieces(&mut self, t_pieces: usize) {
+        let d0 = t_pieces % 10;
+        let d1 = ((t_pieces % 100) - d0) / 10;
+        let d2 = ((t_pieces % 1000) - d1) / 100;
+        let d3 = ((t_pieces % 10000) - d2) / 1000;
+        self.t_pieces.content[0] = d3 as u8 + 0x30;
+        self.t_pieces.content[1] = d2 as u8 + 0x30;
+        self.t_pieces.content[2] = d1 as u8 + 0x30;
+        self.t_pieces.content[3] = d0 as u8 + 0x30;
+    }
+
+    fn update_j_pieces(&mut self, j_pieces: usize) {
+        let d0 = j_pieces % 10;
+        let d1 = ((j_pieces % 100) - d0) / 10;
+        let d2 = ((j_pieces % 1000) - d1) / 100;
+        let d3 = ((j_pieces % 10000) - d2) / 1000;
+        self.j_pieces.content[0] = d3 as u8 + 0x30;
+        self.j_pieces.content[1] = d2 as u8 + 0x30;
+        self.j_pieces.content[2] = d1 as u8 + 0x30;
+        self.j_pieces.content[3] = d0 as u8 + 0x30;        
+    }
+    
+    fn update_z_pieces(&mut self, z_pieces: usize) {
+        let d0 = z_pieces % 10;
+        let d1 = ((z_pieces % 100) - d0) / 10;
+        let d2 = ((z_pieces % 1000) - d1) / 100;
+        let d3 = ((z_pieces % 10000) - d2) / 1000;
+        self.z_pieces.content[0] = d3 as u8 + 0x30;
+        self.z_pieces.content[1] = d2 as u8 + 0x30;
+        self.z_pieces.content[2] = d1 as u8 + 0x30;
+        self.z_pieces.content[3] = d0 as u8 + 0x30;  
+    }
+
+    fn update_o_pieces(&mut self, o_pieces: usize) {
+        let d0 = o_pieces % 10;
+        let d1 = ((o_pieces % 100) - d0) / 10;
+        let d2 = ((o_pieces % 1000) - d1) / 100;
+        let d3 = ((o_pieces % 10000) - d2) / 1000;
+        self.o_pieces.content[0] = d3 as u8 + 0x30;
+        self.o_pieces.content[1] = d2 as u8 + 0x30;
+        self.o_pieces.content[2] = d1 as u8 + 0x30;
+        self.o_pieces.content[3] = d0 as u8 + 0x30;          
+    }
+
+    fn update_s_pieces(&mut self, s_pieces: usize) {
+        let d0 = s_pieces % 10;
+        let d1 = ((s_pieces % 100) - d0) / 10;
+        let d2 = ((s_pieces % 1000) - d1) / 100;
+        let d3 = ((s_pieces % 10000) - d2) / 1000;
+        self.s_pieces.content[0] = d3 as u8 + 0x30;
+        self.s_pieces.content[1] = d2 as u8 + 0x30;
+        self.s_pieces.content[2] = d1 as u8 + 0x30;
+        self.s_pieces.content[3] = d0 as u8 + 0x30;          
+    }
+
+    fn update_l_pieces(&mut self, l_pieces: usize) {
+        let d0 = l_pieces % 10;
+        let d1 = ((l_pieces % 100) - d0) / 10;
+        let d2 = ((l_pieces % 1000) - d1) / 100;
+        let d3 = ((l_pieces % 10000) - d2) / 1000;
+        self.l_pieces.content[0] = d3 as u8 + 0x30;
+        self.l_pieces.content[1] = d2 as u8 + 0x30;
+        self.l_pieces.content[2] = d1 as u8 + 0x30;
+        self.l_pieces.content[3] = d0 as u8 + 0x30;          
+    }
+
+    fn update_i_pieces(&mut self, i_pieces: usize) {
+        let d0 = i_pieces % 10;
+        let d1 = ((i_pieces % 100) - d0) / 10;
+        let d2 = ((i_pieces % 1000) - d1) / 100;
+        let d3 = ((i_pieces % 10000) - d2) / 1000;
+        self.i_pieces.content[0] = d3 as u8 + 0x30;
+        self.i_pieces.content[1] = d2 as u8 + 0x30;
+        self.i_pieces.content[2] = d1 as u8 + 0x30;
+        self.i_pieces.content[3] = d0 as u8 + 0x30;          
+    }
+
+    fn update_statistics(&mut self, statistics: &Statistics) {
+        self.update_t_pieces(statistics.t_pieces);
+        self.update_j_pieces(statistics.j_pieces);
+        self.update_z_pieces(statistics.z_pieces);
+        self.update_o_pieces(statistics.o_pieces);
+        self.update_s_pieces(statistics.s_pieces);
+        self.update_l_pieces(statistics.l_pieces);
+        self.update_i_pieces(statistics.i_pieces);
     }
 }
 
@@ -853,7 +960,14 @@ fn load_text_panel(gl_state: Rc<RefCell<glh::GLState>>, spec: &TextPanelSpec, un
     let score = TextElement7 { content: [0; 7], placement: spec.score_placement };
     let lines =  TextElement4 { content: [0; 4], placement: spec.lines_placement };
     let level =  TextElement4 { content: [0; 4], placement: spec.level_placement };
-    let tetrises =  TextElement4 { content: [0; 4], placement: spec.tetrises_placement };
+    let tetrises = TextElement4 { content: [0; 4], placement: spec.tetrises_placement };
+    let t_pieces = TextElement4 { content: [0; 4], placement: spec.t_placement };
+    let j_pieces = TextElement4 { content: [0; 4], placement: spec.j_placement };
+    let z_pieces = TextElement4 { content: [0; 4], placement: spec.z_placement };
+    let o_pieces = TextElement4 { content: [0; 4], placement: spec.o_placement };
+    let s_pieces = TextElement4 { content: [0; 4], placement: spec.s_placement };
+    let l_pieces = TextElement4 { content: [0; 4], placement: spec.l_placement };
+    let i_pieces = TextElement4 { content: [0; 4], placement: spec.i_placement };
 
     TextPanel {
         buffer: buffer,
@@ -861,6 +975,13 @@ fn load_text_panel(gl_state: Rc<RefCell<glh::GLState>>, spec: &TextPanelSpec, un
         level: level,
         tetrises: tetrises,
         lines: lines,
+        t_pieces: t_pieces,
+        j_pieces: j_pieces,
+        z_pieces: z_pieces,
+        o_pieces: o_pieces,
+        s_pieces: s_pieces,
+        l_pieces: l_pieces,
+        i_pieces: i_pieces,
     }
 }
 
@@ -932,6 +1053,20 @@ impl UI {
     fn update_tetrises(&mut self, tetrises: usize) {
         self.text_panel.update_tetrises(tetrises);
     }
+
+    fn update_statistics(&mut self, statistics: &Statistics) {
+        self.text_panel.update_statistics(statistics);
+    }
+}
+
+struct Statistics {
+    t_pieces: usize,
+    j_pieces: usize,
+    z_pieces: usize,
+    o_pieces: usize,
+    s_pieces: usize,
+    l_pieces: usize,
+    i_pieces: usize, 
 }
 
 struct Game {
@@ -943,6 +1078,7 @@ struct Game {
     level: usize,
     lines: usize,
     tetrises: usize,
+    statistics: Statistics,
 }
 
 impl Game {
@@ -1001,6 +1137,7 @@ impl Game {
         self.ui.update_lines(self.lines);
         self.ui.update_level(self.level);
         self.ui.update_tetrises(self.tetrises);
+        self.ui.update_statistics(&self.statistics);
         self.ui.update_panel();
     }
 
@@ -1022,7 +1159,7 @@ impl Game {
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, self.ui.text_panel.buffer.buffer.tex);
             gl::BindVertexArray(self.ui.text_panel.buffer.buffer.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 19 * 6);
+            gl::DrawArrays(gl::TRIANGLES, 0, 47 * 6);
         }
     }
 
@@ -1124,6 +1261,13 @@ fn init_game() -> Game {
         level_placement: AbsolutePlacement { x: 0.50, y: -0.21 },
         lines_placement: AbsolutePlacement { x: 0.50, y: -0.54 },
         tetrises_placement: AbsolutePlacement { x: 0.50, y: -0.87 },
+        t_placement: AbsolutePlacement { x: -0.41, y:  0.62 },
+        j_placement: AbsolutePlacement { x: -0.41, y:  0.38 },
+        z_placement: AbsolutePlacement { x: -0.41, y:  0.15 },
+        o_placement: AbsolutePlacement { x: -0.41, y: -0.08 },
+        s_placement: AbsolutePlacement { x: -0.41, y: -0.29 },
+        l_placement: AbsolutePlacement { x: -0.41, y: -0.52 },
+        i_placement: AbsolutePlacement { x: -0.41, y: -0.74 },
         scale_px: 48.0,
     };
     let text_panel = load_text_panel(gl_context.clone(), &text_panel_spec, text_panel_uniforms);
@@ -1142,6 +1286,15 @@ fn init_game() -> Game {
         level: 0,
         lines: 0,
         tetrises: 0,
+        statistics: Statistics {
+            t_pieces: 0,
+            j_pieces: 0,
+            z_pieces: 0,
+            o_pieces: 0,
+            s_pieces: 0,
+            l_pieces: 0,
+            i_pieces: 0, 
+        }
     }
 }
 
