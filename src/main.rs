@@ -576,11 +576,7 @@ impl TextBuffer {
             let context = self.gl_state.borrow();
             context.width as f32
         };
-
-        // TODO: Optimize this.
-        //let mut points = vec![0.0; 12 * st.len()];
-        //let mut tex_coords = vec![0.0; 12 * st.len()];
-        // END TODO.
+        
         let mut at_x = placement.x;
         let at_y = placement.y;
 
@@ -606,14 +602,6 @@ impl TextBuffer {
             self.points.push(y_pos - scale_px / viewport_height);
             self.points.push(x_pos + scale_px / viewport_width);
             self.points.push(y_pos - scale_px / viewport_height);
-            /*
-            points[12 * i]     = x_pos;
-            points[12 * i + 1] = y_pos;
-            points[12 * i + 2] = x_pos;
-            points[12 * i + 3] = y_pos - scale_px / (height as f32);
-            points[12 * i + 4] = x_pos + scale_px / (width as f32);
-            points[12 * i + 5] = y_pos - scale_px / (height as f32);
-            */
 
             self.points.push(x_pos + scale_px / viewport_width);
             self.points.push(y_pos - scale_px / viewport_height);
@@ -621,14 +609,6 @@ impl TextBuffer {
             self.points.push(y_pos);
             self.points.push(x_pos);
             self.points.push(y_pos);
-            /*
-            points[12 * i + 6]  = x_pos + scale_px / (width as f32);
-            points[12 * i + 7]  = y_pos - scale_px / (height as f32);
-            points[12 * i + 8]  = x_pos + scale_px / (width as f32);
-            points[12 * i + 9]  = y_pos;
-            points[12 * i + 10] = x_pos;
-            points[12 * i + 11] = y_pos;
-            */
             
             self.tex_coords.push(s);
             self.tex_coords.push(1.0 - t + 1.0 / atlas_rows);
@@ -636,14 +616,6 @@ impl TextBuffer {
             self.tex_coords.push(1.0 - t);
             self.tex_coords.push(s + 1.0 / atlas_columns);
             self.tex_coords.push(1.0 - t);            
-            /*
-            tex_coords[12 * i]     = s;
-            tex_coords[12 * i + 1] = 1.0 - t + 1.0 / atlas_rows;
-            tex_coords[12 * i + 2] = s;
-            tex_coords[12 * i + 3] = 1.0 - t;
-            tex_coords[12 * i + 4] = s + 1.0 / atlas_columns;
-            tex_coords[12 * i + 5] = 1.0 - t;
-            */
             
             self.tex_coords.push(s + 1.0 / atlas_columns);
             self.tex_coords.push(1.0 - t);
@@ -651,18 +623,7 @@ impl TextBuffer {
             self.tex_coords.push(1.0 - t + 1.0 / atlas_rows);
             self.tex_coords.push(s);
             self.tex_coords.push(1.0 - t + 1.0 / atlas_rows);
-            /*
-            tex_coords[12 * i + 6]  = s + 1.0 / atlas_columns;
-            tex_coords[12 * i + 7]  = 1.0 - t;
-            tex_coords[12 * i + 8]  = s + 1.0 / atlas_columns;
-            tex_coords[12 * i + 9]  = 1.0 - t + 1.0 / atlas_rows;
-            tex_coords[12 * i + 10] = s;
-            tex_coords[12 * i + 11] = 1.0 - t + 1.0 / atlas_rows;
-            */
         }
-
-        //self.points.append(&mut points);
-        //self.tex_coords.append(&mut tex_coords);
 
         let point_count = 6 * st.len();
 
