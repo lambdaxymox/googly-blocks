@@ -579,7 +579,7 @@ impl TextBuffer {
 
         // TODO: Optimize this.
         //let mut points = vec![0.0; 12 * st.len()];
-        let mut tex_coords = vec![0.0; 12 * st.len()];
+        //let mut tex_coords = vec![0.0; 12 * st.len()];
         // END TODO.
         let mut at_x = placement.x;
         let at_y = placement.y;
@@ -629,40 +629,40 @@ impl TextBuffer {
             points[12 * i + 10] = x_pos;
             points[12 * i + 11] = y_pos;
             */
-            /*
+            
             self.tex_coords.push(s);
-            self.tex_coords.push(1.0 - t + 1.0 / (atlas.rows as f32));
+            self.tex_coords.push(1.0 - t + 1.0 / atlas_rows);
             self.tex_coords.push(s);
             self.tex_coords.push(1.0 - t);
-            self.tex_coords.push(s + 1.0 / (atlas.columns as f32));
+            self.tex_coords.push(s + 1.0 / atlas_columns);
             self.tex_coords.push(1.0 - t);            
-            */
+            /*
             tex_coords[12 * i]     = s;
             tex_coords[12 * i + 1] = 1.0 - t + 1.0 / atlas_rows;
             tex_coords[12 * i + 2] = s;
             tex_coords[12 * i + 3] = 1.0 - t;
             tex_coords[12 * i + 4] = s + 1.0 / atlas_columns;
             tex_coords[12 * i + 5] = 1.0 - t;
-            
-            /*
-            self.tex_coords.push(s + 1.0 / (atlas.columns as f32));
-            self.tex_coords.push(1.0 - t);
-            self.tex_coords.push(s + 1.0 / (atlas.columns as f32));
-            self.tex_coords.push(1.0 - t + 1.0 / (atlas.rows as f32));
-            self.tex_coords.push(s);
-            self.tex_coords.push(1.0 - t + 1.0 / (atlas.rows as f32));
             */
+            
+            self.tex_coords.push(s + 1.0 / atlas_columns);
+            self.tex_coords.push(1.0 - t);
+            self.tex_coords.push(s + 1.0 / atlas_columns);
+            self.tex_coords.push(1.0 - t + 1.0 / atlas_rows);
+            self.tex_coords.push(s);
+            self.tex_coords.push(1.0 - t + 1.0 / atlas_rows);
+            /*
             tex_coords[12 * i + 6]  = s + 1.0 / atlas_columns;
             tex_coords[12 * i + 7]  = 1.0 - t;
             tex_coords[12 * i + 8]  = s + 1.0 / atlas_columns;
             tex_coords[12 * i + 9]  = 1.0 - t + 1.0 / atlas_rows;
             tex_coords[12 * i + 10] = s;
             tex_coords[12 * i + 11] = 1.0 - t + 1.0 / atlas_rows;
-            
+            */
         }
 
         //self.points.append(&mut points);
-        self.tex_coords.append(&mut tex_coords);
+        //self.tex_coords.append(&mut tex_coords);
 
         let point_count = 6 * st.len();
 
