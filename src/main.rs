@@ -287,6 +287,33 @@ fn update_uniforms_background_panel(game: &mut Game) {
 }
 
 
+fn create_shaders_next_panel() -> ShaderSource {
+    let vert_source = include_shader!("next_panel.vert.glsl");
+    let frag_source = include_shader!("next_panel.frag.glsl");
+
+    ShaderSource { 
+        vert_name: "next_panel.vert.glsl",
+        vert_source: vert_source,
+        frag_name: "next_panel.frag.glsl",
+        frag_source: frag_source,
+    }
+}
+
+fn create_geometry_next_panel() -> ObjMesh {
+    let points: Vec<[f32; 3]> = vec![
+        
+    ];
+    let tex_coords: Vec<[f32; 2]> = vec![
+
+    ];
+    let normals: Vec<[f32; 3]> = vec![
+
+    ];
+
+    ObjMesh::new(points, tex_coords, normals)
+}
+
+
 fn create_shaders_ui_panel() -> ShaderSource {
     let vert_source = include_shader!("ui_panel.vert.glsl");
     let frag_source = include_shader!("ui_panel.frag.glsl");
