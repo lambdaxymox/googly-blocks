@@ -44,7 +44,10 @@ const GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FF;
 const TEXT_COLOR: [f32; 4] = [
     38_f32 / 255_f32, 239_f32 / 255_f32, 29_f32 / 255_f32, 255_f32 / 255_f32
 ];
-
+// Default value for the color buffer.
+const CLEAR_COLOR: [f32; 4] = [0.2_f32, 0.2_f32, 0.2_f32, 1.0_f32];
+// Default value for the depth buffer.
+const CLEAR_DEPTH: [f32; 4] = [1.0_f32, 1.0_f32, 1.0_f32, 1.0_f32];
 
 fn to_vec(ptr: *const u8, length: usize) -> Vec<u8> {
     let mut vec = vec![0 as u8; length];
@@ -1335,7 +1338,9 @@ fn main() {
         gl::CullFace(gl::BACK);
         gl::FrontFace(gl::CCW);
         // Gray background.
-        gl::ClearColor(0.2, 0.2, 0.2, 1.0);
+        gl::ClearBufferfv(gl::DEPTH, 0, &CLEAR_DEPTH[0] as *const GLfloat);
+        gl::ClearBufferfv(gl::COLOR, 0, &CLEAR_COLOR[0] as *const GLfloat);
+
         let width = {
             let context = game.gl.borrow();
             context.width as i32
@@ -1365,9 +1370,10 @@ fn main() {
 
         // Render the results.
         unsafe {
-            // Clear the screen.
-            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
-            gl::ClearColor(0.2, 0.2, 0.2, 1.0);
+            // Clear the screen and the depth buffer.
+            gl::ClearBufferfv(gl::DEPTH, 0, &CLEAR_DEPTH[0] as *const GLfloat);
+            gl::ClearBufferfv(gl::COLOR, 0, &CLEAR_COLOR[0] as *const GLfloat);
+
             let width = {
                 let context = game.gl.borrow();
                 context.width as i32
