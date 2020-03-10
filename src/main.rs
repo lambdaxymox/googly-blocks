@@ -1099,6 +1099,11 @@ struct Statistics {
     i_pieces: usize, 
 }
 
+struct ViewportDimensions {
+    width: i32,
+    height: i32,
+}
+
 struct Game {
     gl: Rc<RefCell<glh::GLState>>,
     atlas: Rc<BitmapFontAtlas>,
@@ -1204,8 +1209,7 @@ impl Game {
     }
 
     #[inline(always)]
-    fn update_framebuffer_size(&mut self) {
-        let (viewport_width, viewport_height) = self.get_framebuffer_size();
+    fn viewport_dimensions(&self) -> ViewportDimensions {
         let width = {
             let context = self.gl.borrow();
             context.width as i32
@@ -1214,7 +1218,15 @@ impl Game {
             let context = self.gl.borrow();
             context.height as i32
         };
-        if (width != viewport_width) && (height != viewport_height) {
+        
+        ViewportDimensions { width, height }
+    }
+
+    #[inline(always)]
+    fn update_framebuffer_size(&mut self) {
+        let (viewport_width, viewport_height) = self.get_framebuffer_size();
+        let dims = self.viewport_dimensions();
+        if (dims.width != viewport_width) && (dims.height != viewport_height) {
             glfw_framebuffer_size_callback(
                 self, viewport_width as u32, viewport_height as u32
             );
@@ -1338,15 +1350,8 @@ fn main() {
         gl::ClearBufferfv(gl::DEPTH, 0, &CLEAR_DEPTH[0] as *const GLfloat);
         gl::ClearBufferfv(gl::COLOR, 0, &CLEAR_COLOR[0] as *const GLfloat);
 
-        let width = {
-            let context = game.gl.borrow();
-            context.width as i32
-        };
-        let height = {
-            let context = game.gl.borrow();
-            context.height as i32
-        };
-        gl::Viewport(0, 0, width, height);
+        let dims = game.viewport_dimensions();
+        gl::Viewport(0, 0, dims.width, dims.height);
     }
 
     while !game.window_should_close() {
@@ -1370,15 +1375,9 @@ fn main() {
             // Clear the screen and the depth buffer.
             gl::ClearBufferfv(gl::DEPTH, 0, &CLEAR_DEPTH[0] as *const GLfloat);
             gl::ClearBufferfv(gl::COLOR, 0, &CLEAR_COLOR[0] as *const GLfloat);
-            let width = {
-                let context = game.gl.borrow();
-                context.width as i32
-            };
-            let height = {
-                let context = game.gl.borrow();
-                context.height as i32
-            };
-            gl::Viewport(0, 0, width, height);
+            
+            let dims = game.viewport_dimensions();
+            gl::Viewport(0, 0, dims.width, dims.height);
 
             // Render the background.
             game.update_background();
