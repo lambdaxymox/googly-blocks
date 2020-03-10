@@ -1334,10 +1334,7 @@ fn main() {
         // Enable depth testing.
         gl::Enable(gl::DEPTH_TEST);
         gl::DepthFunc(gl::LESS);
-        gl::Enable(gl::CULL_FACE);
-        gl::CullFace(gl::BACK);
-        gl::FrontFace(gl::CCW);
-        // Gray background.
+        // Clear the z-buffer and the frame buffer.
         gl::ClearBufferfv(gl::DEPTH, 0, &CLEAR_DEPTH[0] as *const GLfloat);
         gl::ClearBufferfv(gl::COLOR, 0, &CLEAR_COLOR[0] as *const GLfloat);
 
