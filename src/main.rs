@@ -1373,7 +1373,6 @@ fn main() {
             // Clear the screen and the depth buffer.
             gl::ClearBufferfv(gl::DEPTH, 0, &CLEAR_DEPTH[0] as *const GLfloat);
             gl::ClearBufferfv(gl::COLOR, 0, &CLEAR_COLOR[0] as *const GLfloat);
-
             let width = {
                 let context = game.gl.borrow();
                 context.width as i32
