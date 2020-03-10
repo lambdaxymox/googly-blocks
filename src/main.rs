@@ -1210,13 +1210,9 @@ impl Game {
 
     #[inline(always)]
     fn viewport_dimensions(&self) -> ViewportDimensions {
-        let width = {
+        let (width, height) = {
             let context = self.gl.borrow();
-            context.width as i32
-        };
-        let height = {
-            let context = self.gl.borrow();
-            context.height as i32
+            (context.width as i32, context.height as i32)
         };
         
         ViewportDimensions { width, height }
