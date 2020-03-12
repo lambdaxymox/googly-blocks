@@ -784,8 +784,101 @@ fn send_to_gpu_shaders_next_panel(game: &mut glh::GLState, source: ShaderSource)
     send_to_gpu_shaders(game, source)
 }
 
-fn send_to_gpu_geometry_next_panel() {
+struct NextPanelHandle {
+    vao: GLuint,
+    v_pos_vbo: GLuint,
+    v_tex_vbo: GLuint,
+}
 
+fn send_to_gpu_geometry_piece_mesh(sp: GLuint, mesh: &ObjMesh) -> NextPanelHandle {
+    let v_pos_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+    };
+    debug_assert!(v_pos_loc > -1);
+    let v_pos_loc = v_pos_loc as u32;
+
+    let v_tex_loc = unsafe { gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr()) };
+    debug_assert!(v_tex_loc > -1);
+    let v_tex_loc = v_tex_loc as u32;
+
+    let mut v_pos_vbo = 0;
+    unsafe {
+        gl::CreateBuffers(1, &mut v_pos_vbo);
+    }
+    debug_assert!(v_pos_vbo > 0);
+    unsafe {
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            mesh.points.len_bytes() as GLsizeiptr,
+            mesh.points.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+        );
+    }
+
+    let mut v_tex_vbo = 0;
+    unsafe {
+        gl::CreateBuffers(1, &mut v_tex_vbo);
+    }
+    debug_assert!(v_tex_vbo > 0);
+    unsafe {
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            mesh.tex_coords.len_bytes() as GLsizeiptr,
+            mesh.tex_coords.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+        )
+    }
+
+    let mut vao = 0;
+    unsafe {
+        gl::GenVertexArrays(1, &mut vao);
+    }
+    debug_assert!(vao > 0);
+    unsafe {
+        gl::BindVertexArray(vao);
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
+        gl::VertexAttribPointer(v_pos_loc, 3, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
+        gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(v_pos_loc);
+        gl::EnableVertexAttribArray(v_tex_loc);
+    }
+
+    NextPanelHandle {
+        vao: vao,
+        v_pos_vbo: v_pos_vbo,
+        v_tex_vbo: v_tex_vbo,
+    }
+}
+
+struct PieceHandles {
+    t_handle: NextPanelHandle,
+    j_handle: NextPanelHandle,
+    z_handle: NextPanelHandle,
+    o_handle: NextPanelHandle,
+    s_handle: NextPanelHandle,
+    l_handle: NextPanelHandle,
+    i_handle: NextPanelHandle,
+}
+
+fn send_to_gpu_geometry_next_panel(sp: GLuint, meshes: &PieceMeshes) -> PieceHandles {
+    let t_handle = send_to_gpu_geometry_piece_mesh(sp, &meshes.t);
+    let j_handle = send_to_gpu_geometry_piece_mesh(sp, &meshes.j);
+    let z_handle = send_to_gpu_geometry_piece_mesh(sp, &meshes.z);
+    let o_handle = send_to_gpu_geometry_piece_mesh(sp, &meshes.o);
+    let s_handle = send_to_gpu_geometry_piece_mesh(sp, &meshes.s);
+    let l_handle = send_to_gpu_geometry_piece_mesh(sp, &meshes.l);
+    let i_handle = send_to_gpu_geometry_piece_mesh(sp, &meshes.i);
+
+    PieceHandles {
+        t_handle: t_handle,
+        j_handle: j_handle,
+        z_handle: z_handle,
+        o_handle: o_handle,
+        s_handle: s_handle,
+        l_handle: l_handle,
+        i_handle: i_handle,
+    }
 }
 
 fn send_to_gpu_uniforms_next_panel() {
