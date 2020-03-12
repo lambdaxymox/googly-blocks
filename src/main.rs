@@ -779,6 +779,15 @@ fn create_textures_next_panel() -> TexImage2D {
     tex_image
 }
 
+/// Send the shaders for a textbox buffer to the GPU.
+fn send_to_gpu_shaders_next_panel(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+    send_to_gpu_shaders(game, source)
+}
+
+fn send_to_gpu_geometry_next_panel() {
+
+}
+
 fn send_to_gpu_uniforms_next_panel() {
 
 }
