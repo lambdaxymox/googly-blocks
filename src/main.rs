@@ -515,6 +515,7 @@ fn update_ui_panel_uniforms(game: &mut Game) {
     send_to_gpu_uniforms_ui_panel(game.ui.ui_panel.sp, uniforms);
 }
 
+
 /// Create the shaders for the next panel in the game's user interface.
 fn create_shaders_next_panel() -> ShaderSource {
     let vert_source = include_shader!("next_panel.vert.glsl");
@@ -768,6 +769,14 @@ fn create_geometry_next_panel() -> PieceMeshes {
         l: ObjMesh::new(l_points, l_tex_coords, l_normals),
         i: ObjMesh::new(i_points, i_tex_coords, i_normals),
     }
+}
+
+fn create_textures_next_panel() -> TexImage2D {
+    let arr: &'static [u8; 1448] = include_asset!("blocks.png");
+    let asset = to_vec(&arr[0], 1448);
+    let tex_image = teximage2d::load_from_memory(&asset).unwrap();
+
+    tex_image
 }
 
 fn send_to_gpu_uniforms_next_panel() {
