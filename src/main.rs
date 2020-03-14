@@ -929,6 +929,9 @@ fn send_to_gpu_uniforms_next_panel(sp: GLuint, handles: &NextPanelHandles, unifo
     send_to_gpu_piece_uniforms(sp, handles.i.vao, &uniforms.i);
 }
 
+fn send_to_gpu_textures_next_panel(tex_image: &TexImage2D) -> GLuint {
+    send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()  
+}
 
 #[derive(Copy, Clone, Debug)]
 struct GLTextBuffer {
