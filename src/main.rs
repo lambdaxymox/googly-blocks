@@ -851,17 +851,17 @@ fn send_to_gpu_geometry_piece_mesh(sp: GLuint, mesh: &ObjMesh) -> NextPanelHandl
     }
 }
 
-struct PieceHandles {
-    t_handle: NextPanelHandle,
-    j_handle: NextPanelHandle,
-    z_handle: NextPanelHandle,
-    o_handle: NextPanelHandle,
-    s_handle: NextPanelHandle,
-    l_handle: NextPanelHandle,
-    i_handle: NextPanelHandle,
+struct NextPanelHandles {
+    t: NextPanelHandle,
+    j: NextPanelHandle,
+    z: NextPanelHandle,
+    o: NextPanelHandle,
+    s: NextPanelHandle,
+    l: NextPanelHandle,
+    i: NextPanelHandle,
 }
 
-fn send_to_gpu_geometry_next_panel(sp: GLuint, meshes: &PieceMeshes) -> PieceHandles {
+fn send_to_gpu_geometry_next_panel(sp: GLuint, meshes: &PieceMeshes) -> NextPanelHandles {
     let t_handle = send_to_gpu_geometry_piece_mesh(sp, &meshes.t);
     let j_handle = send_to_gpu_geometry_piece_mesh(sp, &meshes.j);
     let z_handle = send_to_gpu_geometry_piece_mesh(sp, &meshes.z);
@@ -870,19 +870,63 @@ fn send_to_gpu_geometry_next_panel(sp: GLuint, meshes: &PieceMeshes) -> PieceHan
     let l_handle = send_to_gpu_geometry_piece_mesh(sp, &meshes.l);
     let i_handle = send_to_gpu_geometry_piece_mesh(sp, &meshes.i);
 
-    PieceHandles {
-        t_handle: t_handle,
-        j_handle: j_handle,
-        z_handle: z_handle,
-        o_handle: o_handle,
-        s_handle: s_handle,
-        l_handle: l_handle,
-        i_handle: i_handle,
+    NextPanelHandles {
+        t: t_handle,
+        j: j_handle,
+        z: z_handle,
+        o: o_handle,
+        s: s_handle,
+        l: l_handle,
+        i: i_handle,
     }
 }
 
-fn send_to_gpu_uniforms_next_panel() {
+struct PieceUniformsData {
+    gui_scale_mat: Matrix4,
+}
 
+struct NextPanelUniforms {
+    t: PieceUniformsData,
+    j: PieceUniformsData,
+    z: PieceUniformsData,
+    o: PieceUniformsData,
+    s: PieceUniformsData,
+    l: PieceUniformsData,
+    i: PieceUniformsData,
+}
+
+fn create_uniforms_piece() -> NextPanelUniforms {
+    NextPanelUniforms {
+        t: PieceUniformsData { gui_scale_mat: Matrix4::one() },
+        j: PieceUniformsData { gui_scale_mat: Matrix4::one() },
+        z: PieceUniformsData { gui_scale_mat: Matrix4::one() },
+        o: PieceUniformsData { gui_scale_mat: Matrix4::one() },
+        s: PieceUniformsData { gui_scale_mat: Matrix4::one() },
+        l: PieceUniformsData { gui_scale_mat: Matrix4::one() },
+        i: PieceUniformsData { gui_scale_mat: Matrix4::one() },
+    }
+}
+
+fn send_to_gpu_piece_uniforms(sp: GLuint, vao: GLuint, uniforms: &PieceUniformsData) {
+    let gui_scale_mat_loc = unsafe {
+        gl::GetUniformLocation(sp, glh::gl_str("m_gui_scale").as_ptr())
+    };
+    debug_assert!(gui_scale_mat_loc > -1);
+    unsafe {
+        gl::UseProgram(sp);
+        gl::BindVertexArray(vao);
+        gl::UniformMatrix4fv(gui_scale_mat_loc, 1, gl::FALSE, uniforms.gui_scale_mat.as_ptr());
+    }
+}
+
+fn send_to_gpu_uniforms_next_panel(sp: GLuint, handles: &NextPanelHandles, uniforms: &NextPanelUniforms) {
+    send_to_gpu_piece_uniforms(sp, handles.t.vao, &uniforms.t);
+    send_to_gpu_piece_uniforms(sp, handles.j.vao, &uniforms.j);
+    send_to_gpu_piece_uniforms(sp, handles.z.vao, &uniforms.z);
+    send_to_gpu_piece_uniforms(sp, handles.o.vao, &uniforms.o);
+    send_to_gpu_piece_uniforms(sp, handles.s.vao, &uniforms.s);
+    send_to_gpu_piece_uniforms(sp, handles.l.vao, &uniforms.l);
+    send_to_gpu_piece_uniforms(sp, handles.i.vao, &uniforms.i);
 }
 
 
