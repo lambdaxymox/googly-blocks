@@ -518,13 +518,13 @@ fn update_ui_panel_uniforms(game: &mut Game) {
 
 /// Create the shaders for the next panel in the game's user interface.
 fn create_shaders_next_piece_panel() -> ShaderSource {
-    let vert_source = include_shader!("next_panel.vert.glsl");
-    let frag_source = include_shader!("next_panel.frag.glsl");
+    let vert_source = include_shader!("next_piece_panel.vert.glsl");
+    let frag_source = include_shader!("next_piece_panel.frag.glsl");
 
     ShaderSource { 
-        vert_name: "next_panel.vert.glsl",
+        vert_name: "next_piece_panel.vert.glsl",
         vert_source: vert_source,
-        frag_name: "next_panel.frag.glsl",
+        frag_name: "next_piece_panel.frag.glsl",
         frag_source: frag_source,
     }
 }
