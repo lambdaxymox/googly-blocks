@@ -34,11 +34,9 @@ pub fn gl_str(st: &str) -> CString {
     CString::new(st).unwrap()
 }
 
-///
 /// A record containing a description of the GL capabilities on a local machine.
 /// The contents of this record can be used for debugging OpenGL problems on
 /// different machines.
-/// 
 struct GLParameters {
     params: Vec<(String, String)>
 }
@@ -53,10 +51,8 @@ impl fmt::Display for GLParameters {
     }
 }
 
-///
 /// Print out the GL capabilities on a local machine. This is handy for debugging
 /// OpenGL program problems on other people's machines.
-///
 fn gl_params() -> GLParameters {
     let params: [GLenum; 12] = [
         gl::MAX_COMBINED_TEXTURE_IMAGE_UNITS,
@@ -112,9 +108,7 @@ fn gl_params() -> GLParameters {
     }
 }
 
-///
 /// Helper function to convert GLSL types to storage sizes
-///
 fn type_size(gl_type: GLenum) -> usize {
     match gl_type {
         gl::FLOAT             => 1 * mem::size_of::<GLfloat>(),
@@ -146,10 +140,8 @@ fn type_size(gl_type: GLenum) -> usize {
     }
 }
 
-///
 /// A record for storing all the OpenGL state needed on the application side
 /// of the graphics application in order to manage OpenGL and GLFW.
-///
 pub struct GLState {
     pub glfw: glfw::Glfw,
     pub window: glfw::Window,
@@ -202,9 +194,7 @@ fn __init_glfw() -> Glfw {
     glfw
 }
 
-///
 /// Initialize a new OpenGL context and start a new GLFW window. 
-///
 pub fn start_gl(width: u32, height: u32) -> Result<GLState, String> {
     // Start GL context and O/S window using the GLFW helper library.
     info!("Starting GLFW");
@@ -257,10 +247,8 @@ pub fn start_gl(width: u32, height: u32) -> Result<GLState, String> {
     })
 }
 
-///
 /// Updates the timers in a GL context. It returns the elapsed time since the last call to
 /// `update_timers`.
-///
 #[inline]
 pub fn update_timers(context: &mut GLState) -> f64 {
     let current_seconds = context.glfw.get_time();
@@ -270,9 +258,7 @@ pub fn update_timers(context: &mut GLState) -> f64 {
     elapsed_seconds
 }
 
-///
 /// Update the framerate and display in the window titlebar.
-///
 #[inline]
 pub fn update_fps_counter(context: &mut GLState) {     
     let current_time_seconds = context.glfw.get_time();
@@ -318,9 +304,7 @@ impl fmt::Display for ShaderCompilationError {
     }
 }
 
-///
 /// Load a shader source file.
-///
 pub fn parse_shader<P: AsRef<Path>, R: Read>(
     reader: &mut R, file_name: P, shader_str: &mut [u8]) -> Result<usize, ShaderCompilationError> {
 
@@ -339,10 +323,8 @@ pub fn parse_shader<P: AsRef<Path>, R: Read>(
     Ok(bytes_read)
 }
 
-///
 /// A record containing all the relevant compilation log information for a
 /// given GLSL shader compiled at run time.
-///
 pub struct ShaderLog {
     index: GLuint,
     log: String,
@@ -355,10 +337,8 @@ impl fmt::Display for ShaderLog {
     }
 }
 
-///
 /// Query the shader information log generated during shader compilation from
 /// OpenGL.
-/// 
 pub fn shader_info_log(shader_index: GLuint) -> ShaderLog {
     let mut actual_length = 0;
     unsafe {
@@ -377,9 +357,7 @@ pub fn shader_info_log(shader_index: GLuint) -> ShaderLog {
     ShaderLog { index: shader_index, log: log }
 }
 
-///
 /// Create a shader from source files.
-///
 pub fn create_shader<P: AsRef<Path>, R: Read>(
     _context: &GLState,
     reader: &mut R, file_name: P, kind: GLenum) -> Result<GLuint, ShaderCompilationError> {
@@ -430,10 +408,8 @@ pub fn create_shader<P: AsRef<Path>, R: Read>(
 }
 
 
-///
 /// A record containing all the relevant compilation log information for a
 /// given GLSL shader program compiled at run time.
-///
 pub struct ProgramLog {
     index: GLuint,
     log: String,
@@ -446,10 +422,8 @@ impl fmt::Display for ProgramLog {
     }
 }
 
-///
 /// Query the shader program information log generated during shader compilation
 /// from OpenGL.
-///
 pub fn program_info_log(index: GLuint) -> ProgramLog {
     let mut actual_length = 0;
     unsafe {
@@ -468,11 +442,9 @@ pub fn program_info_log(index: GLuint) -> ProgramLog {
     ProgramLog { index: index, log: log }
 }
 
-///
 /// Validate that the shader program `sp` can execute with the current OpenGL program state.
 /// Use this for information purposes in application development. Return `true` if the program and
 /// OpenGL state contain no errors.
-///
 pub fn validate_shader_program(sp: GLuint) -> bool {
     let mut params = -1;
     unsafe {
@@ -492,9 +464,7 @@ pub fn validate_shader_program(sp: GLuint) -> bool {
     true
 }
 
-///
 /// Compile and link a shader program.
-///
 pub fn create_program(
     _context: &GLState,
     vertex_shader: GLuint, fragment_shader: GLuint) -> Result<GLuint, ShaderCompilationError> {
@@ -531,9 +501,7 @@ pub fn create_program(
     Ok(program)
 }
 
-///
 /// Compile and link a shader program directly from the files.
-///
 pub fn create_program_from_files<P: AsRef<Path>, Q: AsRef<Path>>(
     context: &GLState,
     vert_file_name: P, frag_file_name: Q) -> Result<GLuint, ShaderCompilationError> {
@@ -564,9 +532,7 @@ pub fn create_program_from_files<P: AsRef<Path>, Q: AsRef<Path>>(
     Ok(program)
 }
 
-///
 /// Compile and link a shader program directly from any readable sources.
-///
 pub fn create_program_from_reader<R1: Read, P1: AsRef<Path>, R2: Read, P2: AsRef<Path>>(
     context: &GLState,
     vert_reader: &mut R1, vert_file_name: P1,
