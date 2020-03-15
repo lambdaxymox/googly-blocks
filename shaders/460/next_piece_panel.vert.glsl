@@ -3,7 +3,7 @@
 in vec2 v_pos;
 in vec2 v_tex;
 uniform mat4 m_gui_scale;
-out vec4 tex_coord;
+out vec2 tex_coord;
 
 
 void main() {
