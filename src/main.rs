@@ -517,7 +517,7 @@ fn update_ui_panel_uniforms(game: &mut Game) {
 
 
 /// Create the shaders for the next panel in the game's user interface.
-fn create_shaders_next_panel() -> ShaderSource {
+fn create_shaders_next_piece_panel() -> ShaderSource {
     let vert_source = include_shader!("next_panel.vert.glsl");
     let frag_source = include_shader!("next_panel.frag.glsl");
 
@@ -542,7 +542,7 @@ struct PieceMeshes {
 
 /// Create the model space geometry for the pieces displayed in the next panel
 /// on the game's interface.
-fn create_geometry_next_panel() -> PieceMeshes {
+fn create_geometry_next_piece_panel() -> PieceMeshes {
     let t_points: Vec<[f32; 3]> = vec![
         [-0.5, 0.5, 0.0], [0.0, 1.0, 0.0], [-0.5, 1.0, 0.0],
         [-0.5, 0.5, 0.0], [0.0, 0.5, 0.0], [ 0.0, 1.0, 0.0],
@@ -771,7 +771,7 @@ fn create_geometry_next_panel() -> PieceMeshes {
     }
 }
 
-fn create_textures_next_panel() -> TexImage2D {
+fn create_textures_next_piece_panel() -> TexImage2D {
     let arr: &'static [u8; 1448] = include_asset!("blocks.png");
     let asset = to_vec(&arr[0], 1448);
     let tex_image = teximage2d::load_from_memory(&asset).unwrap();
@@ -780,17 +780,18 @@ fn create_textures_next_panel() -> TexImage2D {
 }
 
 /// Send the shaders for a textbox buffer to the GPU.
-fn send_to_gpu_shaders_next_panel(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+fn send_to_gpu_shaders_next_piece_panel(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
     send_to_gpu_shaders(game, source)
 }
 
-struct NextPanelHandle {
+#[derive(Copy, Clone, PartialEq, Eq)]
+struct NextPiecePanelHandle {
     vao: GLuint,
     v_pos_vbo: GLuint,
     v_tex_vbo: GLuint,
 }
 
-fn send_to_gpu_geometry_piece_mesh(sp: GLuint, mesh: &ObjMesh) -> NextPanelHandle {
+fn send_to_gpu_geometry_piece_mesh(sp: GLuint, mesh: &ObjMesh) -> NextPiecePanelHandle {
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
     };
@@ -826,7 +827,7 @@ fn send_to_gpu_geometry_piece_mesh(sp: GLuint, mesh: &ObjMesh) -> NextPanelHandl
             gl::ARRAY_BUFFER,
             mesh.tex_coords.len_bytes() as GLsizeiptr,
             mesh.tex_coords.as_ptr() as *const GLvoid, gl::STATIC_DRAW
-        )
+        );
     }
 
     let mut vao = 0;
@@ -844,7 +845,7 @@ fn send_to_gpu_geometry_piece_mesh(sp: GLuint, mesh: &ObjMesh) -> NextPanelHandl
         gl::EnableVertexAttribArray(v_tex_loc);
     }
 
-    NextPanelHandle {
+    NextPiecePanelHandle {
         vao: vao,
         v_pos_vbo: v_pos_vbo,
         v_tex_vbo: v_tex_vbo,
@@ -852,13 +853,13 @@ fn send_to_gpu_geometry_piece_mesh(sp: GLuint, mesh: &ObjMesh) -> NextPanelHandl
 }
 
 struct NextPanelHandles {
-    t: NextPanelHandle,
-    j: NextPanelHandle,
-    z: NextPanelHandle,
-    o: NextPanelHandle,
-    s: NextPanelHandle,
-    l: NextPanelHandle,
-    i: NextPanelHandle,
+    t: NextPiecePanelHandle,
+    j: NextPiecePanelHandle,
+    z: NextPiecePanelHandle,
+    o: NextPiecePanelHandle,
+    s: NextPiecePanelHandle,
+    l: NextPiecePanelHandle,
+    i: NextPiecePanelHandle,
 }
 
 fn send_to_gpu_geometry_next_panel(sp: GLuint, meshes: &PieceMeshes) -> NextPanelHandles {
@@ -885,7 +886,7 @@ struct PieceUniformsData {
     gui_scale_mat: Matrix4,
 }
 
-struct NextPanelUniforms {
+struct NextPiecePanelUniforms {
     t: PieceUniformsData,
     j: PieceUniformsData,
     z: PieceUniformsData,
@@ -895,8 +896,8 @@ struct NextPanelUniforms {
     i: PieceUniformsData,
 }
 
-fn create_uniforms_piece() -> NextPanelUniforms {
-    NextPanelUniforms {
+fn create_uniforms_next_piece_panel() -> NextPiecePanelUniforms {
+    NextPiecePanelUniforms {
         t: PieceUniformsData { gui_scale_mat: Matrix4::one() },
         j: PieceUniformsData { gui_scale_mat: Matrix4::one() },
         z: PieceUniformsData { gui_scale_mat: Matrix4::one() },
@@ -919,7 +920,7 @@ fn send_to_gpu_piece_uniforms(sp: GLuint, vao: GLuint, uniforms: &PieceUniformsD
     }
 }
 
-fn send_to_gpu_uniforms_next_panel(sp: GLuint, handles: &NextPanelHandles, uniforms: &NextPanelUniforms) {
+fn send_to_gpu_uniforms_next_panel(sp: GLuint, handles: &NextPanelHandles, uniforms: &NextPiecePanelUniforms) {
     send_to_gpu_piece_uniforms(sp, handles.t.vao, &uniforms.t);
     send_to_gpu_piece_uniforms(sp, handles.j.vao, &uniforms.j);
     send_to_gpu_piece_uniforms(sp, handles.z.vao, &uniforms.z);
@@ -929,8 +930,88 @@ fn send_to_gpu_uniforms_next_panel(sp: GLuint, handles: &NextPanelHandles, unifo
     send_to_gpu_piece_uniforms(sp, handles.i.vao, &uniforms.i);
 }
 
-fn send_to_gpu_textures_next_panel(tex_image: &TexImage2D) -> GLuint {
+fn send_to_gpu_textures_next_piece_panel(tex_image: &TexImage2D) -> GLuint {
     send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()  
+}
+
+#[derive(Copy, Clone, PartialEq, Eq)]
+enum TetrisPiece {
+    T, J, Z, O, S, L, I
+}
+
+struct GLNextPiecePanel {
+    sp: GLuint,
+    tex: GLuint,
+    t_handle: NextPiecePanelHandle,
+    j_handle: NextPiecePanelHandle,
+    z_handle: NextPiecePanelHandle,
+    o_handle: NextPiecePanelHandle,
+    s_handle: NextPiecePanelHandle,
+    l_handle: NextPiecePanelHandle,
+    i_handle: NextPiecePanelHandle,
+}
+
+impl GLNextPiecePanel {
+    fn handle(&self, piece: TetrisPiece) -> NextPiecePanelHandle {
+        use TetrisPiece::*;
+        match piece {
+            T => self.t_handle, 
+            J => self.j_handle,
+            Z => self.z_handle,
+            O => self.o_handle,
+            S => self.s_handle,
+            L => self.l_handle,
+            I => self.i_handle,
+        }
+    }
+}
+
+fn create_next_piece_panel_buffer(gl_context: &mut glh::GLState, uniforms: &NextPiecePanelUniforms) -> GLNextPiecePanel {
+    let shader_source = create_shaders_next_piece_panel();
+    let sp = send_to_gpu_shaders_next_piece_panel(gl_context, shader_source);
+    let tex_image = create_textures_next_piece_panel();
+    let tex = send_to_gpu_textures_next_piece_panel(&tex_image);
+    let meshes = create_geometry_next_piece_panel();
+    let handles = send_to_gpu_geometry_next_panel(sp, &meshes);
+    send_to_gpu_uniforms_next_panel(sp, &handles, uniforms);
+
+    GLNextPiecePanel {
+        sp: sp,
+        tex: tex,
+        t_handle: handles.t,
+        j_handle: handles.j,
+        z_handle: handles.z,
+        o_handle: handles.o,
+        s_handle: handles.s,
+        l_handle: handles.l,
+        i_handle: handles.i,
+    }
+}
+
+struct NextPiecePanel {
+    current_piece: TetrisPiece,
+    buffer: GLNextPiecePanel,
+}
+
+impl NextPiecePanel {
+    fn update(&mut self, piece: TetrisPiece) {
+        self.current_piece = piece;
+    }
+}
+
+struct NextPiecePanelSpec {
+    piece: TetrisPiece,
+}
+
+fn load_next_piece_panel(
+    game: &mut glh::GLState, 
+    spec: NextPiecePanelSpec, uniforms: &NextPiecePanelUniforms) -> NextPiecePanel {
+    
+    let buffer = create_next_piece_panel_buffer(game, uniforms);
+    NextPiecePanel {
+        current_piece: spec.piece,
+        buffer: buffer,
+    }
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -1451,6 +1532,7 @@ fn load_font_atlas() -> bmfa::BitmapFontAtlas {
 struct UI {
     ui_panel: UIPanel,
     text_panel: TextPanel,
+    next_piece_panel: NextPiecePanel,
 }
 
 impl UI {
@@ -1476,6 +1558,10 @@ impl UI {
 
     fn update_statistics(&mut self, statistics: &Statistics) {
         self.text_panel.update_statistics(statistics);
+    }
+
+    fn update_next_piece(&mut self, piece: TetrisPiece) {
+        self.next_piece_panel.update(piece);
     }
 }
 
@@ -1504,6 +1590,7 @@ struct Game {
     lines: usize,
     tetrises: usize,
     statistics: Statistics,
+    next_piece: TetrisPiece,
 }
 
 impl Game {
@@ -1544,6 +1631,11 @@ impl Game {
         update_uniforms_background_panel(self);
     }
 
+    #[inline]
+    fn update_next_piece(&mut self) {
+        // Do nothing as of yet.
+    }
+
     #[inline(always)]
     fn render_background(&mut self) {
         unsafe {
@@ -1563,6 +1655,7 @@ impl Game {
         self.ui.update_level(self.level);
         self.ui.update_tetrises(self.tetrises);
         self.ui.update_statistics(&self.statistics);
+        self.ui.update_next_piece(self.next_piece);
         self.ui.update_panel();
     }
 
@@ -1585,6 +1678,13 @@ impl Game {
             gl::BindTexture(gl::TEXTURE_2D, self.ui.text_panel.buffer.buffer.tex);
             gl::BindVertexArray(self.ui.text_panel.buffer.buffer.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 47 * 6);
+
+            gl::UseProgram(self.ui.next_piece_panel.buffer.sp);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, self.ui.next_piece_panel.buffer.tex);
+            gl::BindVertexArray(self.ui.next_piece_panel.buffer.handle(self.next_piece).vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 8);
         }
     }
 
@@ -1700,9 +1800,20 @@ fn init_game() -> Game {
     };
     let text_panel = load_text_panel(gl_context.clone(), &text_panel_spec, text_panel_uniforms);
     
+    let next_piece = TetrisPiece::T;
+    let next_piece_panel_spec = NextPiecePanelSpec {
+        piece: next_piece,
+    };
+    let next_piece_panel_uniforms = create_uniforms_next_piece_panel();
+    let next_piece_panel = {
+        let mut context = gl_context.borrow_mut();
+        load_next_piece_panel(&mut *context, next_piece_panel_spec, &next_piece_panel_uniforms)
+    };
+
     let ui = UI { 
         ui_panel: ui_panel,
         text_panel: text_panel,
+        next_piece_panel: next_piece_panel,
     };
 
     Game {
@@ -1722,7 +1833,8 @@ fn init_game() -> Game {
             s_pieces: 0,
             l_pieces: 0,
             i_pieces: 0, 
-        }
+        },
+        next_piece: next_piece,
     }
 }
 
@@ -1773,7 +1885,7 @@ fn main() {
             game.update_ui();
             game.render_ui();
 
-            // TODO: Render the blocks instanced.
+            // TODO: Render the blocks.
 
             // TODO: Render the googly eyes.
             
