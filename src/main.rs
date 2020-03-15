@@ -546,7 +546,7 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
     let t_points: Vec<[f32; 3]> = vec![
         [-0.5, 0.5, 0.0], [0.0, 1.0, 0.0], [-0.5, 1.0, 0.0],
         [-0.5, 0.5, 0.0], [0.0, 0.5, 0.0], [ 0.0, 1.0, 0.0],
-        [ 0.0, 0.5, 0.0], [0.5, 0.5, 0.0], [ 0.5, 1.0, 0.0],
+        [ 0.0, 0.5, 0.0], [0.5, 1.0, 0.0], [ 0.0, 1.0, 0.0],
         [ 0.0, 0.5, 0.0], [0.5, 0.5, 0.0], [ 0.5, 1.0, 0.0],
         [ 0.0, 0.0, 0.0], [0.5, 0.5, 0.0], [ 0.0, 0.5, 0.0],
         [ 0.0, 0.0, 0.0], [0.5, 0.0, 0.0], [ 0.5, 0.5, 0.0],
@@ -1684,7 +1684,7 @@ impl Game {
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, self.ui.next_piece_panel.buffer.tex);
             gl::BindVertexArray(self.ui.next_piece_panel.buffer.handle(self.next_piece).vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 8);
+            gl::DrawArrays(gl::TRIANGLES, 0, 36);
         }
     }
 
