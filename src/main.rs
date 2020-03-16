@@ -887,42 +887,13 @@ struct PieceUniformsData {
     trans_mat: Matrix4,
 }
 
-struct NextPiecePanelUniforms {
-    t: PieceUniformsData,
-    j: PieceUniformsData,
-    z: PieceUniformsData,
-    o: PieceUniformsData,
-    s: PieceUniformsData,
-    l: PieceUniformsData,
-    i: PieceUniformsData,
-}
-
 fn create_uniforms_next_piece_panel(
-    piece: TetrisPiece, scale: u32, viewport_width: u32, viewport_height: u32) -> PieceUniformsData /* NextPiecePanelUniforms */ {
+    piece: TetrisPiece, scale: u32, viewport_width: u32, viewport_height: u32) -> PieceUniformsData {
     
     let block_width = 2.0 * (scale as f32 / viewport_width as f32);
     let block_height = 2.0 * (scale as f32 / viewport_height as f32);
     let gui_scale_mat = Matrix4::from_nonuniform_scale(block_width, block_height, 1.0);
     let trans_mat = Matrix4::from_translation(cgmath::vec3((0.5, 0.5, 0.0)));
-    /*
-    let t_trans_mat = Matrix4::from_translation(cgmath::vec3((-0.5, -0.5, 0.0)));
-    let j_trans_mat = Matrix4::from_translation(cgmath::vec3((-0.3, -0.3, 0.0)));
-    let z_trans_mat = Matrix4::from_translation(cgmath::vec3((-0.1, -0.1, 0.0)));
-    let o_trans_mat = Matrix4::from_translation(cgmath::vec3(( 0.1,  0.1, 0.0)));
-    let s_trans_mat = Matrix4::from_translation(cgmath::vec3(( 0.3,  0.3, 0.0)));
-    let l_trans_mat = Matrix4::from_translation(cgmath::vec3(( 0.5,  0.5, 0.0)));
-    let i_trans_mat = Matrix4::from_translation(cgmath::vec3(( 0.7,  0.7, 0.0)));
-
-    NextPiecePanelUniforms {
-        t: PieceUniformsData { gui_scale_mat: gui_scale_mat, trans_mat: t_trans_mat },
-        j: PieceUniformsData { gui_scale_mat: gui_scale_mat, trans_mat: j_trans_mat },
-        z: PieceUniformsData { gui_scale_mat: gui_scale_mat, trans_mat: z_trans_mat },
-        o: PieceUniformsData { gui_scale_mat: gui_scale_mat, trans_mat: o_trans_mat },
-        s: PieceUniformsData { gui_scale_mat: gui_scale_mat, trans_mat: s_trans_mat },
-        l: PieceUniformsData { gui_scale_mat: gui_scale_mat, trans_mat: l_trans_mat },
-        i: PieceUniformsData { gui_scale_mat: gui_scale_mat, trans_mat: i_trans_mat },
-    }
-    */
 
     PieceUniformsData {
         gui_scale_mat: gui_scale_mat,
