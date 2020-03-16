@@ -884,6 +884,7 @@ fn send_to_gpu_geometry_next_panel(sp: GLuint, meshes: &PieceMeshes) -> NextPane
 
 struct PieceUniformsData {
     gui_scale_mat: Matrix4,
+    trans_mat: Matrix4,
 }
 
 struct NextPiecePanelUniforms {
@@ -896,15 +897,28 @@ struct NextPiecePanelUniforms {
     i: PieceUniformsData,
 }
 
-fn create_uniforms_next_piece_panel() -> NextPiecePanelUniforms {
+fn create_uniforms_next_piece_panel(
+    scale: u32, viewport_width: u32, viewport_height: u32) -> NextPiecePanelUniforms {
+    
+    let block_width = 2.0 * (scale as f32 / viewport_width as f32);
+    let block_height = 2.0 * (scale as f32 / viewport_height as f32);
+    let gui_scale_mat = Matrix4::from_nonuniform_scale(block_width, block_height, 1.0);
+    let t_trans_mat = Matrix4::from_translation(cgmath::vec3((-0.5, -0.5, 0.0)));
+    let j_trans_mat = Matrix4::from_translation(cgmath::vec3((-0.3, -0.3, 0.0)));
+    let z_trans_mat = Matrix4::from_translation(cgmath::vec3((-0.1, -0.1, 0.0)));
+    let o_trans_mat = Matrix4::from_translation(cgmath::vec3(( 0.1,  0.1, 0.0)));
+    let s_trans_mat = Matrix4::from_translation(cgmath::vec3(( 0.3,  0.3, 0.0)));
+    let l_trans_mat = Matrix4::from_translation(cgmath::vec3(( 0.5,  0.5, 0.0)));
+    let i_trans_mat = Matrix4::from_translation(cgmath::vec3(( 0.7,  0.7, 0.0)));
+
     NextPiecePanelUniforms {
-        t: PieceUniformsData { gui_scale_mat: Matrix4::one() },
-        j: PieceUniformsData { gui_scale_mat: Matrix4::one() },
-        z: PieceUniformsData { gui_scale_mat: Matrix4::one() },
-        o: PieceUniformsData { gui_scale_mat: Matrix4::one() },
-        s: PieceUniformsData { gui_scale_mat: Matrix4::one() },
-        l: PieceUniformsData { gui_scale_mat: Matrix4::one() },
-        i: PieceUniformsData { gui_scale_mat: Matrix4::one() },
+        t: PieceUniformsData { gui_scale_mat: gui_scale_mat, trans_mat: t_trans_mat },
+        j: PieceUniformsData { gui_scale_mat: gui_scale_mat, trans_mat: j_trans_mat },
+        z: PieceUniformsData { gui_scale_mat: gui_scale_mat, trans_mat: z_trans_mat },
+        o: PieceUniformsData { gui_scale_mat: gui_scale_mat, trans_mat: o_trans_mat },
+        s: PieceUniformsData { gui_scale_mat: gui_scale_mat, trans_mat: s_trans_mat },
+        l: PieceUniformsData { gui_scale_mat: gui_scale_mat, trans_mat: l_trans_mat },
+        i: PieceUniformsData { gui_scale_mat: gui_scale_mat, trans_mat: i_trans_mat },
     }
 }
 
@@ -913,10 +927,15 @@ fn send_to_gpu_piece_uniforms(sp: GLuint, vao: GLuint, uniforms: &PieceUniformsD
         gl::GetUniformLocation(sp, glh::gl_str("m_gui_scale").as_ptr())
     };
     debug_assert!(gui_scale_mat_loc > -1);
+    let trans_mat_loc = unsafe {
+        gl::GetUniformLocation(sp, glh::gl_str("m_trans").as_ptr())
+    };
+    debug_assert!(trans_mat_loc > -1);
     unsafe {
         gl::UseProgram(sp);
         gl::BindVertexArray(vao);
         gl::UniformMatrix4fv(gui_scale_mat_loc, 1, gl::FALSE, uniforms.gui_scale_mat.as_ptr());
+        gl::UniformMatrix4fv(trans_mat_loc, 1, gl::FALSE, uniforms.trans_mat.as_ptr());
     }
 }
 
@@ -935,9 +954,7 @@ fn send_to_gpu_textures_next_piece_panel(tex_image: &TexImage2D) -> GLuint {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq)]
-enum TetrisPiece {
-    T, J, Z, O, S, L, I
-}
+enum TetrisPiece { T, J, Z, O, S, L, I }
 
 struct GLNextPiecePanel {
     sp: GLuint,
@@ -1684,7 +1701,8 @@ impl Game {
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, self.ui.next_piece_panel.buffer.tex);
             gl::BindVertexArray(self.ui.next_piece_panel.buffer.handle(self.next_piece).vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 36);
+            println!("{}", self.ui.next_piece_panel.buffer.handle(self.next_piece).vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 3 * 8);
         }
     }
 
@@ -1804,7 +1822,7 @@ fn init_game() -> Game {
     let next_piece_panel_spec = NextPiecePanelSpec {
         piece: next_piece,
     };
-    let next_piece_panel_uniforms = create_uniforms_next_piece_panel();
+    let next_piece_panel_uniforms = create_uniforms_next_piece_panel(50, width, height);
     let next_piece_panel = {
         let mut context = gl_context.borrow_mut();
         load_next_piece_panel(&mut *context, next_piece_panel_spec, &next_piece_panel_uniforms)
