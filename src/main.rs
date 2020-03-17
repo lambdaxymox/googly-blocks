@@ -145,7 +145,13 @@ fn create_geometry_background() -> ObjMesh {
     ObjMesh::new(points, tex_coords, normals)
 }
 
-fn send_to_gpu_geometry_background(sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuint, GLuint) {
+struct BackgroundPanelHandle {
+    vao: GLuint,
+    v_pos_vbo: GLuint,
+    v_tex_vbo: GLuint,
+}
+
+fn send_to_gpu_geometry_background(sp: GLuint, mesh: &ObjMesh) -> BackgroundPanelHandle {
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
     };
@@ -199,7 +205,11 @@ fn send_to_gpu_geometry_background(sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuin
         gl::EnableVertexAttribArray(v_tex_loc);
     }
 
-    (v_pos_vbo, v_tex_vbo, vao)
+    BackgroundPanelHandle {
+        vao: vao,
+        v_pos_vbo: v_pos_vbo,
+        v_tex_vbo: v_tex_vbo,
+    }
 }
 
 fn create_textures_background() -> TexImage2D {
@@ -262,13 +272,13 @@ fn load_background(game: &mut glh::GLState, spec: BackgroundPanelSpec) -> Backgr
     let mesh = create_geometry_background();
     let tex_image = create_textures_background();
     let sp = send_to_gpu_shaders_background(game, shader_source);
-    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_geometry_background(sp, &mesh);
+    let handle = send_to_gpu_geometry_background(sp, &mesh);
     let tex = send_to_gpu_textures_background(&tex_image);
     let buffer = GLBackgroundPanel {
         sp: sp,
-        v_pos_vbo: v_pos_vbo,
-        v_tex_vbo: v_tex_vbo,
-        vao: vao,
+        v_pos_vbo: handle.v_pos_vbo,
+        v_tex_vbo: handle.v_tex_vbo,
+        vao: handle.vao,
         tex: tex,
     };
 
