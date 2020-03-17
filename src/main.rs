@@ -97,19 +97,6 @@ struct ShaderSource {
     frag_source: &'static str,
 }
 
-#[inline]
-fn create_shaders_background() -> ShaderSource {
-    let vert_source = include_shader!("background_panel.vert.glsl");
-    let frag_source = include_shader!("background_panel.frag.glsl");
-
-    ShaderSource { 
-        vert_name: "background_panel.vert.glsl",
-        vert_source: vert_source,
-        frag_name: "background_panel.frag.glsl",
-        frag_source: frag_source,
-    }
-}
-
 fn send_to_gpu_shaders(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
     let mut vert_reader = io::Cursor::new(source.vert_source);
     let mut frag_reader = io::Cursor::new(source.frag_source);
@@ -121,6 +108,18 @@ fn send_to_gpu_shaders(game: &mut glh::GLState, source: ShaderSource) -> GLuint 
     debug_assert!(sp > 0);
 
     sp
+}
+
+fn create_shaders_background() -> ShaderSource {
+    let vert_source = include_shader!("background_panel.vert.glsl");
+    let frag_source = include_shader!("background_panel.frag.glsl");
+
+    ShaderSource { 
+        vert_name: "background_panel.vert.glsl",
+        vert_source: vert_source,
+        frag_name: "background_panel.frag.glsl",
+        frag_source: frag_source,
+    }
 }
 
 #[inline]
