@@ -26,7 +26,7 @@ use bmfa::BitmapFontAtlas;
 use glfw::{Action, Context, Key};
 use gl::types::{GLfloat, GLint, GLuint, GLvoid, GLsizeiptr};
 use log::{info};
-use math::{Array, One, Matrix4, Vector3};
+use math::{Array, One, Matrix4};
 use mesh::ObjMesh;
 use teximage2d::TexImage2D;
 
