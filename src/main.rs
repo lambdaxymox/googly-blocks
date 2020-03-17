@@ -342,7 +342,13 @@ fn create_geometry_ui_panel() -> ObjMesh {
     ObjMesh::new(points, tex_coords, normals)
 }
 
-fn send_to_gpu_geometry_ui_panel(sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuint, GLuint) {
+struct UIPanelHandle {
+    vao: GLuint,
+    v_pos_vbo: GLuint,
+    v_tex_vbo: GLuint,
+}
+
+fn send_to_gpu_geometry_ui_panel(sp: GLuint, mesh: &ObjMesh) -> UIPanelHandle {
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
     };
@@ -396,7 +402,11 @@ fn send_to_gpu_geometry_ui_panel(sp: GLuint, mesh: &ObjMesh) -> (GLuint, GLuint,
         gl::EnableVertexAttribArray(v_tex_loc);
     }
 
-    (v_pos_vbo, v_tex_vbo, vao)
+    UIPanelHandle {
+        vao: vao,
+        v_pos_vbo: v_pos_vbo,
+        v_tex_vbo: v_tex_vbo,
+    }
 }
 
 fn create_textures_ui_panel() -> TexImage2D {
@@ -499,16 +509,16 @@ fn load_ui_panel(game: &mut glh::GLState, spec: UIPanelSpec, uniforms: UIPanelUn
     let shader_source = create_shaders_ui_panel();
     let sp = send_to_gpu_shaders_ui_panel(game, shader_source);
     let mesh = create_geometry_ui_panel();
-    let (v_pos_vbo, v_tex_vbo, vao) = send_to_gpu_geometry_ui_panel(sp, &mesh);
+    let handle = send_to_gpu_geometry_ui_panel(sp, &mesh);
     let tex_image = create_textures_ui_panel();
     let tex = send_to_gpu_textures_ui_panel(&tex_image);
     send_to_gpu_uniforms_ui_panel(sp, uniforms);
 
     UIPanel {
         sp: sp,
-        v_pos_vbo: v_pos_vbo,
-        v_tex_vbo: v_tex_vbo,
-        vao: vao,
+        v_pos_vbo: handle.v_pos_vbo,
+        v_tex_vbo: handle.v_tex_vbo,
+        vao: handle.vao,
         tex: tex,
         height: spec.height,
         width: spec.width,
