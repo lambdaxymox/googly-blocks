@@ -1425,8 +1425,14 @@ impl TextPanel {
     }
 }
 
+struct TextBufferHandle {
+    vao: GLuint,
+    v_pos_vbo: GLuint,
+    v_tex_vbo: GLuint,
+}
+
 /// Set up the geometry for rendering title screen text.
-fn create_buffers_text_buffer(sp: GLuint) -> (GLuint, GLuint, GLuint) {
+fn create_buffers_text_buffer(sp: GLuint) -> TextBufferHandle {
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
     };
@@ -1466,7 +1472,11 @@ fn create_buffers_text_buffer(sp: GLuint) -> (GLuint, GLuint, GLuint) {
         gl::EnableVertexAttribArray(v_tex_loc);
     }
 
-    (v_pos_vbo, v_tex_vbo, vao)
+    TextBufferHandle {
+        vao: vao,
+        v_pos_vbo: v_pos_vbo,
+        v_tex_vbo: v_tex_vbo,
+    }
 }
 
 /// Load the shaders for a textbox buffer.
@@ -1512,15 +1522,15 @@ fn create_text_buffer(
         let mut context = gl_state.borrow_mut();
         send_to_gpu_shaders_text_buffer(&mut *context, shader_source)
     };
-    let (v_pos_vbo, v_tex_vbo, vao) = create_buffers_text_buffer(sp);
+    let handle = create_buffers_text_buffer(sp);
     send_to_gpu_uniforms_text_buffer(sp, uniforms);
 
     let buffer = GLTextBuffer {
         sp: sp,
         tex: atlas_tex,
-        vao: vao,
-        v_pos_vbo: v_pos_vbo,
-        v_tex_vbo: v_tex_vbo,
+        vao: handle.vao,
+        v_pos_vbo: handle.v_pos_vbo,
+        v_tex_vbo: handle.v_tex_vbo,
     };
 
     TextBuffer::new(gl_state, atlas, buffer, scale_px)
