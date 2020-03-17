@@ -540,10 +540,8 @@ struct PieceMeshes {
     i: ObjMesh,
 }
 
-/// Create the model space geometry for the pieces displayed in the next panel
-/// on the game's interface.
-fn create_geometry_next_piece_panel() -> PieceMeshes {
-    let t_points: Vec<[f32; 3]> = vec![
+fn create_geometry_t_piece() -> ObjMesh {
+    let points: Vec<[f32; 3]> = vec![
         [-0.5, 0.5, 0.0], [0.0, 1.0, 0.0], [-0.5, 1.0, 0.0],
         [-0.5, 0.5, 0.0], [0.0, 0.5, 0.0], [ 0.0, 1.0, 0.0],
         [ 0.0, 0.5, 0.0], [0.5, 1.0, 0.0], [ 0.0, 1.0, 0.0],
@@ -553,7 +551,7 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [ 0.5, 0.5, 0.0], [1.0, 1.0, 0.0], [ 0.5, 1.0, 0.0],
         [ 0.5, 0.5, 0.0], [1.0, 0.5, 0.0], [ 1.0, 1.0, 0.0],        
     ];
-    let t_tex_coords: Vec<[f32; 2]> = vec![
+    let tex_coords: Vec<[f32; 2]> = vec![
         [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32], [0_f32 / 3_f32, 3_f32 / 3_f32],
         [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32],
         [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32], [0_f32 / 3_f32, 3_f32 / 3_f32],
@@ -563,7 +561,7 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32], [0_f32 / 3_f32, 3_f32 / 3_f32],
         [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32],
     ];
-    let t_normals: Vec<[f32; 3]> = vec![
+    let normals: Vec<[f32; 3]> = vec![
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
@@ -574,7 +572,11 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
     ];
 
-    let j_points: Vec<[f32; 3]> = vec![
+    ObjMesh::new(points, tex_coords, normals)
+}
+
+fn create_geometry_j_piece() -> ObjMesh {
+    let points: Vec<[f32; 3]> = vec![
         [-0.5, 0.5, 0.0], [0.0, 1.0, 0.0], [-0.5, 1.0, 0.0],
         [-0.5, 0.5, 0.0], [0.0, 0.5, 0.0], [ 0.0, 1.0, 0.0],
         [ 0.0, 0.5, 0.0], [0.5, 1.0, 0.0], [ 0.0, 1.0, 0.0],
@@ -584,7 +586,7 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [ 0.5, 0.0, 0.0], [1.0, 0.5, 0.0], [ 0.5, 0.5, 0.0],
         [ 0.5, 0.0, 0.0], [1.0, 0.0, 0.0], [ 1.0, 0.5, 0.0],       
     ];
-    let j_tex_coords: Vec<[f32; 2]> = vec![
+    let tex_coords: Vec<[f32; 2]> = vec![
         [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [0_f32 / 3_f32, 2_f32 / 3_f32],
         [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
         [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [0_f32 / 3_f32, 2_f32 / 3_f32],
@@ -594,7 +596,7 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [0_f32 / 3_f32, 2_f32 / 3_f32],
         [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
     ];
-    let j_normals: Vec<[f32; 3]> = vec![
+    let normals: Vec<[f32; 3]> = vec![
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
@@ -604,8 +606,12 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],    
     ];
+    
+    ObjMesh::new(points, tex_coords, normals)
+}
 
-    let z_points: Vec<[f32; 3]> = vec![
+fn create_geometry_z_piece() -> ObjMesh {
+    let points: Vec<[f32; 3]> = vec![
         [-0.5, 0.5, 0.0], [0.0, 1.0, 0.0], [-0.5, 1.0, 0.0],
         [-0.5, 0.5, 0.0], [0.0, 0.5, 0.0], [ 0.0, 1.0, 0.0],
         [ 0.0, 0.5, 0.0], [0.5, 1.0, 0.0], [ 0.0, 1.0, 0.0],
@@ -615,7 +621,7 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [ 0.5, 0.0, 0.0], [1.0, 0.5, 0.0], [ 0.5, 0.5, 0.0],
         [ 0.5, 0.0, 0.0], [1.0, 0.0, 0.0], [ 1.0, 0.5, 0.0],
     ];
-    let z_tex_coords: Vec<[f32; 2]> = vec![
+    let tex_coords: Vec<[f32; 2]> = vec![
         [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
         [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32],
         [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
@@ -625,7 +631,7 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
         [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32],
     ];
-    let z_normals: Vec<[f32; 3]> = vec![
+    let normals: Vec<[f32; 3]> = vec![
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
@@ -634,9 +640,13 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
-    ];
+    ];    
 
-    let o_points: Vec<[f32; 3]> = vec![
+    ObjMesh::new(points, tex_coords, normals)
+}
+
+fn create_geometry_o_piece() -> ObjMesh {
+    let points: Vec<[f32; 3]> = vec![
         [0.0, 0.5, 0.0], [0.5, 1.0, 0.0], [0.0, 1.0, 0.0],
         [0.0, 0.5, 0.0], [0.5, 0.5, 0.0], [0.5, 1.0, 0.0],
         [0.0, 0.0, 0.0], [0.5, 0.5, 0.0], [0.0, 0.5, 0.0],
@@ -646,7 +656,7 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [0.5, 0.0, 0.0], [1.0, 0.5, 0.0], [0.5, 0.5, 0.0],
         [0.5, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.5, 0.0],        
     ];
-    let o_tex_coords: Vec<[f32; 2]> = vec![
+    let tex_coords: Vec<[f32; 2]> = vec![
         [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
         [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32],
         [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
@@ -656,7 +666,7 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
         [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32],
     ];
-    let o_normals: Vec<[f32; 3]> = vec![
+    let normals: Vec<[f32; 3]> = vec![
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
@@ -666,8 +676,12 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
     ];
-    
-    let s_points: Vec<[f32; 3]> = vec![
+
+    ObjMesh::new(points, tex_coords, normals)
+}
+
+fn create_geometry_s_piece() -> ObjMesh {
+    let points: Vec<[f32; 3]> = vec![
         [-0.5, 0.0, 0.0], [0.0, 0.5, 0.0], [-0.5, 0.5, 0.0],
         [-0.5, 0.0, 0.0], [0.0, 0.0, 0.0], [ 0.0, 0.5, 0.0],
         [ 0.0, 0.5, 0.0], [0.5, 1.0, 0.0], [ 0.0, 1.0, 0.0],
@@ -677,7 +691,7 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [ 0.5, 0.5, 0.0], [1.0, 1.0, 0.0], [ 0.5, 1.0, 0.0],
         [ 0.5, 0.5, 0.0], [1.0, 0.5, 0.0], [ 1.0, 1.0, 0.0],        
     ];
-    let s_tex_coords: Vec<[f32; 2]> = vec![
+    let tex_coords: Vec<[f32; 2]> = vec![
         [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
         [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
         [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
@@ -687,7 +701,7 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
         [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
     ];
-    let s_normals: Vec<[f32; 3]> = vec![
+    let normals: Vec<[f32; 3]> = vec![
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
@@ -697,8 +711,12 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],    
     ];
+    
+    ObjMesh::new(points, tex_coords, normals)
+}
 
-    let l_points: Vec<[f32; 3]> = vec![
+fn create_geometry_l_piece() -> ObjMesh {
+    let points: Vec<[f32; 3]> = vec![
         [-0.5, 0.0, 0.0], [0.0, 0.5, 0.0], [-0.5, 0.5, 0.0],
         [-0.5, 0.0, 0.0], [0.0, 0.0, 0.0], [ 0.0, 0.5, 0.0],
         [ 0.0, 0.0, 0.0], [0.5, 0.5, 0.0], [ 0.0, 0.5, 0.0],
@@ -708,7 +726,7 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [ 0.5, 0.0, 0.0], [1.0, 0.5, 0.0], [ 0.5, 0.5, 0.0],
         [ 0.5, 0.0, 0.0], [1.0, 0.0, 0.0], [ 1.0, 0.5, 0.0],        
     ];
-    let l_tex_coords: Vec<[f32; 2]> = vec![
+    let tex_coords: Vec<[f32; 2]> = vec![
         [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
         [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
         [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
@@ -718,7 +736,7 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
         [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
     ];
-    let l_normals: Vec<[f32; 3]> = vec![
+    let normals: Vec<[f32; 3]> = vec![
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
@@ -729,7 +747,11 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
     ];
 
-    let i_points: Vec<[f32; 3]> = vec![
+    ObjMesh::new(points, tex_coords, normals)
+}
+
+fn create_geometry_i_piece() -> ObjMesh {
+    let points: Vec<[f32; 3]> = vec![
         [-1.0, 0.0, 0.0], [-0.5, 0.5, 0.0], [-1.0, 0.5, 0.0],
         [-1.0, 0.0, 0.0], [-0.5, 0.0, 0.0], [-0.5, 0.5, 0.0],
         [-0.5, 0.0, 0.0], [ 0.0, 0.5, 0.0], [-0.5, 0.5, 0.0],
@@ -739,7 +761,7 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [ 0.5, 0.0, 0.0], [ 1.0, 0.5, 0.0], [ 0.5, 0.5, 0.0],
         [ 0.5, 0.0, 0.0], [ 1.0, 0.0, 0.0], [ 1.0, 0.5, 0.0],        
     ];
-    let i_tex_coords: Vec<[f32; 2]> = vec![
+    let tex_coords: Vec<[f32; 2]> = vec![
         [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [0_f32 / 3_f32, 1_f32 / 3_f32],
         [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
         [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [0_f32 / 3_f32, 1_f32 / 3_f32],
@@ -749,7 +771,7 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [0_f32 / 3_f32, 1_f32 / 3_f32],
         [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
     ];
-    let i_normals: Vec<[f32; 3]> = vec![
+    let normals: Vec<[f32; 3]> = vec![
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
@@ -760,14 +782,20 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
         [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0],
     ];
 
+    ObjMesh::new(points, tex_coords, normals)
+}
+
+/// Create the model space geometry for the pieces displayed in the next panel
+/// on the game's interface.
+fn create_geometry_next_piece_panel() -> PieceMeshes {    
     PieceMeshes {
-        t: ObjMesh::new(t_points, t_tex_coords, t_normals),
-        j: ObjMesh::new(j_points, j_tex_coords, j_normals),
-        z: ObjMesh::new(z_points, z_tex_coords, z_normals),
-        o: ObjMesh::new(o_points, o_tex_coords, o_normals),
-        s: ObjMesh::new(s_points, s_tex_coords, s_normals),
-        l: ObjMesh::new(l_points, l_tex_coords, l_normals),
-        i: ObjMesh::new(i_points, i_tex_coords, i_normals),
+        t: create_geometry_t_piece(),
+        j: create_geometry_j_piece(),
+        z: create_geometry_z_piece(),
+        o: create_geometry_o_piece(),
+        s: create_geometry_s_piece(),
+        l: create_geometry_l_piece(),
+        i: create_geometry_i_piece(),
     }
 }
 
@@ -890,10 +918,21 @@ struct PieceUniformsData {
 fn create_uniforms_next_piece_panel(
     piece: TetrisPiece, scale: u32, viewport_width: u32, viewport_height: u32) -> PieceUniformsData {
     
+    use TetrisPiece::*;
+
     let block_width = 2.0 * (scale as f32 / viewport_width as f32);
     let block_height = 2.0 * (scale as f32 / viewport_height as f32);
     let gui_scale_mat = Matrix4::from_nonuniform_scale(block_width, block_height, 1.0);
-    let trans_mat = Matrix4::from_translation(cgmath::vec3((0.5, 0.5, 0.0)));
+    
+    let trans_mat = match piece {
+        T => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
+        J => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
+        Z => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
+        O => Matrix4::from_translation(cgmath::vec3((0.50, 0.43, 0.0))),
+        S => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
+        L => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
+        I => Matrix4::from_translation(cgmath::vec3((0.555, 0.48, 0.0))),
+    };
 
     PieceUniformsData {
         gui_scale_mat: gui_scale_mat,
@@ -922,14 +961,24 @@ fn send_to_gpu_uniforms_next_piece_panel(sp: GLuint, uniforms: &PieceUniformsDat
 }
 
 fn update_uniforms_next_piece_panel(game: &mut Game) {
+    use TetrisPiece::*;
+
     let (viewport_width, viewport_height) = game.get_framebuffer_size();
     let scale = 50;
-    let gui_scale_x = (scale as f32) / (viewport_width as f32);
-    let gui_scale_y = (scale as f32) / (viewport_height as f32);
+    let gui_scale_x = 2.0 * (scale as f32) / (viewport_width as f32);
+    let gui_scale_y = 2.0 * (scale as f32) / (viewport_height as f32);
     let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 1.0);
-    let trans_mat = Matrix4::from_translation(cgmath::vec3((0.5, 0.5, 0.0)));
+    let trans_mat = match game.next_piece {
+        T => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
+        J => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
+        Z => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
+        O => Matrix4::from_translation(cgmath::vec3((0.50, 0.43, 0.0))),
+        S => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
+        L => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
+        I => Matrix4::from_translation(cgmath::vec3((0.555, 0.48, 0.0))),
+    };
     let uniforms = PieceUniformsData { gui_scale_mat: gui_scale_mat, trans_mat: trans_mat };
-    send_to_gpu_uniforms_next_piece_panel(game.background.buffer.sp, &uniforms);
+    send_to_gpu_uniforms_next_piece_panel(game.ui.next_piece_panel.buffer.sp, &uniforms);
 }
 
 fn send_to_gpu_textures_next_piece_panel(tex_image: &TexImage2D) -> GLuint {
@@ -1632,12 +1681,6 @@ impl Game {
         update_uniforms_background_panel(self);
     }
 
-    #[inline]
-    fn update_next_piece(&mut self) {
-        // Update the uniforms.
-        update_uniforms_next_piece_panel(self);
-    }
-
     #[inline(always)]
     fn render_background(&mut self) {
         unsafe {
@@ -1652,6 +1695,7 @@ impl Game {
     #[inline(always)]
     fn update_ui(&mut self) {
         update_ui_panel_uniforms(self);
+        update_uniforms_next_piece_panel(self);
         self.ui.update_score(self.score);
         self.ui.update_lines(self.lines);
         self.ui.update_level(self.level);
