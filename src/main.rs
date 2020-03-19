@@ -355,13 +355,14 @@ fn create_geometry_ui_panel() -> ObjMesh {
     ObjMesh::new(points, tex_coords, normals)
 }
 
+#[derive(Copy, Clone)]
 struct UIPanelHandle {
     vao: GLuint,
     v_pos_vbo: GLuint,
     v_tex_vbo: GLuint,
 }
 
-fn send_to_gpu_geometry_ui_panel(sp: GLuint, mesh: &ObjMesh) -> UIPanelHandle {
+fn create_buffers_geometry_ui_panel(sp: GLuint, mesh: &ObjMesh) -> UIPanelHandle {
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
     };
@@ -377,6 +378,8 @@ fn send_to_gpu_geometry_ui_panel(sp: GLuint, mesh: &ObjMesh) -> UIPanelHandle {
         gl::GenBuffers(1, &mut v_pos_vbo);
     }
     debug_assert!(v_pos_vbo > 0);
+
+    /*
     unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
         gl::BufferData(
@@ -385,12 +388,14 @@ fn send_to_gpu_geometry_ui_panel(sp: GLuint, mesh: &ObjMesh) -> UIPanelHandle {
             mesh.points.as_ptr() as *const GLvoid, gl::STATIC_DRAW
         );
     }
-
+    */
     let mut v_tex_vbo = 0;
     unsafe {
         gl::GenBuffers(1, &mut v_tex_vbo);
     }
     debug_assert!(v_tex_vbo > 0);
+
+    /*
     unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
         gl::BufferData(
@@ -399,6 +404,7 @@ fn send_to_gpu_geometry_ui_panel(sp: GLuint, mesh: &ObjMesh) -> UIPanelHandle {
             mesh.tex_coords.as_ptr() as *const GLvoid, gl::STATIC_DRAW
         )
     }
+    */
 
     let mut vao = 0;
     unsafe {
@@ -419,6 +425,64 @@ fn send_to_gpu_geometry_ui_panel(sp: GLuint, mesh: &ObjMesh) -> UIPanelHandle {
         vao: vao,
         v_pos_vbo: v_pos_vbo,
         v_tex_vbo: v_tex_vbo,
+    }
+}
+
+fn send_to_gpu_geometry_ui_panel(sp: GLuint, handle: UIPanelHandle, mesh: &ObjMesh) {
+    let v_pos_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+    };
+    debug_assert!(v_pos_loc > -1);
+    let v_pos_loc = v_pos_loc as u32;
+
+    let v_tex_loc = unsafe { gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr()) };
+    debug_assert!(v_tex_loc > -1);
+    let v_tex_loc = v_tex_loc as u32;
+    /*
+    let mut v_pos_vbo = 0;
+    unsafe {
+        gl::GenBuffers(1, &mut v_pos_vbo);
+    }
+    debug_assert!(v_pos_vbo > 0);
+    */
+    unsafe {
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            mesh.points.len_bytes() as GLsizeiptr,
+            mesh.points.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+        );
+    }
+    /*
+    let mut v_tex_vbo = 0;
+    unsafe {
+        gl::GenBuffers(1, &mut v_tex_vbo);
+    }
+    debug_assert!(v_tex_vbo > 0);
+    */
+    unsafe {
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            mesh.tex_coords.len_bytes() as GLsizeiptr,
+            mesh.tex_coords.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+        )
+    }
+    /*
+    let mut vao = 0;
+    unsafe {
+        gl::GenVertexArrays(1, &mut vao);
+    }
+    debug_assert!(vao > 0);
+    */
+    unsafe {
+        gl::BindVertexArray(handle.vao);
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
+        gl::VertexAttribPointer(v_pos_loc, 3, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
+        gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(v_pos_loc);
+        gl::EnableVertexAttribArray(v_tex_loc);
     }
 }
 
@@ -522,7 +586,8 @@ fn load_ui_panel(game: &mut glh::GLState, spec: UIPanelSpec, uniforms: UIPanelUn
     let shader_source = create_shaders_ui_panel();
     let sp = send_to_gpu_shaders_ui_panel(game, shader_source);
     let mesh = create_geometry_ui_panel();
-    let handle = send_to_gpu_geometry_ui_panel(sp, &mesh);
+    let handle = create_buffers_geometry_ui_panel(sp, &mesh);
+    send_to_gpu_geometry_ui_panel(sp, handle, &mesh);
     let tex_image = create_textures_ui_panel();
     let tex = send_to_gpu_textures_ui_panel(&tex_image);
     send_to_gpu_uniforms_ui_panel(sp, uniforms);
