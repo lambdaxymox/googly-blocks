@@ -168,31 +168,11 @@ fn create_buffers_geometry_background(sp: GLuint) -> BackgroundPanelHandle {
     }
     debug_assert!(v_pos_vbo > 0);
     
-    /*
-    unsafe {
-        gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
-        gl::BufferData(
-            gl::ARRAY_BUFFER,
-            mesh.points.len_bytes() as GLsizeiptr,
-            mesh.points.as_ptr() as *const GLvoid, gl::STATIC_DRAW
-        );
-    }
-    */
     let mut v_tex_vbo = 0;
     unsafe {
         gl::GenBuffers(1, &mut v_tex_vbo);
     }
     debug_assert!(v_tex_vbo > 0);
-    /*
-    unsafe {
-        gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
-        gl::BufferData(
-            gl::ARRAY_BUFFER,
-            mesh.tex_coords.len_bytes() as GLsizeiptr,
-            mesh.tex_coords.as_ptr() as *const GLvoid, gl::STATIC_DRAW
-        )
-    }
-    */
 
     let mut vao = 0;
     unsafe {
@@ -226,13 +206,6 @@ fn send_to_gpu_geometry_background(sp: GLuint, handle: BackgroundPanelHandle, me
     let v_tex_loc = unsafe { gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr()) };
     debug_assert!(v_tex_loc > -1);
     let v_tex_loc = v_tex_loc as u32;
-    /*
-    let mut v_pos_vbo = 0;
-    unsafe {
-        gl::GenBuffers(1, &mut v_pos_vbo);
-    }
-    debug_assert!(v_pos_vbo > 0);
-    */
     
     unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
@@ -242,13 +215,7 @@ fn send_to_gpu_geometry_background(sp: GLuint, handle: BackgroundPanelHandle, me
             mesh.points.as_ptr() as *const GLvoid, gl::STATIC_DRAW
         );
     }
-    /*
-    let mut v_tex_vbo = 0;
-    unsafe {
-        gl::GenBuffers(1, &mut v_tex_vbo);
-    }
-    debug_assert!(v_tex_vbo > 0);
-    */
+
     unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
         gl::BufferData(
@@ -257,13 +224,7 @@ fn send_to_gpu_geometry_background(sp: GLuint, handle: BackgroundPanelHandle, me
             mesh.tex_coords.as_ptr() as *const GLvoid, gl::STATIC_DRAW
         )
     }
-    /*
-    let mut vao = 0;
-    unsafe {
-        gl::GenVertexArrays(1, &mut vao);
-    }
-    debug_assert!(vao > 0);
-    */
+
     unsafe {
         gl::BindVertexArray(handle.vao);
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
@@ -273,13 +234,6 @@ fn send_to_gpu_geometry_background(sp: GLuint, handle: BackgroundPanelHandle, me
         gl::EnableVertexAttribArray(v_pos_loc);
         gl::EnableVertexAttribArray(v_tex_loc);
     }
-    /*
-    BackgroundPanelHandle {
-        vao: vao,
-        v_pos_vbo: v_pos_vbo,
-        v_tex_vbo: v_tex_vbo,
-    }
-    */
 }
 
 fn create_textures_background() -> TexImage2D {
