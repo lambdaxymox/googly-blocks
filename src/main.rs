@@ -1661,12 +1661,9 @@ fn send_to_gpu_font_texture(atlas: &BitmapFontAtlas, wrapping_mode: GLuint) -> R
 
 /// Load a file atlas.
 fn load_font_atlas() -> bmfa::BitmapFontAtlas {
-    let arr: &'static [u8; 192197] = include_asset!("NotoSans-Bold.bmfa");
-    let contents = to_vec(&arr[0], 192197);
-    let mut reader = io::Cursor::new(contents);
-    let atlas = bmfa::from_reader(&mut reader).unwrap();
-
-    atlas
+    let asset: &'static [u8; 192197] = include_asset!("NotoSans-Bold.bmfa");
+    let mut reader = io::Cursor::new(asset.iter());
+    bmfa::from_reader(&mut reader).unwrap()
 }
 
 struct UI {
