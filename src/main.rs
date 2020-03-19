@@ -288,13 +288,12 @@ struct BackgroundPanel {
     buffer: GLBackgroundPanel,
 }
 
-fn load_background(game: &mut glh::GLState, spec: BackgroundPanelSpec) -> BackgroundPanel {
+fn load_background_panel(game: &mut glh::GLState, spec: BackgroundPanelSpec) -> BackgroundPanel {
     let shader_source = create_shaders_background();
     let mesh = create_geometry_background();
     let tex_image = create_textures_background();
     let sp = send_to_gpu_shaders_background(game, shader_source);
     let handle = create_buffers_geometry_background(sp);
-    //let handle = send_to_gpu_geometry_background(sp, &mesh);
     send_to_gpu_geometry_background(sp, handle, &mesh);
     let tex = send_to_gpu_textures_background(&tex_image);
     let buffer = GLBackgroundPanel {
@@ -1861,7 +1860,7 @@ fn init_game() -> Game {
     let background_panel_spec = BackgroundPanelSpec { height: background_panel_height, width: background_panel_width };
     let background = {
         let mut context = gl_context.borrow_mut(); 
-        load_background(&mut *context, background_panel_spec)
+        load_background_panel(&mut *context, background_panel_spec)
     };
     let (viewport_width, viewport_height) = {
         let context = gl_context.borrow();
