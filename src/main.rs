@@ -49,14 +49,6 @@ const CLEAR_COLOR: [f32; 4] = [0.2_f32, 0.2_f32, 0.2_f32, 1.0_f32];
 // Default value for the depth buffer.
 const CLEAR_DEPTH: [f32; 4] = [1.0_f32, 1.0_f32, 1.0_f32, 1.0_f32];
 
-fn to_vec(ptr: *const u8, length: usize) -> Vec<u8> {
-    let mut vec = vec![0 as u8; length];
-    for i in 0..length {
-        vec[i] = unsafe { *((ptr as usize + i) as *const u8) };
-    }
-
-    vec
-}
 
 /// Load texture image into the GPU.
 fn send_to_gpu_texture(tex_data: &TexImage2D, wrapping_mode: GLuint) -> Result<GLuint, String> {
@@ -152,15 +144,8 @@ struct BackgroundPanelHandle {
 }
 
 fn create_buffers_geometry_background(sp: GLuint) -> BackgroundPanelHandle {
-    let v_pos_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
-    };
-    debug_assert!(v_pos_loc > -1);
-    let v_pos_loc = v_pos_loc as u32;
-
-    let v_tex_loc = unsafe { gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr()) };
-    debug_assert!(v_tex_loc > -1);
-    let v_tex_loc = v_tex_loc as u32;
+    let v_pos_loc = 0;
+    let v_tex_loc = 1;
 
     let mut v_pos_vbo = 0;
     unsafe {
@@ -197,16 +182,8 @@ fn create_buffers_geometry_background(sp: GLuint) -> BackgroundPanelHandle {
 }
 
 fn send_to_gpu_geometry_background(sp: GLuint, handle: BackgroundPanelHandle, mesh: &ObjMesh) {
-    let v_pos_loc = unsafe { 
-        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
-    };
-    debug_assert!(v_pos_loc > -1);
-    let v_pos_loc = v_pos_loc as u32;
-
-    let v_tex_loc = unsafe { gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr()) };
-    debug_assert!(v_tex_loc > -1);
-    let v_tex_loc = v_tex_loc as u32;
-    
+    let v_pos_loc = 0;
+    let v_tex_loc = 1;
     unsafe {
         // Load position data.
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
