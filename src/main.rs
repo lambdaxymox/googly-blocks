@@ -994,11 +994,24 @@ struct PieceUniformsData {
     trans_mat: Matrix4,
 }
 
+
+#[derive(Copy, Clone, PartialEq, Eq)]
+enum TetrisPiece { 
+    T,
+    J, 
+    Z, 
+    O, 
+    S, 
+    L, 
+    I,
+}
+
 fn create_uniforms_next_piece_panel(
     piece: TetrisPiece, scale: u32, viewport_width: u32, viewport_height: u32) -> PieceUniformsData {
     
     use TetrisPiece::*;
 
+    // FIXME: MAGIC NUMBERS IN USE HERE.
     let block_width = 2.0 * (scale as f32 / viewport_width as f32);
     let block_height = 2.0 * (scale as f32 / viewport_height as f32);
     let gui_scale_mat = Matrix4::from_nonuniform_scale(block_width, block_height, 1.0);
@@ -1063,10 +1076,6 @@ fn update_uniforms_next_piece_panel(game: &mut Game) {
 fn send_to_gpu_textures_next_piece_panel(tex_image: &TexImage2D) -> GLuint {
     send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()  
 }
-
-
-#[derive(Copy, Clone, PartialEq, Eq)]
-enum TetrisPiece { T, J, Z, O, S, L, I }
 
 struct GLNextPiecePanel {
     sp: GLuint,
@@ -2038,7 +2047,6 @@ fn main() {
             // TODO: Render the blocks.
 
             // TODO: Render the googly eyes.
-            
         }
 
         // Send the results to the output.
