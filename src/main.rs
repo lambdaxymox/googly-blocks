@@ -335,16 +335,7 @@ fn create_shaders_ui_panel() -> ShaderSource {
 }
 
 fn send_to_gpu_shaders_ui_panel(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
-    let mut vert_reader = io::Cursor::new(source.vert_source);
-    let mut frag_reader = io::Cursor::new(source.frag_source);
-    let sp = glh::create_program_from_reader(
-        game,
-        &mut vert_reader, source.vert_name,
-        &mut frag_reader, source.frag_name,
-    ).unwrap();
-    debug_assert!(sp > 0);
-
-    sp
+    send_to_gpu_shaders(game, source)
 }
 
 fn create_geometry_ui_panel() -> ObjMesh {
