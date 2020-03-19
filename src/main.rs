@@ -235,11 +235,8 @@ fn send_to_gpu_geometry_background(sp: GLuint, handle: BackgroundPanelHandle, me
 }
 
 fn create_textures_background() -> TexImage2D {
-    let arr: &'static [u8; 27695] = include_asset!("title.png");
-    let asset = to_vec(&arr[0], 27695);
-    let tex_image = teximage2d::load_from_memory(&asset).unwrap();
-
-    tex_image
+    let asset: &'static [u8; 27695] = include_asset!("title.png");
+    teximage2d::load_from_memory(asset).unwrap()
 }
 
 fn send_to_gpu_textures_background(tex_image: &TexImage2D) -> GLuint {
@@ -444,10 +441,8 @@ fn send_to_gpu_geometry_ui_panel(sp: GLuint, handle: UIPanelHandle, mesh: &ObjMe
 }
 
 fn create_textures_ui_panel() -> TexImage2D {
-    let arr: &'static [u8; 31235] = include_asset!("ui_panel.png");
-    let asset = to_vec(&arr[0], 31235);
-
-    teximage2d::load_from_memory(&asset).unwrap()
+    let asset: &'static [u8; 31235] = include_asset!("ui_panel.png");
+    teximage2d::load_from_memory(asset).unwrap()
 }
 
 fn send_to_gpu_textures_ui_panel(tex_image: &TexImage2D) -> GLuint {
@@ -854,11 +849,8 @@ fn create_geometry_next_piece_panel() -> PieceMeshes {
 }
 
 fn create_textures_next_piece_panel() -> TexImage2D {
-    let arr: &'static [u8; 1448] = include_asset!("blocks.png");
-    let asset = to_vec(&arr[0], 1448);
-    let tex_image = teximage2d::load_from_memory(&asset).unwrap();
-
-    tex_image
+    let asset: &'static [u8; 1448] = include_asset!("blocks.png");
+    teximage2d::load_from_memory(asset).unwrap()
 }
 
 /// Send the shaders for a textbox buffer to the GPU.
