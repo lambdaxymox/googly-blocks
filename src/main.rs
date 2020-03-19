@@ -362,7 +362,7 @@ struct UIPanelHandle {
     v_tex_vbo: GLuint,
 }
 
-fn create_buffers_geometry_ui_panel(sp: GLuint, mesh: &ObjMesh) -> UIPanelHandle {
+fn create_buffers_geometry_ui_panel(sp: GLuint) -> UIPanelHandle {
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
     };
@@ -543,7 +543,7 @@ fn load_ui_panel(game: &mut glh::GLState, spec: UIPanelSpec, uniforms: UIPanelUn
     let shader_source = create_shaders_ui_panel();
     let sp = send_to_gpu_shaders_ui_panel(game, shader_source);
     let mesh = create_geometry_ui_panel();
-    let handle = create_buffers_geometry_ui_panel(sp, &mesh);
+    let handle = create_buffers_geometry_ui_panel(sp);
     send_to_gpu_geometry_ui_panel(sp, handle, &mesh);
     let tex_image = create_textures_ui_panel();
     let tex = send_to_gpu_textures_ui_panel(&tex_image);
@@ -890,33 +890,11 @@ fn create_buffers_geometry_piece_mesh(sp: GLuint) -> NextPiecePanelHandle {
     }
     debug_assert!(v_pos_vbo > 0);
 
-    /*
-    unsafe {
-        gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
-        gl::BufferData(
-            gl::ARRAY_BUFFER,
-            mesh.points.len_bytes() as GLsizeiptr,
-            mesh.points.as_ptr() as *const GLvoid, gl::STATIC_DRAW
-        );
-    }
-    */
-
     let mut v_tex_vbo = 0;
     unsafe {
         gl::CreateBuffers(1, &mut v_tex_vbo);
     }
     debug_assert!(v_tex_vbo > 0);
-
-    /*
-    unsafe {
-        gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
-        gl::BufferData(
-            gl::ARRAY_BUFFER,
-            mesh.tex_coords.len_bytes() as GLsizeiptr,
-            mesh.tex_coords.as_ptr() as *const GLvoid, gl::STATIC_DRAW
-        );
-    }
-    */
 
     let mut vao = 0;
     unsafe {
@@ -951,13 +929,6 @@ fn send_to_gpu_geometry_piece_mesh(sp: GLuint, handle: NextPiecePanelHandle, mes
     debug_assert!(v_tex_loc > -1);
     let v_tex_loc = v_tex_loc as u32;
 
-    /*
-    let mut v_pos_vbo = 0;
-    unsafe {
-        gl::CreateBuffers(1, &mut v_pos_vbo);
-    }
-    debug_assert!(v_pos_vbo > 0);
-    */
     unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
         gl::BufferData(
@@ -965,30 +936,12 @@ fn send_to_gpu_geometry_piece_mesh(sp: GLuint, handle: NextPiecePanelHandle, mes
             mesh.points.len_bytes() as GLsizeiptr,
             mesh.points.as_ptr() as *const GLvoid, gl::STATIC_DRAW
         );
-    }
-    /*
-    let mut v_tex_vbo = 0;
-    unsafe {
-        gl::CreateBuffers(1, &mut v_tex_vbo);
-    }
-    debug_assert!(v_tex_vbo > 0);
-    */
-    unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
         gl::BufferData(
             gl::ARRAY_BUFFER,
             mesh.tex_coords.len_bytes() as GLsizeiptr,
             mesh.tex_coords.as_ptr() as *const GLvoid, gl::STATIC_DRAW
         );
-    }
-    /*
-    let mut vao = 0;
-    unsafe {
-        gl::GenVertexArrays(1, &mut vao);
-    }
-    debug_assert!(vao > 0);
-    */
-    unsafe {
         gl::BindVertexArray(handle.vao);
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
         gl::VertexAttribPointer(v_pos_loc, 3, gl::FLOAT, gl::FALSE, 0, ptr::null());
