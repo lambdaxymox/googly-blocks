@@ -144,13 +144,14 @@ fn create_geometry_background() -> ObjMesh {
     ObjMesh::new(points, tex_coords, normals)
 }
 
+#[derive(Copy, Clone)]
 struct BackgroundPanelHandle {
     vao: GLuint,
     v_pos_vbo: GLuint,
     v_tex_vbo: GLuint,
 }
 
-fn send_to_gpu_geometry_background(sp: GLuint, mesh: &ObjMesh) -> BackgroundPanelHandle {
+fn create_buffers_geometry_background(sp: GLuint) -> BackgroundPanelHandle {
     let v_pos_loc = unsafe {
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
     };
@@ -166,6 +167,8 @@ fn send_to_gpu_geometry_background(sp: GLuint, mesh: &ObjMesh) -> BackgroundPane
         gl::GenBuffers(1, &mut v_pos_vbo);
     }
     debug_assert!(v_pos_vbo > 0);
+    
+    /*
     unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
         gl::BufferData(
@@ -174,12 +177,13 @@ fn send_to_gpu_geometry_background(sp: GLuint, mesh: &ObjMesh) -> BackgroundPane
             mesh.points.as_ptr() as *const GLvoid, gl::STATIC_DRAW
         );
     }
-
+    */
     let mut v_tex_vbo = 0;
     unsafe {
         gl::GenBuffers(1, &mut v_tex_vbo);
     }
     debug_assert!(v_tex_vbo > 0);
+    /*
     unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
         gl::BufferData(
@@ -188,6 +192,7 @@ fn send_to_gpu_geometry_background(sp: GLuint, mesh: &ObjMesh) -> BackgroundPane
             mesh.tex_coords.as_ptr() as *const GLvoid, gl::STATIC_DRAW
         )
     }
+    */
 
     let mut vao = 0;
     unsafe {
@@ -208,7 +213,73 @@ fn send_to_gpu_geometry_background(sp: GLuint, mesh: &ObjMesh) -> BackgroundPane
         vao: vao,
         v_pos_vbo: v_pos_vbo,
         v_tex_vbo: v_tex_vbo,
+    }    
+}
+
+fn send_to_gpu_geometry_background(sp: GLuint, handle: BackgroundPanelHandle, mesh: &ObjMesh) {
+    let v_pos_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+    };
+    debug_assert!(v_pos_loc > -1);
+    let v_pos_loc = v_pos_loc as u32;
+
+    let v_tex_loc = unsafe { gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr()) };
+    debug_assert!(v_tex_loc > -1);
+    let v_tex_loc = v_tex_loc as u32;
+    /*
+    let mut v_pos_vbo = 0;
+    unsafe {
+        gl::GenBuffers(1, &mut v_pos_vbo);
     }
+    debug_assert!(v_pos_vbo > 0);
+    */
+    
+    unsafe {
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            mesh.points.len_bytes() as GLsizeiptr,
+            mesh.points.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+        );
+    }
+    /*
+    let mut v_tex_vbo = 0;
+    unsafe {
+        gl::GenBuffers(1, &mut v_tex_vbo);
+    }
+    debug_assert!(v_tex_vbo > 0);
+    */
+    unsafe {
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            mesh.tex_coords.len_bytes() as GLsizeiptr,
+            mesh.tex_coords.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+        )
+    }
+    /*
+    let mut vao = 0;
+    unsafe {
+        gl::GenVertexArrays(1, &mut vao);
+    }
+    debug_assert!(vao > 0);
+    */
+    unsafe {
+        gl::BindVertexArray(handle.vao);
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
+        gl::VertexAttribPointer(v_pos_loc, 3, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
+        gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(v_pos_loc);
+        gl::EnableVertexAttribArray(v_tex_loc);
+    }
+    /*
+    BackgroundPanelHandle {
+        vao: vao,
+        v_pos_vbo: v_pos_vbo,
+        v_tex_vbo: v_tex_vbo,
+    }
+    */
 }
 
 fn create_textures_background() -> TexImage2D {
@@ -233,7 +304,6 @@ fn send_to_gpu_uniforms_background_panel(sp: GLuint, uniforms: BackgroundPanelUn
     let gui_scale_mat = Matrix4::from_nonuniform_scale(
         uniforms.gui_scale_x, uniforms.gui_scale_y, 0.0
     );
-
     let m_gui_scale_loc = unsafe {
         gl::GetUniformLocation(sp, glh::gl_str("m_gui_scale").as_ptr())
     };
@@ -271,7 +341,9 @@ fn load_background(game: &mut glh::GLState, spec: BackgroundPanelSpec) -> Backgr
     let mesh = create_geometry_background();
     let tex_image = create_textures_background();
     let sp = send_to_gpu_shaders_background(game, shader_source);
-    let handle = send_to_gpu_geometry_background(sp, &mesh);
+    let handle = create_buffers_geometry_background(sp);
+    //let handle = send_to_gpu_geometry_background(sp, &mesh);
+    send_to_gpu_geometry_background(sp, handle, &mesh);
     let tex = send_to_gpu_textures_background(&tex_image);
     let buffer = GLBackgroundPanel {
         sp: sp,
