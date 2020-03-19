@@ -197,7 +197,7 @@ fn create_buffers_geometry_background(sp: GLuint) -> BackgroundPanelHandle {
 }
 
 fn send_to_gpu_geometry_background(sp: GLuint, handle: BackgroundPanelHandle, mesh: &ObjMesh) {
-    let v_pos_loc = unsafe {
+    let v_pos_loc = unsafe { 
         gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
     };
     debug_assert!(v_pos_loc > -1);
@@ -208,24 +208,22 @@ fn send_to_gpu_geometry_background(sp: GLuint, handle: BackgroundPanelHandle, me
     let v_tex_loc = v_tex_loc as u32;
     
     unsafe {
+        // Load position data.
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
         gl::BufferData(
             gl::ARRAY_BUFFER,
             mesh.points.len_bytes() as GLsizeiptr,
             mesh.points.as_ptr() as *const GLvoid, gl::STATIC_DRAW
         );
-    }
-
-    unsafe {
+        // Load the texture coordinates.
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
         gl::BufferData(
             gl::ARRAY_BUFFER,
             mesh.tex_coords.len_bytes() as GLsizeiptr,
             mesh.tex_coords.as_ptr() as *const GLvoid, gl::STATIC_DRAW
-        )
-    }
+        );
 
-    unsafe {
+        // Enable the arrays for use by the shader.
         gl::BindVertexArray(handle.vao);
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
         gl::VertexAttribPointer(v_pos_loc, 3, gl::FLOAT, gl::FALSE, 0, ptr::null());
