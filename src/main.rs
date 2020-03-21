@@ -14,13 +14,12 @@ mod gl {
 
 #[macro_use]
 mod macros;
-
+mod mesh;
 mod gl_help;
 
 
 use gl_help as glh;
 use cgmath as math;
-use mini_obj as mesh;
 
 use bmfa::BitmapFontAtlas;
 use glfw::{Action, Context, Key};
@@ -120,6 +119,15 @@ fn send_to_gpu_shaders_background(game: &mut glh::GLState, source: ShaderSource)
 }
 
 fn create_geometry_background() -> ObjMesh {
+    let points: Vec<[GLfloat; 2]> = vec![
+        [1.0, 1.0], [-1.0, -1.0], [ 1.0, -1.0],
+        [1.0, 1.0], [-1.0,  1.0], [-1.0, -1.0],
+    ];
+    let tex_coords: Vec<[GLfloat; 2]> = vec![
+        [1.0, 1.0], [0.0, 0.0], [1.0, 0.0],
+        [1.0, 1.0], [0.0, 1.0], [0.0, 0.0],
+    ];
+    /*
     let points: Vec<[GLfloat; 3]> = vec![
         [1.0, 1.0, 0.0], [-1.0, -1.0, 0.0], [ 1.0, -1.0, 0.0],
         [1.0, 1.0, 0.0], [-1.0,  1.0, 0.0], [-1.0, -1.0, 0.0],
@@ -134,6 +142,8 @@ fn create_geometry_background() -> ObjMesh {
     ];
 
     ObjMesh::new(points, tex_coords, normals)
+    */
+    ObjMesh::new(points, tex_coords)
 }
 
 #[derive(Copy, Clone)]
@@ -167,7 +177,7 @@ fn create_buffers_geometry_background(sp: GLuint) -> BackgroundPanelHandle {
     unsafe {
         gl::BindVertexArray(vao);
         gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
-        gl::VertexAttribPointer(v_pos_loc, 3, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::VertexAttribPointer(v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
         gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
         gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
         gl::EnableVertexAttribArray(v_pos_loc);
@@ -203,7 +213,7 @@ fn send_to_gpu_geometry_background(sp: GLuint, handle: BackgroundPanelHandle, me
         // Enable the arrays for use by the shader.
         gl::BindVertexArray(handle.vao);
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
-        gl::VertexAttribPointer(v_pos_loc, 3, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::VertexAttribPointer(v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
         gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
         gl::EnableVertexAttribArray(v_pos_loc);
@@ -313,6 +323,7 @@ fn send_to_gpu_shaders_ui_panel(game: &mut glh::GLState, source: ShaderSource) -
 }
 
 fn create_geometry_ui_panel() -> ObjMesh {
+    /*
     let points: Vec<[GLfloat; 3]> = vec![
         [1.0, 1.0, 0.0], [-1.0, -1.0, 0.0], [ 1.0, -1.0, 0.0],
         [1.0, 1.0, 0.0], [-1.0,  1.0, 0.0], [-1.0, -1.0, 0.0]
@@ -327,6 +338,17 @@ fn create_geometry_ui_panel() -> ObjMesh {
     ];
 
     ObjMesh::new(points, tex_coords, normals)
+    */
+    let points: Vec<[GLfloat; 2]> = vec![
+        [1.0, 1.0], [-1.0, -1.0], [ 1.0, -1.0],
+        [1.0, 1.0], [-1.0,  1.0], [-1.0, -1.0]
+    ];
+    let tex_coords: Vec<[GLfloat; 2]> = vec![
+        [1.0, 1.0], [0.0, 0.0], [1.0, 0.0],
+        [1.0, 1.0], [0.0, 1.0], [0.0, 0.0],
+    ];
+
+    ObjMesh::new(points, tex_coords)
 }
 
 #[derive(Copy, Clone)]
@@ -360,7 +382,7 @@ fn create_buffers_geometry_ui_panel(sp: GLuint) -> UIPanelHandle {
     unsafe {
         gl::BindVertexArray(vao);
         gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
-        gl::VertexAttribPointer(v_pos_loc, 3, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::VertexAttribPointer(v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
         gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
         gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
         gl::EnableVertexAttribArray(v_pos_loc);
@@ -395,7 +417,7 @@ fn send_to_gpu_geometry_ui_panel(sp: GLuint, handle: UIPanelHandle, mesh: &ObjMe
 
         gl::BindVertexArray(handle.vao);
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
-        gl::VertexAttribPointer(v_pos_loc, 3, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::VertexAttribPointer(v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
         gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
         gl::EnableVertexAttribArray(v_pos_loc);
@@ -553,6 +575,7 @@ struct PieceMeshes {
 }
 
 fn create_geometry_t_piece() -> ObjMesh {
+    /*
     let points: Vec<[f32; 3]> = vec![
         [-0.5, 0.5, 0.0], [0.0, 1.0, 0.0], [-0.5, 1.0, 0.0],
         [-0.5, 0.5, 0.0], [0.0, 0.5, 0.0], [ 0.0, 1.0, 0.0],
@@ -585,9 +608,33 @@ fn create_geometry_t_piece() -> ObjMesh {
     ];
 
     ObjMesh::new(points, tex_coords, normals)
+    */
+    let points: Vec<[f32; 2]> = vec![
+        [-0.5, 0.5], [0.0, 1.0], [-0.5, 1.0],
+        [-0.5, 0.5], [0.0, 0.5], [ 0.0, 1.0],
+        [ 0.0, 0.5], [0.5, 1.0], [ 0.0, 1.0],
+        [ 0.0, 0.5], [0.5, 0.5], [ 0.5, 1.0],
+        [ 0.0, 0.0], [0.5, 0.5], [ 0.0, 0.5],
+        [ 0.0, 0.0], [0.5, 0.0], [ 0.5, 0.5],
+        [ 0.5, 0.5], [1.0, 1.0], [ 0.5, 1.0],
+        [ 0.5, 0.5], [1.0, 0.5], [ 1.0, 1.0],        
+    ];
+    let tex_coords: Vec<[f32; 2]> = vec![
+        [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32], [0_f32 / 3_f32, 3_f32 / 3_f32],
+        [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32],
+        [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32], [0_f32 / 3_f32, 3_f32 / 3_f32],
+        [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32],
+        [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32], [0_f32 / 3_f32, 3_f32 / 3_f32],
+        [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32],
+        [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32], [0_f32 / 3_f32, 3_f32 / 3_f32],
+        [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32],
+    ];
+
+    ObjMesh::new(points, tex_coords)
 }
 
 fn create_geometry_j_piece() -> ObjMesh {
+    /*
     let points: Vec<[f32; 3]> = vec![
         [-0.5, 0.5, 0.0], [0.0, 1.0, 0.0], [-0.5, 1.0, 0.0],
         [-0.5, 0.5, 0.0], [0.0, 0.5, 0.0], [ 0.0, 1.0, 0.0],
@@ -620,9 +667,33 @@ fn create_geometry_j_piece() -> ObjMesh {
     ];
     
     ObjMesh::new(points, tex_coords, normals)
+    */
+    let points: Vec<[f32; 2]> = vec![
+        [-0.5, 0.5], [0.0, 1.0], [-0.5, 1.0],
+        [-0.5, 0.5], [0.0, 0.5], [ 0.0, 1.0],
+        [ 0.0, 0.5], [0.5, 1.0], [ 0.0, 1.0],
+        [ 0.0, 0.5], [0.5, 0.5], [ 0.5, 1.0],
+        [ 0.5, 0.5], [1.0, 1.0], [ 0.5, 1.0],
+        [ 0.5, 0.5], [1.0, 0.5], [ 1.0, 1.0],
+        [ 0.5, 0.0], [1.0, 0.5], [ 0.5, 0.5],
+        [ 0.5, 0.0], [1.0, 0.0], [ 1.0, 0.5],       
+    ];
+    let tex_coords: Vec<[f32; 2]> = vec![
+        [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [0_f32 / 3_f32, 2_f32 / 3_f32],
+        [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
+        [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [0_f32 / 3_f32, 2_f32 / 3_f32],
+        [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
+        [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [0_f32 / 3_f32, 2_f32 / 3_f32],
+        [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
+        [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [0_f32 / 3_f32, 2_f32 / 3_f32],
+        [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
+    ];
+    
+    ObjMesh::new(points, tex_coords)
 }
 
 fn create_geometry_z_piece() -> ObjMesh {
+    /*
     let points: Vec<[f32; 3]> = vec![
         [-0.5, 0.5, 0.0], [0.0, 1.0, 0.0], [-0.5, 1.0, 0.0],
         [-0.5, 0.5, 0.0], [0.0, 0.5, 0.0], [ 0.0, 1.0, 0.0],
@@ -655,9 +726,33 @@ fn create_geometry_z_piece() -> ObjMesh {
     ];    
 
     ObjMesh::new(points, tex_coords, normals)
+    */
+    let points: Vec<[f32; 2]> = vec![
+        [-0.5, 0.5], [0.0, 1.0], [-0.5, 1.0],
+        [-0.5, 0.5], [0.0, 0.5], [ 0.0, 1.0],
+        [ 0.0, 0.5], [0.5, 1.0], [ 0.0, 1.0],
+        [ 0.0, 0.5], [0.5, 0.5], [ 0.5, 1.0],
+        [ 0.0, 0.0], [0.5, 0.5], [ 0.0, 0.5],
+        [ 0.0, 0.0], [0.5, 0.0], [ 0.5, 0.5],
+        [ 0.5, 0.0], [1.0, 0.5], [ 0.5, 0.5],
+        [ 0.5, 0.0], [1.0, 0.0], [ 1.0, 0.5],
+    ];
+    let tex_coords: Vec<[f32; 2]> = vec![
+        [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
+        [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32],
+        [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
+        [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32],
+        [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
+        [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32],
+        [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
+        [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32],
+    ];   
+
+    ObjMesh::new(points, tex_coords)
 }
 
 fn create_geometry_o_piece() -> ObjMesh {
+    /*
     let points: Vec<[f32; 3]> = vec![
         [0.0, 0.5, 0.0], [0.5, 1.0, 0.0], [0.0, 1.0, 0.0],
         [0.0, 0.5, 0.0], [0.5, 0.5, 0.0], [0.5, 1.0, 0.0],
@@ -690,9 +785,33 @@ fn create_geometry_o_piece() -> ObjMesh {
     ];
 
     ObjMesh::new(points, tex_coords, normals)
+    */
+    let points: Vec<[f32; 2]> = vec![
+        [0.0, 0.5], [0.5, 1.0], [0.0, 1.0],
+        [0.0, 0.5], [0.5, 0.5], [0.5, 1.0],
+        [0.0, 0.0], [0.5, 0.5], [0.0, 0.5],
+        [0.0, 0.0], [0.5, 0.0], [0.5, 0.5],
+        [0.5, 0.5], [1.0, 1.0], [0.5, 1.0],
+        [0.5, 0.5], [1.0, 0.5], [1.0, 1.0],
+        [0.5, 0.0], [1.0, 0.5], [0.5, 0.5],
+        [0.5, 0.0], [1.0, 0.0], [1.0, 0.5],        
+    ];
+    let tex_coords: Vec<[f32; 2]> = vec![
+        [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
+        [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32],
+        [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
+        [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32],
+        [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
+        [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32],
+        [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
+        [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32],
+    ];
+
+    ObjMesh::new(points, tex_coords)
 }
 
 fn create_geometry_s_piece() -> ObjMesh {
+    /*
     let points: Vec<[f32; 3]> = vec![
         [-0.5, 0.0, 0.0], [0.0, 0.5, 0.0], [-0.5, 0.5, 0.0],
         [-0.5, 0.0, 0.0], [0.0, 0.0, 0.0], [ 0.0, 0.5, 0.0],
@@ -725,9 +844,33 @@ fn create_geometry_s_piece() -> ObjMesh {
     ];
     
     ObjMesh::new(points, tex_coords, normals)
+    */
+    let points: Vec<[f32; 2]> = vec![
+        [-0.5, 0.0], [0.0, 0.5], [-0.5, 0.5],
+        [-0.5, 0.0], [0.0, 0.0], [ 0.0, 0.5],
+        [ 0.0, 0.5], [0.5, 1.0], [ 0.0, 1.0],
+        [ 0.0, 0.5], [0.5, 0.5], [ 0.5, 1.0],
+        [ 0.0, 0.0], [0.5, 0.5], [ 0.0, 0.5],
+        [ 0.0, 0.0], [0.5, 0.0], [ 0.5, 0.5],
+        [ 0.5, 0.5], [1.0, 1.0], [ 0.5, 1.0],
+        [ 0.5, 0.5], [1.0, 0.5], [ 1.0, 1.0],        
+    ];
+    let tex_coords: Vec<[f32; 2]> = vec![
+        [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
+        [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
+        [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
+        [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
+        [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
+        [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
+        [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
+        [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
+    ];
+    
+    ObjMesh::new(points, tex_coords)
 }
 
 fn create_geometry_l_piece() -> ObjMesh {
+    /*
     let points: Vec<[f32; 3]> = vec![
         [-0.5, 0.0, 0.0], [0.0, 0.5, 0.0], [-0.5, 0.5, 0.0],
         [-0.5, 0.0, 0.0], [0.0, 0.0, 0.0], [ 0.0, 0.5, 0.0],
@@ -760,9 +903,33 @@ fn create_geometry_l_piece() -> ObjMesh {
     ];
 
     ObjMesh::new(points, tex_coords, normals)
+    */
+    let points: Vec<[f32; 2]> = vec![
+        [-0.5, 0.0], [0.0, 0.5], [-0.5, 0.5],
+        [-0.5, 0.0], [0.0, 0.0], [ 0.0, 0.5],
+        [ 0.0, 0.0], [0.5, 0.5], [ 0.0, 0.5],
+        [ 0.0, 0.0], [0.5, 0.0], [ 0.5, 0.5],
+        [ 0.5, 0.5], [1.0, 1.0], [ 0.5, 1.0],
+        [ 0.5, 0.5], [1.0, 0.5], [ 1.0, 1.0],
+        [ 0.5, 0.0], [1.0, 0.5], [ 0.5, 0.5],
+        [ 0.5, 0.0], [1.0, 0.0], [ 1.0, 0.5],        
+    ];
+    let tex_coords: Vec<[f32; 2]> = vec![
+        [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
+        [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
+        [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
+        [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
+        [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
+        [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
+        [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
+        [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
+    ];
+
+    ObjMesh::new(points, tex_coords)
 }
 
 fn create_geometry_i_piece() -> ObjMesh {
+    /*
     let points: Vec<[f32; 3]> = vec![
         [-1.0, 0.0, 0.0], [-0.5, 0.5, 0.0], [-1.0, 0.5, 0.0],
         [-1.0, 0.0, 0.0], [-0.5, 0.0, 0.0], [-0.5, 0.5, 0.0],
@@ -795,6 +962,29 @@ fn create_geometry_i_piece() -> ObjMesh {
     ];
 
     ObjMesh::new(points, tex_coords, normals)
+    */
+    let points: Vec<[f32; 2]> = vec![
+        [-1.0, 0.0], [-0.5, 0.5], [-1.0, 0.5],
+        [-1.0, 0.0], [-0.5, 0.0], [-0.5, 0.5],
+        [-0.5, 0.0], [ 0.0, 0.5], [-0.5, 0.5],
+        [-0.5, 0.0], [ 0.0, 0.0], [ 0.0, 0.5],
+        [ 0.0, 0.0], [ 0.5, 0.5], [ 0.0, 0.5],
+        [ 0.0, 0.0], [ 0.5, 0.0], [ 0.5, 0.5],
+        [ 0.5, 0.0], [ 1.0, 0.5], [ 0.5, 0.5],
+        [ 0.5, 0.0], [ 1.0, 0.0], [ 1.0, 0.5],        
+    ];
+    let tex_coords: Vec<[f32; 2]> = vec![
+        [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [0_f32 / 3_f32, 1_f32 / 3_f32],
+        [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
+        [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [0_f32 / 3_f32, 1_f32 / 3_f32],
+        [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
+        [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [0_f32 / 3_f32, 1_f32 / 3_f32],
+        [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
+        [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [0_f32 / 3_f32, 1_f32 / 3_f32],
+        [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
+    ];
+
+    ObjMesh::new(points, tex_coords)
 }
 
 /// Create the model space geometry for the pieces displayed in the next panel
@@ -852,7 +1042,7 @@ fn create_buffers_geometry_piece_mesh(sp: GLuint) -> NextPiecePanelHandle {
     unsafe {
         gl::BindVertexArray(vao);
         gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
-        gl::VertexAttribPointer(v_pos_loc, 3, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::VertexAttribPointer(v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
         gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
         gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
         gl::EnableVertexAttribArray(v_pos_loc);
@@ -885,7 +1075,7 @@ fn send_to_gpu_geometry_piece_mesh(sp: GLuint, handle: NextPiecePanelHandle, mes
         );
         gl::BindVertexArray(handle.vao);
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
-        gl::VertexAttribPointer(v_pos_loc, 3, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::VertexAttribPointer(v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
         gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
         gl::EnableVertexAttribArray(v_pos_loc);
