@@ -5,8 +5,8 @@ uniform Matrices {
     mat4 m_gui_scale;
 };
 
-in vec3 v_pos;
-in vec2 v_tex;
+layout (location = 0) in vec3 v_pos;
+layout (location = 1) in vec2 v_tex;
 
 out Data {
     out vec2 tex_coord;

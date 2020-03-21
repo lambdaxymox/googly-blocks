@@ -337,15 +337,8 @@ struct UIPanelHandle {
 }
 
 fn create_buffers_geometry_ui_panel(sp: GLuint) -> UIPanelHandle {
-    let v_pos_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
-    };
-    debug_assert!(v_pos_loc > -1);
-    let v_pos_loc = v_pos_loc as u32;
-
-    let v_tex_loc = unsafe { gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr()) };
-    debug_assert!(v_tex_loc > -1);
-    let v_tex_loc = v_tex_loc as u32;
+    let v_pos_loc = 0;
+    let v_tex_loc = 1;
 
     let mut v_pos_vbo = 0;
     unsafe {
@@ -382,15 +375,8 @@ fn create_buffers_geometry_ui_panel(sp: GLuint) -> UIPanelHandle {
 }
 
 fn send_to_gpu_geometry_ui_panel(sp: GLuint, handle: UIPanelHandle, mesh: &ObjMesh) {
-    let v_pos_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
-    };
-    debug_assert!(v_pos_loc > -1);
-    let v_pos_loc = v_pos_loc as u32;
-
-    let v_tex_loc = unsafe { gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr()) };
-    debug_assert!(v_tex_loc > -1);
-    let v_tex_loc = v_tex_loc as u32;
+    let v_pos_loc = 0;
+    let v_tex_loc = 1;
 
     unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
@@ -843,15 +829,8 @@ struct NextPiecePanelHandle {
 }
 
 fn create_buffers_geometry_piece_mesh(sp: GLuint) -> NextPiecePanelHandle {
-    let v_pos_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
-    };
-    debug_assert!(v_pos_loc > -1);
-    let v_pos_loc = v_pos_loc as u32;
-
-    let v_tex_loc = unsafe { gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr()) };
-    debug_assert!(v_tex_loc > -1);
-    let v_tex_loc = v_tex_loc as u32;
+    let v_pos_loc = 0;
+    let v_tex_loc = 1;
 
     let mut v_pos_vbo = 0;
     unsafe {
@@ -888,15 +867,8 @@ fn create_buffers_geometry_piece_mesh(sp: GLuint) -> NextPiecePanelHandle {
 }
 
 fn send_to_gpu_geometry_piece_mesh(sp: GLuint, handle: NextPiecePanelHandle, mesh: &ObjMesh) {
-    let v_pos_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
-    };
-    debug_assert!(v_pos_loc > -1);
-    let v_pos_loc = v_pos_loc as u32;
-
-    let v_tex_loc = unsafe { gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr()) };
-    debug_assert!(v_tex_loc > -1);
-    let v_tex_loc = v_tex_loc as u32;
+    let v_pos_loc = 0;
+    let v_tex_loc = 1;
 
     unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
@@ -1470,18 +1442,9 @@ struct TextBufferHandle {
 
 /// Set up the geometry for rendering title screen text.
 fn create_buffers_text_buffer(sp: GLuint) -> TextBufferHandle {
-    let v_pos_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
-    };
-    debug_assert!(v_pos_loc > -1);
-    let v_pos_loc = v_pos_loc as u32;
+    let v_pos_loc = 0;
+    let v_tex_loc = 1;
 
-    let v_tex_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
-    };
-    debug_assert!(v_tex_loc > -1);
-    let v_tex_loc = v_tex_loc as u32;
-    
     let mut v_pos_vbo = 0;
     unsafe {
         gl::GenBuffers(1, &mut v_pos_vbo);

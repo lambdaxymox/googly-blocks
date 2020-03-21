@@ -1,7 +1,7 @@
 #version 460 core
 
-in vec2 v_pos;
-in vec2 v_tex;
+layout (location = 0) in vec2 v_pos;
+layout (location = 1) in vec2 v_tex;
 uniform mat4 m_gui_scale;
 uniform mat4 m_trans;
 out vec2 tex_coord;

@@ -1,7 +1,7 @@
 #version 460 core
 
-in vec2 v_pos;
-in vec2 v_tex;
+layout (location = 0) in vec2 v_pos;
+layout (location = 1) in vec2 v_tex;
 out vec2 st;
 
 
