@@ -1179,9 +1179,43 @@ struct TextElement7 {
     placement: AbsolutePlacement,
 }
 
+impl TextElement7 {
+    #[inline]
+    fn write(&mut self, value: usize) {
+        let d0 = value % 10;
+        let d1 = ((value % 100) - d0) / 10;
+        let d2 = ((value % 1000) - d1) / 100;
+        let d3 = ((value % 10000) - d2) / 1000;
+        let d4 = ((value % 100000) - d3) / 10000;
+        let d5 = ((value % 1000000) - d4) / 100000;
+        let d6 = ((value % 10000000) - d5) / 1000000;
+        self.content[0] = d6 as u8 + 0x30;
+        self.content[1] = d5 as u8 + 0x30;
+        self.content[2] = d4 as u8 + 0x30;
+        self.content[3] = d3 as u8 + 0x30;
+        self.content[4] = d2 as u8 + 0x30;
+        self.content[5] = d1 as u8 + 0x30;
+        self.content[6] = d0 as u8 + 0x30;
+    }
+}
+
 struct TextElement4 {
     content: [u8; 4],
     placement: AbsolutePlacement,
+}
+
+impl TextElement4 {
+    #[inline]
+    fn write(&mut self, value: usize) {
+        let d0 = value % 10;
+        let d1 = ((value % 100) - d0) / 10;
+        let d2 = ((value % 1000) - d1) / 100;
+        let d3 = ((value % 10000) - d2) / 1000;
+        self.content[0] = d3 as u8 + 0x30;
+        self.content[1] = d2 as u8 + 0x30;
+        self.content[2] = d1 as u8 + 0x30;
+        self.content[3] = d0 as u8 + 0x30;
+    }
 }
 
 struct TextPanel {
@@ -1217,130 +1251,47 @@ impl TextPanel {
     }
 
     fn update_score(&mut self, score: usize) {
-        let d0 = score % 10;
-        let d1 = ((score % 100) - d0) / 10;
-        let d2 = ((score % 1000) - d1) / 100;
-        let d3 = ((score % 10000) - d2) / 1000;
-        let d4 = ((score % 100000) - d3) / 10000;
-        let d5 = ((score % 1000000) - d4) / 100000;
-        let d6 = ((score % 10000000) - d5) / 1000000;
-        self.score.content[0] = d6 as u8 + 0x30;
-        self.score.content[1] = d5 as u8 + 0x30;
-        self.score.content[2] = d4 as u8 + 0x30;
-        self.score.content[3] = d3 as u8 + 0x30;
-        self.score.content[4] = d2 as u8 + 0x30;
-        self.score.content[5] = d1 as u8 + 0x30;
-        self.score.content[6] = d0 as u8 + 0x30;
+        self.score.write(score);
     }
 
     fn update_level(&mut self, level: usize) {
-        let d0 = level % 10;
-        let d1 = ((level % 100) - d0) / 10;
-        let d2 = ((level % 1000) - d1) / 100;
-        let d3 = ((level % 10000) - d2) / 1000;
-        self.level.content[0] = d3 as u8 + 0x30;
-        self.level.content[1] = d2 as u8 + 0x30;
-        self.level.content[2] = d1 as u8 + 0x30;
-        self.level.content[3] = d0 as u8 + 0x30;
+        self.level.write(level);
     }
 
     fn update_lines(&mut self, lines: usize) {
-        let d0 = lines % 10;
-        let d1 = ((lines % 100) - d0) / 10;
-        let d2 = ((lines % 1000) - d1) / 100;
-        let d3 = ((lines % 10000) - d2) / 1000;
-        self.lines.content[0] = d3 as u8 + 0x30;
-        self.lines.content[1] = d2 as u8 + 0x30;
-        self.lines.content[2] = d1 as u8 + 0x30;
-        self.lines.content[3] = d0 as u8 + 0x30;
+        self.lines.write(lines);
     }
 
     fn update_tetrises(&mut self, tetrises: usize) {
-        let d0 = tetrises % 10;
-        let d1 = ((tetrises % 100) - d0) / 10;
-        let d2 = ((tetrises % 1000) - d1) / 100;
-        let d3 = ((tetrises % 10000) - d2) / 1000;
-        self.tetrises.content[0] = d3 as u8 + 0x30;
-        self.tetrises.content[1] = d2 as u8 + 0x30;
-        self.tetrises.content[2] = d1 as u8 + 0x30;
-        self.tetrises.content[3] = d0 as u8 + 0x30;
+        self.tetrises.write(tetrises);
     }
 
     fn update_t_pieces(&mut self, t_pieces: usize) {
-        let d0 = t_pieces % 10;
-        let d1 = ((t_pieces % 100) - d0) / 10;
-        let d2 = ((t_pieces % 1000) - d1) / 100;
-        let d3 = ((t_pieces % 10000) - d2) / 1000;
-        self.t_pieces.content[0] = d3 as u8 + 0x30;
-        self.t_pieces.content[1] = d2 as u8 + 0x30;
-        self.t_pieces.content[2] = d1 as u8 + 0x30;
-        self.t_pieces.content[3] = d0 as u8 + 0x30;
+        self.t_pieces.write(t_pieces);
     }
 
     fn update_j_pieces(&mut self, j_pieces: usize) {
-        let d0 = j_pieces % 10;
-        let d1 = ((j_pieces % 100) - d0) / 10;
-        let d2 = ((j_pieces % 1000) - d1) / 100;
-        let d3 = ((j_pieces % 10000) - d2) / 1000;
-        self.j_pieces.content[0] = d3 as u8 + 0x30;
-        self.j_pieces.content[1] = d2 as u8 + 0x30;
-        self.j_pieces.content[2] = d1 as u8 + 0x30;
-        self.j_pieces.content[3] = d0 as u8 + 0x30;        
+        self.j_pieces.write(j_pieces);
     }
     
     fn update_z_pieces(&mut self, z_pieces: usize) {
-        let d0 = z_pieces % 10;
-        let d1 = ((z_pieces % 100) - d0) / 10;
-        let d2 = ((z_pieces % 1000) - d1) / 100;
-        let d3 = ((z_pieces % 10000) - d2) / 1000;
-        self.z_pieces.content[0] = d3 as u8 + 0x30;
-        self.z_pieces.content[1] = d2 as u8 + 0x30;
-        self.z_pieces.content[2] = d1 as u8 + 0x30;
-        self.z_pieces.content[3] = d0 as u8 + 0x30;  
+        self.z_pieces.write(z_pieces);
     }
 
     fn update_o_pieces(&mut self, o_pieces: usize) {
-        let d0 = o_pieces % 10;
-        let d1 = ((o_pieces % 100) - d0) / 10;
-        let d2 = ((o_pieces % 1000) - d1) / 100;
-        let d3 = ((o_pieces % 10000) - d2) / 1000;
-        self.o_pieces.content[0] = d3 as u8 + 0x30;
-        self.o_pieces.content[1] = d2 as u8 + 0x30;
-        self.o_pieces.content[2] = d1 as u8 + 0x30;
-        self.o_pieces.content[3] = d0 as u8 + 0x30;          
+        self.o_pieces.write(o_pieces);
     }
 
     fn update_s_pieces(&mut self, s_pieces: usize) {
-        let d0 = s_pieces % 10;
-        let d1 = ((s_pieces % 100) - d0) / 10;
-        let d2 = ((s_pieces % 1000) - d1) / 100;
-        let d3 = ((s_pieces % 10000) - d2) / 1000;
-        self.s_pieces.content[0] = d3 as u8 + 0x30;
-        self.s_pieces.content[1] = d2 as u8 + 0x30;
-        self.s_pieces.content[2] = d1 as u8 + 0x30;
-        self.s_pieces.content[3] = d0 as u8 + 0x30;          
+        self.s_pieces.write(s_pieces);
     }
 
     fn update_l_pieces(&mut self, l_pieces: usize) {
-        let d0 = l_pieces % 10;
-        let d1 = ((l_pieces % 100) - d0) / 10;
-        let d2 = ((l_pieces % 1000) - d1) / 100;
-        let d3 = ((l_pieces % 10000) - d2) / 1000;
-        self.l_pieces.content[0] = d3 as u8 + 0x30;
-        self.l_pieces.content[1] = d2 as u8 + 0x30;
-        self.l_pieces.content[2] = d1 as u8 + 0x30;
-        self.l_pieces.content[3] = d0 as u8 + 0x30;          
+        self.l_pieces.write(l_pieces);
     }
 
     fn update_i_pieces(&mut self, i_pieces: usize) {
-        let d0 = i_pieces % 10;
-        let d1 = ((i_pieces % 100) - d0) / 10;
-        let d2 = ((i_pieces % 1000) - d1) / 100;
-        let d3 = ((i_pieces % 10000) - d2) / 1000;
-        self.i_pieces.content[0] = d3 as u8 + 0x30;
-        self.i_pieces.content[1] = d2 as u8 + 0x30;
-        self.i_pieces.content[2] = d1 as u8 + 0x30;
-        self.i_pieces.content[3] = d0 as u8 + 0x30;          
+        self.i_pieces.write(i_pieces);
     }
 
     fn update_statistics(&mut self, statistics: &Statistics) {
