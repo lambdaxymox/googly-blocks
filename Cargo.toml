@@ -11,7 +11,6 @@ toml = "0.4.8"
 bmfa = { git = "https://github.com/lambdaxymox/bmfa" }
 file_logger = { git = "https://github.com/lambdaxymox/file-logger" }
 lean_cgmath = { git = "https://github.com/lambdaxymox/lean-cgmath" }
-mini_obj = { git = "https://github.com/lambdaxymox/mini-obj" }
 teximage2d = { git = "https://github.com/lambdaxymox/teximage2d" }
 
 [build-dependencies]
