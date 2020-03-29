@@ -33,7 +33,7 @@ mod macros;
 
 mod mesh;
 mod gl_help;
-
+mod board;
 
 use gl_help as glh;
 use cgmath as math;
