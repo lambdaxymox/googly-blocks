@@ -17,6 +17,7 @@
  */
 use std::fmt;
 use std::fmt::Write;
+use std::iter::Iterator;
 
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
@@ -54,6 +55,34 @@ struct GooglyBlockShape {
     element: GooglyBlockElement,
     rows: usize,
     columns: usize,
+}
+
+struct GooglyBlockShapeIterator<'a> {
+    index: usize,
+    shape: &'a GooglyBlockShape
+}
+
+impl<'a> Iterator for GooglyBlockShapeIterator<'a> {
+    type Item = (usize, usize);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.index < 4 {
+            let item = self.shape.shape[self.index];
+            self.index += 1;
+            Some(item)
+        } else {
+            None
+        }
+    }
+}
+
+impl GooglyBlockShape {
+    fn iter(&self) -> GooglyBlockShapeIterator {
+        GooglyBlockShapeIterator {
+            index: 0,
+            shape: self,
+        }
+    }
 }
 
 impl fmt::Display for GooglyBlockShape {
@@ -389,6 +418,9 @@ impl fmt::Display for LandedBlocks {
     }
 
 }
+
+#[cfg(test)]
+
 
 #[cfg(test)]
 mod landed_blocks_tests {
