@@ -360,6 +360,32 @@ struct LandedBlocks {
     landed: [[GooglyBlockElement; 10]; 20],
 }
 
+struct LandedBlocksIterator {
+    row: usize,
+    column: usize,
+    rows: usize,
+    columns: usize,
+}
+
+impl Iterator for LandedBlocksIterator {
+    type Item = (isize, isize);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if (self.row < self.rows) && (self.column < self.columns) {
+            let item = (self.row as isize, self.column as isize);
+            self.column += 1;
+            if self.column >= self.columns {
+                self.row += 1;
+                self.column = 0;
+            }
+
+            Some(item)
+        } else {
+            None
+        }
+    }
+}
+
 impl LandedBlocks {
     fn new() -> Self {
         LandedBlocks {
@@ -399,6 +425,15 @@ impl LandedBlocks {
 
     #[inline]
     fn columns(&self) -> usize { 10 }
+
+    fn iter(&self) -> LandedBlocksIterator {
+        LandedBlocksIterator {
+            row: 0,
+            column: 0,
+            rows: self.rows(),
+            columns: self.columns(),
+        }
+    }
 }
 
 impl fmt::Display for LandedBlocks {
@@ -434,9 +469,7 @@ mod landed_blocks_tests {
     fn inserting_an_element_and_getting_it_back_yields_the_same_element() {
         let mut landed = LandedBlocks::new();
         for element in elements().iter() {
-            for (row, column) in (0..landed.rows()).zip(0..landed.columns())
-                                                   .map(|(r, c)| (r as isize, c as isize)) {
-
+            for (row, column) in landed.iter() {
                 landed.insert(row, column, *element);
                 let expected = LandedBlocksQuery::InOfBounds(*element);
                 let result = landed.get(row, column);
@@ -450,11 +483,10 @@ mod landed_blocks_tests {
     fn inserting_the_same_element_to_the_same_position_twice_is_the_same_as_inserting_it_once() {
         let mut landed = LandedBlocks::new();
         for element in elements().iter() {
-            for (row, column) in (0..landed.rows()).zip(0..landed.columns())
-                                                   .map(|(r, c)| (r as isize, c as isize)) {
+            for (row, column) in landed.iter() {
                 landed.insert(row, column, *element);
                 let expected = landed.get(row, column);
-                landed.insert(4, 6, *element);
+                landed.insert(row, column, *element);
                 let result = landed.get(row, column);
     
                 assert_eq!(result, expected);
@@ -466,7 +498,7 @@ mod landed_blocks_tests {
     fn all_cells_in_a_new_landed_blocks_matrix_should_be_empty_spaces() {
         let landed = LandedBlocks::new();
         let expected = LandedBlocksQuery::InOfBounds(GooglyBlockElement::EmptySpace);
-        for (row, column) in (0..landed.rows()).zip(0..landed.columns()).map(|(r, c)| (r as isize, c as isize)) {
+        for (row, column) in landed.iter() {
             let result = landed.get(row, column);
             assert_eq!(result, expected);
         }
