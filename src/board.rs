@@ -414,20 +414,6 @@ impl fmt::Display for LandedBlocks {
 
 }
 
-impl ops::Index<usize> for LandedBlocks {
-    type Output = [GooglyBlockElement];
-    
-    fn index(&self, idx: usize) -> &Self::Output {
-        &self.landed[idx].row
-    }
-}
-
-impl ops::IndexMut<usize> for LandedBlocks {    
-    fn index_mut(&mut self, idx: usize) -> &mut Self::Output {
-        &mut self.landed[idx].row
-    }
-}
-
 #[cfg(test)]
 mod landed_blocks_tests {
     use super::{GooglyBlockElement, LandedBlocks, LandedBlocksQuery};
