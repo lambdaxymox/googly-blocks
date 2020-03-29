@@ -17,7 +17,6 @@
  */
 use std::fmt;
 use std::fmt::Write;
-use std::ops;
 
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
