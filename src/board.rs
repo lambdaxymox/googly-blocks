@@ -102,6 +102,13 @@ struct GooglyBlock {
 }
 
 impl GooglyBlock {
+    fn new(piece: GooglyBlockPiece, rotation: Rotation) -> Self {
+        GooglyBlock {
+            piece: piece,
+            rotation: rotation,
+        }
+    }
+
     fn shape(&self) -> GooglyBlockShape {
         use self::GooglyBlockPiece::*;
         use self::Rotation::*;
@@ -385,7 +392,10 @@ impl fmt::Display for LandedBlocks {
 
 #[cfg(test)]
 mod landed_blocks_tests {
-    use super::{GooglyBlockElement, LandedBlocks, LandedBlocksQuery};
+    use super::{
+        GooglyBlock, GooglyBlockPiece, GooglyBlockElement, Rotation, LandedBlocks, LandedBlocksQuery
+    };
+    
     #[test]
     fn inserting_an_element_and_getting_it_back_yields_the_same_element() {
         let element = GooglyBlockElement::J;
@@ -402,6 +412,22 @@ mod landed_blocks_tests {
         let landed = LandedBlocks::new();
         let expected = LandedBlocksQuery::InOfBounds(GooglyBlockElement::EmptySpace);
         for (row, column) in (0..landed.rows()).zip(0..landed.columns()).map(|(r, c)| (r as isize, c as isize)) {
+            let result = landed.get(row, column);
+            assert_eq!(result, expected);
+        }
+    }
+
+    #[test]
+    fn inserting_a_block_into_landed_blocks_and_getting_it_back_yields_the_same_elements() {
+        let block = GooglyBlock::new(GooglyBlockPiece::J, Rotation::R0);
+        let shape = block.shape();
+        let mut landed = LandedBlocks::new();
+        let top_left_row = 5;
+        let top_left_column = 9;
+        landed.insert_block(top_left_row, top_left_column, block);
+        
+        let expected = LandedBlocksQuery::InOfBounds(GooglyBlockElement::J);
+        for (row, column) in shape.shape.iter().map(|(r, c)| (*r as isize, *c as isize)) {
             let result = landed.get(row, column);
             assert_eq!(result, expected);
         }
