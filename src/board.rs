@@ -423,13 +423,13 @@ mod landed_blocks_tests {
         let shape = block.shape();
         let mut landed = LandedBlocks::new();
         let top_left_row = 5;
-        let top_left_column = 9;
+        let top_left_column = 6;
         landed.insert_block(top_left_row, top_left_column, block);
         
         let expected = LandedBlocksQuery::InOfBounds(GooglyBlockElement::J);
         for (row, column) in shape.shape.iter().map(|(r, c)| (*r as isize, *c as isize)) {
-            let result = landed.get(row, column);
-            assert_eq!(result, expected);
+            let result = landed.get(top_left_row + row, top_left_column + column);
+            assert_eq!(result, expected, "{}", landed);
         }
     }
 }
