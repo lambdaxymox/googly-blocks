@@ -88,8 +88,8 @@ impl GooglyBlockShape {
 impl fmt::Display for GooglyBlockShape {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut shape_matrix = [[GooglyBlockElement::EmptySpace; 4]; 4];
-        for (row, column) in self.shape.iter() {
-            shape_matrix[*row][*column] = self.element;
+        for (row, column) in self.iter() {
+            shape_matrix[row][column] = self.element;
         }
         
         let mut disp = format!("{}", "");
