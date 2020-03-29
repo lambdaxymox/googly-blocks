@@ -457,7 +457,8 @@ impl fmt::Display for LandedBlocks {
 #[cfg(test)]
 mod landed_blocks_tests {
     use super::{
-        GooglyBlock, GooglyBlockPiece, GooglyBlockElement, GooglyBlockRotation, LandedBlocks, LandedBlocksQuery
+        GooglyBlock, GooglyBlockPiece, GooglyBlockElement, 
+        GooglyBlockRotation, LandedBlocks, LandedBlocksQuery
     };
 
     fn elements() -> [GooglyBlockElement; 8] { 
