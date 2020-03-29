@@ -401,10 +401,22 @@ mod landed_blocks_tests {
         let element = GooglyBlockElement::J;
         let mut landed = LandedBlocks::new();
         landed.insert(4, 6, element);
-
         let expected = LandedBlocksQuery::InOfBounds(element);
         let result = landed.get(4, 6);
+
         assert_eq!(expected, result);
+    }
+
+    #[test]
+    fn inserting_the_same_element_to_the_same_position_twice_is_the_same_as_inserting_it_once() {
+        let element = GooglyBlockElement::J;
+        let mut landed = LandedBlocks::new();
+        landed.insert(4, 6, element);
+        let expected = landed.get(4, 6);
+        landed.insert(4, 6, element);
+        let result = landed.get(4, 6);
+
+        assert_eq!(result, expected);
     }
 
     #[test]
