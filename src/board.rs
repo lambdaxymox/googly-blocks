@@ -441,4 +441,14 @@ mod landed_blocks_tests {
         let result = landed.get(4, 6);
         assert_eq!(expected, result);
     }
+
+    #[test]
+    fn all_cells_in_a_new_landed_blocks_matrix_should_be_empty_spaces() {
+        let landed = LandedBlocks::new();
+        let expected = LandedBlocksQuery::InOfBounds(GooglyBlockElement::EmptySpace);
+        for (row, column) in (0..landed.rows()).zip(0..landed.columns()).map(|(r, c)| (r as isize, c as isize)) {
+            let result = landed.get(row, column);
+            assert_eq!(result, expected);
+        }
+    }
 }
