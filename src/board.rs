@@ -77,7 +77,7 @@ impl fmt::Display for GooglyBlockShape {
 }
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
-enum Rotation {
+enum GooglyBlockRotation {
     R0,
     R1,
     R2,
@@ -98,11 +98,11 @@ enum GooglyBlockPiece {
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 struct GooglyBlock {
     piece: GooglyBlockPiece,
-    rotation: Rotation,
+    rotation: GooglyBlockRotation,
 }
 
 impl GooglyBlock {
-    fn new(piece: GooglyBlockPiece, rotation: Rotation) -> Self {
+    fn new(piece: GooglyBlockPiece, rotation: GooglyBlockRotation) -> Self {
         GooglyBlock {
             piece: piece,
             rotation: rotation,
@@ -111,7 +111,7 @@ impl GooglyBlock {
 
     fn shape(&self) -> GooglyBlockShape {
         use self::GooglyBlockPiece::*;
-        use self::Rotation::*;
+        use self::GooglyBlockRotation::*;
         match self.piece {
             T => match self.rotation {
                 R0 => GooglyBlockShape {
@@ -393,7 +393,7 @@ impl fmt::Display for LandedBlocks {
 #[cfg(test)]
 mod landed_blocks_tests {
     use super::{
-        GooglyBlock, GooglyBlockPiece, GooglyBlockElement, Rotation, LandedBlocks, LandedBlocksQuery
+        GooglyBlock, GooglyBlockPiece, GooglyBlockElement, GooglyBlockRotation, LandedBlocks, LandedBlocksQuery
     };
     
     #[test]
@@ -419,7 +419,7 @@ mod landed_blocks_tests {
 
     #[test]
     fn inserting_a_block_into_landed_blocks_and_getting_it_back_yields_the_same_elements() {
-        let block = GooglyBlock::new(GooglyBlockPiece::J, Rotation::R0);
+        let block = GooglyBlock::new(GooglyBlockPiece::J, GooglyBlockRotation::R0);
         let shape = block.shape();
         let mut landed = LandedBlocks::new();
         let top_left_row = 5;
