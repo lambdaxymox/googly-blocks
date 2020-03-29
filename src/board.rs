@@ -424,28 +424,42 @@ mod landed_blocks_tests {
     use super::{
         GooglyBlock, GooglyBlockPiece, GooglyBlockElement, GooglyBlockRotation, LandedBlocks, LandedBlocksQuery
     };
+
+    fn elements() -> [GooglyBlockElement; 7] { 
+        use self::GooglyBlockElement::*;
+        [T, J, Z, O, S, L, I]
+    }
     
     #[test]
     fn inserting_an_element_and_getting_it_back_yields_the_same_element() {
-        let element = GooglyBlockElement::J;
         let mut landed = LandedBlocks::new();
-        landed.insert(4, 6, element);
-        let expected = LandedBlocksQuery::InOfBounds(element);
-        let result = landed.get(4, 6);
+        for element in elements().iter() {
+            for (row, column) in (0..landed.rows()).zip(0..landed.columns())
+                                                   .map(|(r, c)| (r as isize, c as isize)) {
 
-        assert_eq!(expected, result);
+                landed.insert(row, column, *element);
+                let expected = LandedBlocksQuery::InOfBounds(*element);
+                let result = landed.get(row, column);
+        
+                assert_eq!(expected, result);
+            }
+        }
     }
 
     #[test]
     fn inserting_the_same_element_to_the_same_position_twice_is_the_same_as_inserting_it_once() {
-        let element = GooglyBlockElement::J;
         let mut landed = LandedBlocks::new();
-        landed.insert(4, 6, element);
-        let expected = landed.get(4, 6);
-        landed.insert(4, 6, element);
-        let result = landed.get(4, 6);
-
-        assert_eq!(result, expected);
+        for element in elements().iter() {
+            for (row, column) in (0..landed.rows()).zip(0..landed.columns())
+                                                   .map(|(r, c)| (r as isize, c as isize)) {
+                landed.insert(row, column, *element);
+                let expected = landed.get(row, column);
+                landed.insert(4, 6, *element);
+                let result = landed.get(row, column);
+    
+                assert_eq!(result, expected);
+            }
+        }
     }
 
     #[test]
