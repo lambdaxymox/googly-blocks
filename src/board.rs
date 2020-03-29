@@ -390,7 +390,7 @@ impl LandedBlocks {
 
     fn insert_block(&mut self, tl_row: isize, tl_column: isize, block: GooglyBlock) {
         let shape = block.shape();
-        for (row, column) in shape.shape.iter().map(|(r, c)| (*r as isize, *c as isize)) {
+        for (row, column) in shape.iter().map(|(r, c)| (r as isize, c as isize)) {
             self.insert(tl_row + row, tl_column + column, shape.element);
         }
     }
@@ -471,7 +471,7 @@ mod landed_blocks_tests {
         landed.insert_block(top_left_row, top_left_column, block);
         
         let expected = LandedBlocksQuery::InOfBounds(GooglyBlockElement::J);
-        for (row, column) in shape.shape.iter().map(|(r, c)| (*r as isize, *c as isize)) {
+        for (row, column) in shape.iter().map(|(r, c)| (r as isize, c as isize)) {
             let result = landed.get(top_left_row + row, top_left_column + column);
             assert_eq!(result, expected, "{}", landed);
         }
