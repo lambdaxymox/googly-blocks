@@ -66,11 +66,11 @@ impl fmt::Display for GooglyBlockShape {
         
         let mut disp = format!("{}", "");
         for row in 0..self.rows {
-            write!(disp, "[ ");
+            disp.push_str("[ ");
             for column in 0..self.columns {
-                write!(disp, "{} ", shape_matrix[row][column]);
+                disp.push_str(&format!("{} ", shape_matrix[row][column]));
             }
-            write!(disp, "]\n");
+            disp.push_str("]\n");
         }
 
         write!(f, "{}", disp)
@@ -401,13 +401,13 @@ impl fmt::Display for LandedBlocks {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {    
         let mut disp = format!("{}", "");
         for row in 0..self.rows() {
-            write!(disp, "| ");
+            disp.push_str("| ");
             for column in 0..self.columns() {
-                write!(disp, "{} ", self.landed[row][column]);
+                disp.push_str(&format!("{} ", self.landed[row][column]));
             }
-            write!(disp, "|\n");
+            disp.push_str("|\n");
         }
-        write!(disp, "|=====================|");
+        disp.push_str("|=====================|");
 
         write!(f, "{}", disp)
     }
