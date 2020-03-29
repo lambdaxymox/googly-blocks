@@ -16,7 +16,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 use std::fmt;
-use std::fmt::Write;
 use std::iter::Iterator;
 
 
@@ -419,8 +418,6 @@ impl fmt::Display for LandedBlocks {
 
 }
 
-#[cfg(test)]
-
 
 #[cfg(test)]
 mod landed_blocks_tests {
@@ -475,5 +472,17 @@ mod landed_blocks_tests {
             let result = landed.get(top_left_row + row, top_left_column + column);
             assert_eq!(result, expected, "{}", landed);
         }
+    }
+
+    #[test]
+    fn getting_an_element_from_a_negative_valued_row_should_be_out_of_bounds() {
+        let landed = LandedBlocks::new();
+        assert!(landed.get(-1, 1).is_out_of_bounds());
+    }
+
+    #[test]
+    fn getting_an_element_from_a_negative_valued_column_should_be_out_of_bounds() {
+        let landed = LandedBlocks::new();
+        assert!(landed.get(1, -1).is_out_of_bounds());
     }
 }
