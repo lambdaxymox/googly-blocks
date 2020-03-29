@@ -425,9 +425,9 @@ mod landed_blocks_tests {
         GooglyBlock, GooglyBlockPiece, GooglyBlockElement, GooglyBlockRotation, LandedBlocks, LandedBlocksQuery
     };
 
-    fn elements() -> [GooglyBlockElement; 7] { 
+    fn elements() -> [GooglyBlockElement; 8] { 
         use self::GooglyBlockElement::*;
-        [T, J, Z, O, S, L, I]
+        [T, J, Z, O, S, L, I, EmptySpace]
     }
     
     #[test]
