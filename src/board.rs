@@ -532,4 +532,16 @@ mod landed_blocks_tests {
         let landed = LandedBlocks::new();
         assert!(landed.get(1, -1).is_out_of_bounds());
     }
+
+    #[test]
+    fn getting_an_element_from_a_row_larger_than_the_number_of_rows_should_be_out_of_bounds() {
+        let landed = LandedBlocks::new();
+        assert!(landed.get(20, 1).is_out_of_bounds());
+    }
+
+    #[test]
+    fn getting_an_element_from_a_column_larger_than_the_number_of_columns_should_be_out_of_bounds() {
+        let landed = LandedBlocks::new();
+        assert!(landed.get(1, 10).is_out_of_bounds());
+    }
 }
