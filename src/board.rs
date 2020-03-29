@@ -299,36 +299,6 @@ impl fmt::Display for GooglyBlock {
     }   
 }
 
-
-#[derive(Copy, Clone, Debug)]
-struct LandedBlocksRow {
-    row: [GooglyBlockElement; 10],
-}
-
-impl LandedBlocksRow {
-    fn new() -> LandedBlocksRow {
-        LandedBlocksRow {
-            row: [GooglyBlockElement::EmptySpace; 10],
-        }
-    }
-
-    fn len(&self) -> usize { 10 }
-}
-
-impl ops::Index<usize> for LandedBlocksRow {
-    type Output = GooglyBlockElement;
-
-    fn index(&self, idx: usize) -> &Self::Output {
-        &self.row[idx]
-    }
-}
-
-impl ops::IndexMut<usize> for LandedBlocksRow {
-    fn index_mut(&mut self, idx: usize) -> &mut Self::Output {
-        &mut self.row[idx]
-    }
-}
-
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 enum LandedBlocksQuery {
     InOfBounds(GooglyBlockElement),
@@ -353,13 +323,13 @@ impl LandedBlocksQuery {
 
 #[derive(Debug)]
 struct LandedBlocks {
-    landed: [LandedBlocksRow; 20],
+    landed: [[GooglyBlockElement; 10]; 20],
 }
 
 impl LandedBlocks {
     fn new() -> Self {
         LandedBlocks {
-            landed: [LandedBlocksRow { row: [GooglyBlockElement::EmptySpace; 10] }; 20],
+            landed: [[GooglyBlockElement::EmptySpace; 10]; 20],
         }
     }
 
