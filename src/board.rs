@@ -453,6 +453,28 @@ impl fmt::Display for LandedBlocks {
 
 }
 
+#[derive(Copy, Clone)]
+struct BlockPosition {
+    row: isize,
+    column: isize,
+}
+
+
+fn collides_with_element(piece: GooglyBlock, top_left: BlockPosition, landed: &LandedBlocks) -> bool {
+    let shape = piece.shape();
+    for (row, column) in shape.shape.iter() {
+        let element_row = *row as isize;
+        let element_column = *column as isize;
+        match landed.get(top_left.row + element_row, top_left.column + element_column) {
+            LandedBlocksQuery::InOfBounds(GooglyBlockElement::EmptySpace) => {}
+            LandedBlocksQuery::OutOfBounds(_, _) => {}
+            LandedBlocksQuery::InOfBounds(_) => return true,
+        }
+    }
+    
+    false
+}
+
 
 #[cfg(test)]
 mod landed_blocks_tests {
@@ -543,5 +565,30 @@ mod landed_blocks_tests {
     fn getting_an_element_from_a_column_larger_than_the_number_of_columns_should_be_out_of_bounds() {
         let landed = LandedBlocks::new();
         assert!(landed.get(1, 10).is_out_of_bounds());
+    }
+}
+
+#[cfg(test)]
+mod collision_tests {
+    use super::{
+        GooglyBlock, GooglyBlockPiece, GooglyBlockElement, 
+        GooglyBlockRotation, LandedBlocks, LandedBlocksQuery,
+        BlockPosition
+    };
+
+    fn elements() -> [GooglyBlockElement; 8] { 
+        use self::GooglyBlockElement::*;
+        [T, J, Z, O, S, L, I, EmptySpace]
+    }
+
+    #[test]
+    fn no_block_element_should_collide_with_empty_space() {
+        let empty_landed = LandedBlocks::new();
+        let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
+        for (row, column) in empty_landed.iter() {
+            assert!(!super::collides_with_element(
+                piece, BlockPosition { row, column }, &empty_landed)
+            );
+        }
     }
 }
