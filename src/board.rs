@@ -353,6 +353,13 @@ impl LandedBlocksQuery {
             _ => false,
         }
     }
+
+    fn is_empty_space(&self) -> bool {
+        match * self {
+            LandedBlocksQuery::InOfBounds(GooglyBlockElement::EmptySpace) => true,
+            _ => false,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -581,14 +588,79 @@ mod collision_tests {
         [T, J, Z, O, S, L, I, EmptySpace]
     }
 
+    struct CollisionDetectionTestCase {
+        landed: LandedBlocks,
+        occupied_cells: Vec<(isize, isize)>,
+    }
+
+    fn test_case() -> CollisionDetectionTestCase {
+        let mut landed = LandedBlocks::new();
+        landed.insert(19, 8, GooglyBlockElement::J);
+        landed.insert(19, 9, GooglyBlockElement::J);
+        landed.insert(18, 9, GooglyBlockElement::J);
+        landed.insert(17, 9, GooglyBlockElement::J);
+        landed.insert(16, 6, GooglyBlockElement::I);
+        landed.insert(17, 6, GooglyBlockElement::I);
+        landed.insert(18, 6, GooglyBlockElement::I);
+        landed.insert(19, 6, GooglyBlockElement::I);
+        landed.insert(15, 4, GooglyBlockElement::O);
+        landed.insert(15, 5, GooglyBlockElement::O);
+        landed.insert(16, 4, GooglyBlockElement::O);
+        landed.insert(16, 5, GooglyBlockElement::O);
+        landed.insert(17, 4, GooglyBlockElement::S);
+        landed.insert(18, 4, GooglyBlockElement::S);
+        landed.insert(18, 5, GooglyBlockElement::S);
+        landed.insert(19, 5, GooglyBlockElement::S);
+        landed.insert(17, 3, GooglyBlockElement::L);
+        landed.insert(16, 3, GooglyBlockElement::L);
+        landed.insert(15, 3, GooglyBlockElement::L);
+        landed.insert(15, 2, GooglyBlockElement::L);
+        landed.insert(18, 2, GooglyBlockElement::Z);
+        landed.insert(18, 3, GooglyBlockElement::Z);
+        landed.insert(19, 3, GooglyBlockElement::Z);
+        landed.insert(19, 4, GooglyBlockElement::Z);
+        landed.insert(15, 1, GooglyBlockElement::J);
+        landed.insert(15, 0, GooglyBlockElement::J);
+        landed.insert(16, 0, GooglyBlockElement::J);
+        landed.insert(17, 0, GooglyBlockElement::J);
+        landed.insert(16, 1, GooglyBlockElement::O);
+        landed.insert(16, 2, GooglyBlockElement::O);
+        landed.insert(17, 1, GooglyBlockElement::O);
+        landed.insert(17, 2, GooglyBlockElement::O);
+        landed.insert(18, 1, GooglyBlockElement::T);
+        landed.insert(19, 0, GooglyBlockElement::T);
+        landed.insert(19, 1, GooglyBlockElement::T);
+        landed.insert(19, 2, GooglyBlockElement::T);
+
+        let mut occupied_cells = landed.iter()
+            .filter(|(row, column)| landed.get(*row, *column).is_in_of_bounds())
+            .filter(|(row, column)| !landed.get(*row, *column).is_empty_space())
+            .collect::<Vec<(isize, isize)>>();
+
+        CollisionDetectionTestCase {
+            landed: landed,
+            occupied_cells: occupied_cells,
+        }
+    }
+
     #[test]
-    fn no_block_element_should_collide_with_empty_space() {
+    fn block_elements_should_not_collide_with_unoccupied_cells() {
         let empty_landed = LandedBlocks::new();
         let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
         for (row, column) in empty_landed.iter() {
             assert!(!super::collides_with_element(
                 piece, BlockPosition { row, column }, &empty_landed)
             );
+        }
+    }
+
+    #[test]
+    fn blocks_should_collide_on_occupied_cells() {
+        let test = test_case();
+        let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
+        for (oc_row, oc_column) in test.occupied_cells.iter() {
+            let top_left = BlockPosition { row: *oc_row, column: *oc_column };
+            assert!(super::collides_with_element(piece, top_left, &test.landed));
         }
     }
 }
