@@ -704,7 +704,9 @@ mod collision_tests {
         let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
         for row in 0..landed.rows() {
             let top_left = BlockPosition { row: row as isize, column: landed.columns() as isize - 1 };
-            assert!(super::collides_with_right_wall(piece, top_left, &landed));
+            assert!(super::collides_with_right_wall(piece, top_left, &landed),
+                "row: {}; column: {}", top_left.row, top_left.column
+            );
         }
     }
 
@@ -713,8 +715,10 @@ mod collision_tests {
         let landed = LandedBlocks::new();
         let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
         for row in 0..landed.rows() {
-            let top_left = BlockPosition { row: row as isize, column: 17 };
-            assert!(!super::collides_with_right_wall(piece, top_left, &landed));
+            let top_left = BlockPosition { row: row as isize, column: 7 };
+            assert!(!super::collides_with_right_wall(piece, top_left, &landed), 
+                "row: {}; column: {}", top_left.row, top_left.column
+            );
         }
     }
 }
