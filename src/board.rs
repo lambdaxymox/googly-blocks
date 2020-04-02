@@ -506,6 +506,10 @@ fn collides_with_right_wall(piece: GooglyBlock, top_left: BlockPosition, landed:
     false
 }
 
+fn collides_with_floor(piece: GooglyBlock, top_left: BlockPosition, landed: &LandedBlocks) -> bool {
+    unimplemented!()
+}
+
 
 #[cfg(test)]
 mod landed_blocks_tests {
@@ -731,6 +735,17 @@ mod collision_tests {
             assert!(!super::collides_with_right_wall(piece, top_left, &landed), 
                 "row: {}; column: {}", top_left.row, top_left.column
             );
+        }
+    }
+
+    #[test]
+    fn blocks_crossing_floor_should_collide_with_floor() {
+        let landed = LandedBlocks::new();
+        let piece = GooglyBlock::new(GooglyBlockPiece::I, GooglyBlockRotation::R0);
+        for column in 0..landed.columns() {
+            let rows = (landed.rows() - 1) as isize;
+            let top_left = BlockPosition { row: rows, column: column as isize };
+            assert!(super::collides_with_floor(piece, top_left, &landed));
         }
     }
 }
