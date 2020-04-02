@@ -707,4 +707,14 @@ mod collision_tests {
             assert!(super::collides_with_right_wall(piece, top_left, &landed));
         }
     }
+
+    #[test]
+    fn blocks_with_elements_in_rightmost_column_should_not_collide_with_right_wall() {
+        let landed = LandedBlocks::new();
+        let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
+        for row in 0..landed.rows() {
+            let top_left = BlockPosition { row: row as isize, column: 17 };
+            assert!(!super::collides_with_right_wall(piece, top_left, &landed));
+        }
+    }
 }
