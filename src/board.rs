@@ -667,4 +667,14 @@ mod collision_tests {
             assert!(super::collides_with_element(piece, top_left, &test.landed));
         }
     }
+
+    #[test]
+    fn blocks_in_leftmost_column_should_collide_with_left_wall() {
+        let landed = LandedBlocks::new();
+        let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
+        for row in 0..landed.rows() {
+            let top_left = BlockPosition { row: row as isize, column: -1 };
+            assert!(super::collides_with_left_wall(piece, top_left, &landed));
+        }
+    }
 }
