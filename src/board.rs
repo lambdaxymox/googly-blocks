@@ -362,7 +362,7 @@ impl LandedBlocksQuery {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct LandedBlocks {
     landed: [[GooglyBlockElement; 10]; 20],
 }
@@ -679,6 +679,12 @@ mod collision_tests {
         }
     }
 
+    fn failed(piece: GooglyBlock, top_left: BlockPosition, landed: &LandedBlocks) -> String {
+        let mut new_landed = (*landed).clone();
+        new_landed.insert_block(top_left.row, top_left.column, piece);
+        format!("{}", new_landed)
+    }
+
     #[test]
     fn block_elements_should_not_collide_with_unoccupied_cells() {
         let empty_landed = LandedBlocks::new();
@@ -751,9 +757,22 @@ mod collision_tests {
         let landed = LandedBlocks::new();
         let piece = GooglyBlock::new(GooglyBlockPiece::I, GooglyBlockRotation::R0);
         for column in 0..landed.columns() {
-            let rows = (landed.rows() - 1) as isize;
-            let top_left = BlockPosition { row: rows, column: column as isize };
+            let row = (landed.rows() - 1) as isize;
+            let top_left = BlockPosition { row: row, column: column as isize };
             assert!(super::collides_with_floor(piece, top_left, &landed));
+        }
+    }
+
+    #[test]
+    fn blocks_whose_bottom_elements_occupy_bottommost_row_should_not_collide_with_floor() {
+        let landed = LandedBlocks::new();
+        let piece = GooglyBlock::new(GooglyBlockPiece::I, GooglyBlockRotation::R0);
+        for column in 0..landed.columns() {
+            let row = (landed.rows() - 3) as isize;
+            let top_left = BlockPosition { row: row, column: column as isize };
+            assert!(!super::collides_with_floor(piece, top_left, &landed), 
+                "{}", failed(piece, top_left, &landed)
+            );
         }
     }
 }
