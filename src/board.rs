@@ -483,7 +483,15 @@ fn collides_with_element(piece: GooglyBlock, top_left: BlockPosition, landed: &L
 }
 
 fn collides_with_left_wall(piece: GooglyBlock, top_left: BlockPosition, landed: &LandedBlocks) -> bool {
-    unimplemented!()
+    let shape = piece.shape();
+    for (_, column) in shape.iter() {
+        let element_column = column as isize;
+        if top_left.column + element_column < 0 {
+            return true;
+        }
+    }
+
+    false
 }
 
 
