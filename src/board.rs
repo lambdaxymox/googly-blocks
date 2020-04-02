@@ -507,7 +507,15 @@ fn collides_with_right_wall(piece: GooglyBlock, top_left: BlockPosition, landed:
 }
 
 fn collides_with_floor(piece: GooglyBlock, top_left: BlockPosition, landed: &LandedBlocks) -> bool {
-    unimplemented!()
+    let shape = piece.shape();
+    for (row, _) in shape.shape.iter() {
+        let part_row = *row as isize;
+        if top_left.row + part_row >= landed.rows() as isize {
+            return true;
+        }
+    }
+
+    false
 }
 
 
