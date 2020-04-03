@@ -1048,6 +1048,44 @@ fn send_to_gpu_shaders_playing_field(game: &mut glh::GLState, source: ShaderSour
     send_to_gpu_shaders(game, source)
 }
 
+fn create_geometry_playing_field(rows: usize, columns: usize) -> ObjMesh {
+    let mut vertices: Vec<[GLfloat; 2]> = vec![];
+    let width = 0.1;
+    let height = 0.1;
+    let top_left_x = -0.5;
+    let top_left_y = 1.0;
+    for row in 0..rows {
+        for column in 0..columns {
+            let row_f32 = row as f32;
+            let col_f32 = column as f32;
+            let top_left = [top_left_x + row_f32 * width, top_left_y - col_f32 * height];
+            let bottom_left = [top_left_x + row_f32 * width, top_left_y - col_f32 * height - height];
+            let top_right = [top_left_x + row_f32 * width + width, top_left_y - col_f32 * height];
+            let bottom_right = [top_left_x + row_f32 * width + width, top_left_y - col_f32 * height - height];
+            vertices.push(bottom_left);
+            vertices.push(top_right);
+            vertices.push(top_left);
+            vertices.push(bottom_left);
+            vertices.push(bottom_right);
+            vertices.push(top_right);
+        }
+    }
+    
+    let mut tex_coords: Vec<[GLfloat; 2]> = vec![];
+    for _row in 0..rows {
+        for _column in 0..columns {
+            tex_coords.push([1_f32 / 3_f32, 2_f32 / 3_f32]);
+            tex_coords.push([2_f32 / 3_f32, 3_f32 / 3_f32]);
+            tex_coords.push([1_f32 / 3_f32, 3_f32 / 3_f32]);
+            tex_coords.push([1_f32 / 3_f32, 2_f32 / 3_f32]);
+            tex_coords.push([2_f32 / 3_f32, 2_f32 / 3_f32]);
+            tex_coords.push([2_f32 / 3_f32, 3_f32 / 3_f32]);
+        }
+    }
+
+    ObjMesh::new(vertices, tex_coords)
+}
+
 #[derive(Copy, Clone, Debug)]
 struct GLTextBuffer {
     sp: GLuint,
