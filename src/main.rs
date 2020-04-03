@@ -1142,13 +1142,11 @@ fn create_buffers_geometry_playing_field(sp: GLuint) -> PlayingFieldHandle {
 
 fn send_to_gpu_geometry_playing_field(sp: GLuint, handle: PlayingFieldHandle, mesh: &ObjMesh) {
     unsafe {
-        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
         gl::NamedBufferData(
             handle.v_pos_vbo, 
             mesh.points.len_bytes() as GLsizeiptr,
             mesh.points.as_ptr() as *const GLvoid, gl::DYNAMIC_DRAW,
         );
-        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
         gl::NamedBufferData(
             handle.v_tex_vbo,
             mesh.tex_coords.len_bytes() as GLsizeiptr,
