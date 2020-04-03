@@ -1164,6 +1164,16 @@ fn send_to_gpu_geometry_playing_field(sp: GLuint, handle: PlayingFieldHandle, me
     }
 }
 
+fn create_textures_playing_field() -> TexImage2D {
+    let asset: &'static [u8; 1448] = include_asset!("blocks.png");
+    teximage2d::load_from_memory(asset).unwrap()
+}
+
+fn send_to_gpu_textures_playing_field(tex_image: &TexImage2D) -> GLuint {
+    send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()
+}
+
+
 #[derive(Copy, Clone, Debug)]
 struct GLTextBuffer {
     sp: GLuint,
