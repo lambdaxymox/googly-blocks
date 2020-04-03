@@ -1044,7 +1044,9 @@ fn create_shaders_playing_field() -> ShaderSource {
     }
 }
 
-
+fn send_to_gpu_shaders_playing_field(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+    send_to_gpu_shaders(game, source)
+}
 
 #[derive(Copy, Clone, Debug)]
 struct GLTextBuffer {
