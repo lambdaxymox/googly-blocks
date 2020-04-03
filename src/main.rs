@@ -1560,44 +1560,43 @@ struct Game {
 }
 
 impl Game {
-    #[inline(always)]
+    #[inline]
     fn get_framebuffer_size(&self) -> (i32, i32) {
         self.gl.borrow().window.get_framebuffer_size()
     }
 
-    #[inline(always)]
+    #[inline]
     fn window_should_close(&self) -> bool {
         self.gl.borrow().window.should_close()
     }
 
-    #[inline(always)]
+    #[inline]
     fn window_set_should_close(&mut self, close: bool) {
         self.gl.borrow_mut().window.set_should_close(close);
     }
 
-    #[inline(always)]
+    #[inline]
     fn update_fps_counter(&mut self) {
         let mut context = self.gl.borrow_mut();
         glh::update_fps_counter(&mut *context);
     }
 
-    #[inline(always)]
+    #[inline]
     fn update_timers(&mut self) -> f64 {
         let mut context = self.gl.borrow_mut();
         glh::update_timers(&mut *context)
     }
 
-    #[inline(always)]
+    #[inline]
     fn swap_buffers(&mut self) {
         self.gl.borrow_mut().window.swap_buffers();
     }
 
-    #[inline(always)]
+    #[inline]
     fn update_background(&mut self) {
         update_uniforms_background_panel(self);
     }
 
-    #[inline(always)]
     fn render_background(&mut self) {
         unsafe {
             gl::UseProgram(self.background.buffer.sp);
@@ -1608,7 +1607,6 @@ impl Game {
         }
     }
 
-    #[inline(always)]
     fn update_ui(&mut self) {
         update_ui_panel_uniforms(self);
         update_uniforms_next_piece_panel(self);
@@ -1621,7 +1619,6 @@ impl Game {
         self.ui.update_panel();
     }
 
-    #[inline(always)]
     fn render_ui(&mut self) {
         unsafe {
             // Render the game board. We turn off depth testing to do so since this is
@@ -1650,17 +1647,17 @@ impl Game {
         }
     }
 
-    #[inline(always)]
+    #[inline]
     fn poll_events(&mut self) {
         self.gl.borrow_mut().glfw.poll_events();
     }
 
-    #[inline(always)]
+    #[inline]
     fn get_key(&self, key: Key) -> Action {
         self.gl.borrow().window.get_key(key)
     }
 
-    #[inline(always)]
+    #[inline]
     fn viewport_dimensions(&self) -> ViewportDimensions {
         let (width, height) = {
             let context = self.gl.borrow();
@@ -1670,7 +1667,7 @@ impl Game {
         ViewportDimensions { width, height }
     }
 
-    #[inline(always)]
+    #[inline]
     fn update_framebuffer_size(&mut self) {
         let (viewport_width, viewport_height) = self.get_framebuffer_size();
         let dims = self.viewport_dimensions();
@@ -1679,6 +1676,14 @@ impl Game {
                 self, viewport_width as u32, viewport_height as u32
             );
         }
+    }
+
+    fn update_playing_field(&mut self) {
+        
+    }
+
+    fn render_playing_field(&mut self) {
+
     }
 }
 
@@ -1863,6 +1868,8 @@ fn main() {
             game.render_ui();
 
             // TODO: Render the blocks.
+            game.update_playing_field();
+            game.render_playing_field();
 
             // TODO: Render the googly eyes.
         }
