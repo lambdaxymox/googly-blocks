@@ -1086,6 +1086,7 @@ fn create_geometry_playing_field(rows: usize, columns: usize) -> ObjMesh {
     ObjMesh::new(vertices, tex_coords)
 }
 
+#[derive(Copy, Clone)]
 struct PlayingFieldHandle {
     vao: GLuint,
     v_pos_vbo: GLuint,
@@ -1128,6 +1129,33 @@ fn create_buffers_geometry_playing_field(sp: GLuint) -> PlayingFieldHandle {
         vao: vao,
         v_pos_vbo: v_pos_vbo,
         v_tex_vbo: v_tex_vbo,
+    }
+}
+
+fn send_to_gpu_geometry_playing_field(sp: GLuint, handle: PlayingFieldHandle, mesh: &ObjMesh) {
+    let v_pos_loc = 0;
+    let v_tex_loc = 1;
+
+    unsafe {
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
+        gl::NamedBufferData(
+            handle.v_pos_vbo, 
+            mesh.points.len_bytes() as GLsizeiptr,
+            mesh.points.as_ptr() as *const GLvoid, gl::DYNAMIC_DRAW,
+        );
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
+        gl::NamedBufferData(
+            handle.v_tex_vbo,
+            mesh.tex_coords.len_bytes() as GLsizeiptr,
+            mesh.tex_coords.as_ptr() as *const GLvoid, gl::DYNAMIC_DRAW
+        );
+        gl::BindVertexArray(handle.vao);
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
+        gl::VertexAttribPointer(v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
+        gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(v_pos_loc);
+        gl::EnableVertexAttribArray(v_tex_loc);
     }
 }
 
