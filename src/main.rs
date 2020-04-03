@@ -1086,6 +1086,51 @@ fn create_geometry_playing_field(rows: usize, columns: usize) -> ObjMesh {
     ObjMesh::new(vertices, tex_coords)
 }
 
+struct PlayingFieldHandle {
+    vao: GLuint,
+    v_pos_vbo: GLuint,
+    v_tex_vbo: GLuint,
+}
+
+fn create_buffers_geometry_playing_field(sp: GLuint) -> PlayingFieldHandle {
+    let v_pos_loc = 0;
+    let v_tex_loc = 1;
+
+    let mut v_pos_vbo = 0;
+    unsafe {
+        gl::CreateBuffers(1, &mut v_pos_vbo);
+    }
+    debug_assert!(v_pos_vbo > 0);
+
+    let mut v_tex_vbo = 0;
+    unsafe {
+        gl::CreateBuffers(1, &mut v_tex_vbo);
+    }
+    debug_assert!(v_tex_vbo > 0);
+
+    let mut vao = 0;
+    unsafe {
+        gl::CreateVertexArrays(1, &mut vao);
+    }
+    debug_assert!(vao > 0);
+
+    unsafe {
+        gl::BindVertexArray(vao);
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
+        gl::VertexAttribPointer(v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
+        gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(v_pos_loc);
+        gl::EnableVertexAttribArray(v_tex_loc);
+    }
+
+    PlayingFieldHandle {
+        vao: vao,
+        v_pos_vbo: v_pos_vbo,
+        v_tex_vbo: v_tex_vbo,
+    }
+}
+
 #[derive(Copy, Clone, Debug)]
 struct GLTextBuffer {
     sp: GLuint,
