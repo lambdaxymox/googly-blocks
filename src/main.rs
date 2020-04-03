@@ -153,6 +153,8 @@ struct BackgroundPanelHandle {
     vao: GLuint,
     v_pos_vbo: GLuint,
     v_tex_vbo: GLuint,
+    v_pos_loc: GLuint,
+    v_tex_loc: GLuint,
 }
 
 fn create_buffers_geometry_background(sp: GLuint) -> BackgroundPanelHandle {
@@ -190,12 +192,12 @@ fn create_buffers_geometry_background(sp: GLuint) -> BackgroundPanelHandle {
         vao: vao,
         v_pos_vbo: v_pos_vbo,
         v_tex_vbo: v_tex_vbo,
+        v_pos_loc: v_pos_loc,
+        v_tex_loc: v_tex_loc,
     }    
 }
 
 fn send_to_gpu_geometry_background(sp: GLuint, handle: BackgroundPanelHandle, mesh: &ObjMesh) {
-    let v_pos_loc = 0;
-    let v_tex_loc = 1;
     unsafe {
         // Load position data.
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
@@ -215,11 +217,11 @@ fn send_to_gpu_geometry_background(sp: GLuint, handle: BackgroundPanelHandle, me
         // Enable the arrays for use by the shader.
         gl::BindVertexArray(handle.vao);
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
-        gl::VertexAttribPointer(v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::VertexAttribPointer(handle.v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
-        gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
-        gl::EnableVertexAttribArray(v_pos_loc);
-        gl::EnableVertexAttribArray(v_tex_loc);
+        gl::VertexAttribPointer(handle.v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(handle.v_pos_loc);
+        gl::EnableVertexAttribArray(handle.v_tex_loc);
     }
 }
 
@@ -342,6 +344,8 @@ struct UIPanelHandle {
     vao: GLuint,
     v_pos_vbo: GLuint,
     v_tex_vbo: GLuint,
+    v_pos_loc: GLuint,
+    v_tex_loc: GLuint,
 }
 
 fn create_buffers_geometry_ui_panel(sp: GLuint) -> UIPanelHandle {
@@ -379,13 +383,12 @@ fn create_buffers_geometry_ui_panel(sp: GLuint) -> UIPanelHandle {
         vao: vao,
         v_pos_vbo: v_pos_vbo,
         v_tex_vbo: v_tex_vbo,
+        v_pos_loc: v_pos_loc,
+        v_tex_loc: v_tex_loc,
     }
 }
 
 fn send_to_gpu_geometry_ui_panel(sp: GLuint, handle: UIPanelHandle, mesh: &ObjMesh) {
-    let v_pos_loc = 0;
-    let v_tex_loc = 1;
-
     unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
         gl::BufferData(
@@ -403,11 +406,11 @@ fn send_to_gpu_geometry_ui_panel(sp: GLuint, handle: UIPanelHandle, mesh: &ObjMe
 
         gl::BindVertexArray(handle.vao);
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
-        gl::VertexAttribPointer(v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::VertexAttribPointer(handle.v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
-        gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
-        gl::EnableVertexAttribArray(v_pos_loc);
-        gl::EnableVertexAttribArray(v_tex_loc);
+        gl::VertexAttribPointer(handle.v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(handle.v_pos_loc);
+        gl::EnableVertexAttribArray(handle.v_tex_loc);
     }
 }
 
@@ -764,6 +767,8 @@ struct NextPiecePanelHandle {
     vao: GLuint,
     v_pos_vbo: GLuint,
     v_tex_vbo: GLuint,
+    v_pos_loc: GLuint,
+    v_tex_loc: GLuint,
 }
 
 fn create_buffers_geometry_piece_mesh(sp: GLuint) -> NextPiecePanelHandle {
@@ -801,13 +806,12 @@ fn create_buffers_geometry_piece_mesh(sp: GLuint) -> NextPiecePanelHandle {
         vao: vao,
         v_pos_vbo: v_pos_vbo,
         v_tex_vbo: v_tex_vbo,
+        v_pos_loc: v_pos_loc,
+        v_tex_loc: v_tex_loc,
     }
 }
 
 fn send_to_gpu_geometry_piece_mesh(sp: GLuint, handle: NextPiecePanelHandle, mesh: &ObjMesh) {
-    let v_pos_loc = 0;
-    let v_tex_loc = 1;
-
     unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
         gl::BufferData(
@@ -823,11 +827,11 @@ fn send_to_gpu_geometry_piece_mesh(sp: GLuint, handle: NextPiecePanelHandle, mes
         );
         gl::BindVertexArray(handle.vao);
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
-        gl::VertexAttribPointer(v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::VertexAttribPointer(handle.v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
-        gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
-        gl::EnableVertexAttribArray(v_pos_loc);
-        gl::EnableVertexAttribArray(v_tex_loc);
+        gl::VertexAttribPointer(handle.v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(handle.v_pos_loc);
+        gl::EnableVertexAttribArray(handle.v_tex_loc);
     }
 }
 
