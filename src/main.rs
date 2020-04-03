@@ -1031,6 +1031,21 @@ fn load_next_piece_panel(
     }
 }
 
+
+fn create_shaders_playing_field() -> ShaderSource {
+    let vert_source = include_shader!("playing_field.vert.glsl");
+    let frag_source = include_shader!("playing_field.frag.glsl");
+
+    ShaderSource {
+        vert_name: "playing_field.vert.glsl",
+        vert_source: vert_source,
+        frag_name: "playing_field.frag.glsl",
+        frag_source: frag_source,
+    }
+}
+
+
+
 #[derive(Copy, Clone, Debug)]
 struct GLTextBuffer {
     sp: GLuint,
