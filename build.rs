@@ -1,6 +1,6 @@
 /**
  *  Googly Blocks is a video game.
- *  Copyright (C) 2018,2019,2029  Christopher Blanchard
+ *  Copyright (C) 2018,2019,2020  Christopher Blanchard
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
