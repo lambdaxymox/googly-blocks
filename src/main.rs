@@ -1171,6 +1171,62 @@ fn send_to_gpu_textures_playing_field(tex_image: &TexImage2D) -> GLuint {
     send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()
 }
 
+struct PlayingFieldUniforms {
+    gui_scale_x: f32,
+    gui_scale_y: f32,
+}
+
+fn send_to_gpu_uniforms_playing_field(sp: GLuint, uniforms: PlayingFieldUniforms) {
+    let gui_scale_mat = Matrix4::from_nonuniform_scale(
+        uniforms.gui_scale_x, uniforms.gui_scale_y, 0.0
+    );
+    let m_gui_scale_loc = unsafe {
+        gl::GetUniformLocation(sp, glh::gl_str("m_gui_scale").as_ptr())
+    };
+    debug_assert!(m_gui_scale_loc > -1);
+    unsafe {
+        gl::UseProgram(sp);
+        gl::UniformMatrix4fv(m_gui_scale_loc, 1, gl::FALSE, gui_scale_mat.as_ptr());
+    }    
+}
+
+struct PlayingFieldSpec {
+    uniforms: PlayingFieldUniforms,
+    rows: usize,
+    columns: usize,
+}
+
+struct PlayingField {
+    sp: GLuint,
+    vao: GLuint,
+    v_pos_vbo: GLuint,
+    v_tex_vbo: GLuint,
+    tex: GLuint,
+    v_pos_loc: GLuint,
+    v_tex_loc: GLuint,
+}
+
+fn load_playing_field(game: &mut glh::GLState, spec: PlayingFieldSpec) -> PlayingField {
+    let shader_source = create_shaders_playing_field();
+    let mesh = create_geometry_playing_field(spec.rows, spec.columns);
+    let teximage = create_textures_playing_field();
+    let sp = send_to_gpu_shaders_playing_field(game, shader_source);
+    let handle = create_buffers_geometry_playing_field(sp);
+    send_to_gpu_geometry_playing_field(sp, handle, &mesh);
+    let tex = send_to_gpu_textures_playing_field(&teximage);
+    send_to_gpu_uniforms_playing_field(sp, spec.uniforms);
+
+    PlayingField {
+        sp: sp,
+        vao: handle.vao,
+        v_pos_vbo: handle.v_pos_vbo,
+        v_tex_vbo: handle.v_tex_vbo,
+        tex: tex,
+        v_pos_loc: handle.v_pos_loc,
+        v_tex_loc: handle.v_tex_loc,
+    }
+}
+
 
 #[derive(Copy, Clone, Debug)]
 struct GLTextBuffer {
