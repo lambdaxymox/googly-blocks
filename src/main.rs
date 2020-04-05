@@ -1176,6 +1176,13 @@ struct PlayingFieldUniforms {
     gui_scale_y: f32,
 }
 
+fn create_uniforms_playing_field() -> PlayingFieldUniforms {
+    PlayingFieldUniforms { 
+        gui_scale_x: 48.0,
+        gui_scale_y: 48.0,
+    }
+}
+
 fn send_to_gpu_uniforms_playing_field(sp: GLuint, uniforms: PlayingFieldUniforms) {
     let gui_scale_mat = Matrix4::from_nonuniform_scale(
         uniforms.gui_scale_x, uniforms.gui_scale_y, 0.0
@@ -1191,7 +1198,6 @@ fn send_to_gpu_uniforms_playing_field(sp: GLuint, uniforms: PlayingFieldUniforms
 }
 
 struct PlayingFieldSpec {
-    uniforms: PlayingFieldUniforms,
     rows: usize,
     columns: usize,
 }
@@ -1206,7 +1212,7 @@ struct PlayingField {
     v_tex_loc: GLuint,
 }
 
-fn load_playing_field(game: &mut glh::GLState, spec: PlayingFieldSpec) -> PlayingField {
+fn load_playing_field(game: &mut glh::GLState, spec: PlayingFieldSpec, uniforms: PlayingFieldUniforms) -> PlayingField {
     let shader_source = create_shaders_playing_field();
     let mesh = create_geometry_playing_field(spec.rows, spec.columns);
     let teximage = create_textures_playing_field();
@@ -1214,7 +1220,7 @@ fn load_playing_field(game: &mut glh::GLState, spec: PlayingFieldSpec) -> Playin
     let handle = create_buffers_geometry_playing_field(sp);
     send_to_gpu_geometry_playing_field(sp, handle, &mesh);
     let tex = send_to_gpu_textures_playing_field(&teximage);
-    send_to_gpu_uniforms_playing_field(sp, spec.uniforms);
+    send_to_gpu_uniforms_playing_field(sp, uniforms);
 
     PlayingField {
         sp: sp,
@@ -1973,11 +1979,20 @@ fn init_game() -> Game {
         let mut context = gl_context.borrow_mut();
         load_next_piece_panel(&mut *context, next_piece_panel_spec, &next_piece_panel_uniforms)
     };
-
     let ui = UI { 
         ui_panel: ui_panel,
         text_panel: text_panel,
         next_piece_panel: next_piece_panel,
+    };
+    
+    let playing_field_uniforms = create_uniforms_playing_field();
+    let playing_field_spec = PlayingFieldSpec {
+        rows: 20,
+        columns: 10,
+    };
+    let playing_field = {
+        let mut context = gl_context.borrow_mut();
+        load_playing_field(&mut *context, playing_field_spec, playing_field_uniforms)
     };
 
     Game {
