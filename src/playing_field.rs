@@ -931,6 +931,22 @@ mod playing_field_tests {
         false
     }
 
+    fn moves_collide_with_right_wall(playing_field: &mut PlayingFieldState, moves: &[GooglyBlockMove]) -> bool {
+        for mv in moves.iter() {
+            playing_field.update_block_position(*mv);
+            let top_left = playing_field.current_position;
+            let shape = playing_field.current_block.shape();
+            let last_column = playing_field.landed_blocks.columns() as isize - 1;
+            for element in shape.iter() {
+                if top_left.column + element.1 as isize == last_column {
+                    return true;
+                }
+            }
+        }
+
+        false
+    }
+
     #[test]
     fn falls_should_collide_with_element_in_playing_field() {
         let mut test = test_case();
@@ -943,5 +959,12 @@ mod playing_field_tests {
         let mut test = empty_playing_field_test_case();
         let moves = vec![GooglyBlockMove::Fall; 20];
         assert!(moves_collide_with_floor(&mut test.playing_field, moves));
+    }
+
+    #[test]
+    fn moving_far_enough_right_in_an_empty_playing_field_should_stop_on_right_wall() {
+        let mut test = empty_playing_field_test_case();
+        let moves = vec![GooglyBlockMove::Right; 20];
+        assert!(moves_collide_with_right_wall(&mut test.playing_field, &moves));
     }
 }
