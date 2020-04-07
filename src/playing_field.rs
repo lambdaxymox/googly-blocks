@@ -17,6 +17,7 @@
  */
 use std::fmt;
 use std::iter::Iterator;
+use std::time::Duration;
 
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
@@ -518,6 +519,51 @@ fn collides_with_floor(piece: GooglyBlock, top_left: BlockPosition, landed: &Lan
     false
 }
 
+enum GooglyBlockMove {
+    Left,
+    Right,
+    Down,
+    Fall,
+}
+
+struct PlayingFieldTimers {
+    fall_timer: Duration,
+    collision_timer: Duration,
+}
+
+struct PlayingFieldState {
+    current_block: GooglyBlock,
+    current_position: BlockPosition,
+    timers: PlayingFieldTimers,
+    landed_blocks: LandedBlocksGrid,
+}
+
+impl PlayingFieldState {
+    fn new(starting_block: GooglyBlock, starting_position: BlockPosition) -> PlayingFieldState {
+        PlayingFieldState {
+            current_block: starting_block,
+            current_position: starting_position,
+            timers: PlayingFieldTimers {
+                fall_timer: Duration::from_millis(0),
+                collision_timer: Duration::from_millis(0),
+            },
+            landed_blocks: LandedBlocksGrid::new(),
+        }
+    }
+    
+    fn update_timers(&mut self, elapsed: Duration) {
+
+    }
+    
+    fn update_block_position(&mut self, block_move: GooglyBlockMove) {
+        
+    }
+    
+    fn update_new_block(&mut self, block: GooglyBlock) {
+        
+    }
+}
+
 
 #[cfg(test)]
 mod landed_blocks_tests {
@@ -774,5 +820,85 @@ mod collision_tests {
                 "{}", failed(piece, top_left, &landed)
             );
         }
+    }
+}
+
+#[cfg(test)]
+mod playing_field_tests {
+    use super::{
+        GooglyBlock, GooglyBlockPiece, GooglyBlockElement, 
+        GooglyBlockRotation, LandedBlocksGrid, LandedBlocksQuery,
+        BlockPosition, PlayingFieldState,
+    };
+
+    struct PlayingFieldTestCase {
+        playing_field: PlayingFieldState,
+        occupied_cells: Vec<(isize, isize)>,
+    }
+
+    fn test_case() -> PlayingFieldTestCase {
+        let mut landed_blocks = LandedBlocksGrid::new();
+        landed_blocks.insert(19, 8, GooglyBlockElement::J);
+        landed_blocks.insert(19, 9, GooglyBlockElement::J);
+        landed_blocks.insert(18, 9, GooglyBlockElement::J);
+        landed_blocks.insert(17, 9, GooglyBlockElement::J);
+        landed_blocks.insert(16, 6, GooglyBlockElement::I);
+        landed_blocks.insert(17, 6, GooglyBlockElement::I);
+        landed_blocks.insert(18, 6, GooglyBlockElement::I);
+        landed_blocks.insert(19, 6, GooglyBlockElement::I);
+        landed_blocks.insert(15, 4, GooglyBlockElement::O);
+        landed_blocks.insert(15, 5, GooglyBlockElement::O);
+        landed_blocks.insert(16, 4, GooglyBlockElement::O);
+        landed_blocks.insert(16, 5, GooglyBlockElement::O);
+        landed_blocks.insert(17, 4, GooglyBlockElement::S);
+        landed_blocks.insert(18, 4, GooglyBlockElement::S);
+        landed_blocks.insert(18, 5, GooglyBlockElement::S);
+        landed_blocks.insert(19, 5, GooglyBlockElement::S);
+        landed_blocks.insert(17, 3, GooglyBlockElement::L);
+        landed_blocks.insert(16, 3, GooglyBlockElement::L);
+        landed_blocks.insert(15, 3, GooglyBlockElement::L);
+        landed_blocks.insert(15, 2, GooglyBlockElement::L);
+        landed_blocks.insert(18, 2, GooglyBlockElement::Z);
+        landed_blocks.insert(18, 3, GooglyBlockElement::Z);
+        landed_blocks.insert(19, 3, GooglyBlockElement::Z);
+        landed_blocks.insert(19, 4, GooglyBlockElement::Z);
+        landed_blocks.insert(15, 1, GooglyBlockElement::J);
+        landed_blocks.insert(15, 0, GooglyBlockElement::J);
+        landed_blocks.insert(16, 0, GooglyBlockElement::J);
+        landed_blocks.insert(17, 0, GooglyBlockElement::J);
+        landed_blocks.insert(16, 1, GooglyBlockElement::O);
+        landed_blocks.insert(16, 2, GooglyBlockElement::O);
+        landed_blocks.insert(17, 1, GooglyBlockElement::O);
+        landed_blocks.insert(17, 2, GooglyBlockElement::O);
+        landed_blocks.insert(18, 1, GooglyBlockElement::T);
+        landed_blocks.insert(19, 0, GooglyBlockElement::T);
+        landed_blocks.insert(19, 1, GooglyBlockElement::T);
+        landed_blocks.insert(19, 2, GooglyBlockElement::T);
+
+        let mut occupied_cells = landed_blocks.iter()
+            .filter(|(row, column)| landed_blocks.get(*row, *column).is_in_of_bounds())
+            .filter(|(row, column)| !landed_blocks.get(*row, *column).is_empty_space())
+            .collect::<Vec<(isize, isize)>>();
+
+        let starting_block = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
+        let starting_position = BlockPosition { row: 0, column: 6 };
+        let mut playing_field = PlayingFieldState::new(starting_block, starting_position);
+        playing_field.landed_blocks = landed_blocks;
+
+
+        PlayingFieldTestCase {
+            playing_field: playing_field,
+            occupied_cells: occupied_cells,
+        }
+    }
+
+    #[test]
+    fn falls_should_collide_with_element_in_playing_field() {
+        assert!(false);
+    }
+
+    #[test]
+    fn fall_in_an_empty_playing_field_should_stop_on_floor() {
+        assert!(false);
     }
 }
