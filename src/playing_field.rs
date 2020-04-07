@@ -903,7 +903,7 @@ mod playing_field_tests {
         }
     }
 
-    fn moves_collide_with_elements(playing_field: &mut PlayingFieldState, moves: Vec<GooglyBlockMove>) -> bool {
+    fn moves_collide_with_elements(playing_field: &mut PlayingFieldState, moves: &[GooglyBlockMove]) -> bool {
         for mv in moves.iter() {
             let old_position = playing_field.current_position;
             playing_field.update_block_position(*mv);
@@ -915,7 +915,7 @@ mod playing_field_tests {
         false
     }
 
-    fn moves_collide_with_floor(playing_field: &mut PlayingFieldState, moves: Vec<GooglyBlockMove>) -> bool {
+    fn moves_collide_with_floor(playing_field: &mut PlayingFieldState, moves: &[GooglyBlockMove]) -> bool {
         for mv in moves.iter() {
             playing_field.update_block_position(*mv);
             let top_left = playing_field.current_position;
@@ -951,14 +951,14 @@ mod playing_field_tests {
     fn falls_should_collide_with_element_in_playing_field() {
         let mut test = test_case();
         let moves = vec![GooglyBlockMove::Fall; 20];
-        assert!(moves_collide_with_elements(&mut test.playing_field, moves));
+        assert!(moves_collide_with_elements(&mut test.playing_field, &moves));
     }
 
     #[test]
     fn falling_in_an_empty_playing_field_should_stop_on_floor() {
         let mut test = empty_playing_field_test_case();
         let moves = vec![GooglyBlockMove::Fall; 20];
-        assert!(moves_collide_with_floor(&mut test.playing_field, moves));
+        assert!(moves_collide_with_floor(&mut test.playing_field, &moves));
     }
 
     #[test]
