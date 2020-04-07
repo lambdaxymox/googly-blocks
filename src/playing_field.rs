@@ -662,14 +662,9 @@ mod landed_blocks_tests {
 mod collision_tests {
     use super::{
         GooglyBlock, GooglyBlockPiece, GooglyBlockElement, 
-        GooglyBlockRotation, LandedBlocksGrid, LandedBlocksQuery,
+        GooglyBlockRotation, LandedBlocksGrid,
         BlockPosition
     };
-
-    fn elements() -> [GooglyBlockElement; 8] { 
-        use self::GooglyBlockElement::*;
-        [T, J, Z, O, S, L, I, EmptySpace]
-    }
 
     struct CollisionDetectionTestCase {
         landed: LandedBlocksGrid,
@@ -828,7 +823,7 @@ mod collision_tests {
 mod playing_field_tests {
     use super::{
         GooglyBlock, GooglyBlockPiece, GooglyBlockElement, 
-        GooglyBlockRotation, LandedBlocksGrid, LandedBlocksQuery,
+        GooglyBlockRotation, LandedBlocksGrid,
         BlockPosition, PlayingFieldState, GooglyBlockMove,
     };
 
