@@ -363,7 +363,7 @@ impl LandedBlocksQuery {
 }
 
 #[derive(Clone, Debug)]
-struct LandedBlocks {
+struct LandedBlocksGrid {
     landed: [[GooglyBlockElement; 10]; 20],
 }
 
@@ -393,9 +393,9 @@ impl Iterator for LandedBlocksIterator {
     }
 }
 
-impl LandedBlocks {
+impl LandedBlocksGrid {
     fn new() -> Self {
-        LandedBlocks {
+        LandedBlocksGrid {
             landed: [[GooglyBlockElement::EmptySpace; 10]; 20],
         }
     }
@@ -443,7 +443,7 @@ impl LandedBlocks {
     }
 }
 
-impl fmt::Display for LandedBlocks {
+impl fmt::Display for LandedBlocksGrid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {    
         let mut disp = format!("{}", "");
         for row in 0..self.rows() {
@@ -467,7 +467,7 @@ struct BlockPosition {
 }
 
 
-fn collides_with_element(piece: GooglyBlock, top_left: BlockPosition, landed: &LandedBlocks) -> bool {
+fn collides_with_element(piece: GooglyBlock, top_left: BlockPosition, landed: &LandedBlocksGrid) -> bool {
     let shape = piece.shape();
     for (row, column) in shape.shape.iter() {
         let element_row = *row as isize;
@@ -482,7 +482,7 @@ fn collides_with_element(piece: GooglyBlock, top_left: BlockPosition, landed: &L
     false
 }
 
-fn collides_with_left_wall(piece: GooglyBlock, top_left: BlockPosition, landed: &LandedBlocks) -> bool {
+fn collides_with_left_wall(piece: GooglyBlock, top_left: BlockPosition, landed: &LandedBlocksGrid) -> bool {
     let shape = piece.shape();
     for (_, column) in shape.iter() {
         let element_column = column as isize;
@@ -494,7 +494,7 @@ fn collides_with_left_wall(piece: GooglyBlock, top_left: BlockPosition, landed: 
     false
 }
 
-fn collides_with_right_wall(piece: GooglyBlock, top_left: BlockPosition, landed: &LandedBlocks) -> bool {
+fn collides_with_right_wall(piece: GooglyBlock, top_left: BlockPosition, landed: &LandedBlocksGrid) -> bool {
     let shape = piece.shape();
     for (_, column) in shape.iter() {
         let element_column = column as isize;
@@ -506,7 +506,7 @@ fn collides_with_right_wall(piece: GooglyBlock, top_left: BlockPosition, landed:
     false
 }
 
-fn collides_with_floor(piece: GooglyBlock, top_left: BlockPosition, landed: &LandedBlocks) -> bool {
+fn collides_with_floor(piece: GooglyBlock, top_left: BlockPosition, landed: &LandedBlocksGrid) -> bool {
     let shape = piece.shape();
     for (row, _) in shape.shape.iter() {
         let part_row = *row as isize;
@@ -523,7 +523,7 @@ fn collides_with_floor(piece: GooglyBlock, top_left: BlockPosition, landed: &Lan
 mod landed_blocks_tests {
     use super::{
         GooglyBlock, GooglyBlockPiece, GooglyBlockElement, 
-        GooglyBlockRotation, LandedBlocks, LandedBlocksQuery
+        GooglyBlockRotation, LandedBlocksGrid, LandedBlocksQuery
     };
 
     fn elements() -> [GooglyBlockElement; 8] { 
@@ -533,7 +533,7 @@ mod landed_blocks_tests {
     
     #[test]
     fn inserting_an_element_and_getting_it_back_yields_the_same_element() {
-        let mut landed = LandedBlocks::new();
+        let mut landed = LandedBlocksGrid::new();
         for element in elements().iter() {
             for (row, column) in landed.iter() {
                 landed.insert(row, column, *element);
@@ -547,7 +547,7 @@ mod landed_blocks_tests {
 
     #[test]
     fn inserting_the_same_element_to_the_same_position_twice_is_the_same_as_inserting_it_once() {
-        let mut landed = LandedBlocks::new();
+        let mut landed = LandedBlocksGrid::new();
         for element in elements().iter() {
             for (row, column) in landed.iter() {
                 landed.insert(row, column, *element);
@@ -562,7 +562,7 @@ mod landed_blocks_tests {
 
     #[test]
     fn all_cells_in_a_new_landed_blocks_matrix_should_be_empty_spaces() {
-        let landed = LandedBlocks::new();
+        let landed = LandedBlocksGrid::new();
         let expected = LandedBlocksQuery::InOfBounds(GooglyBlockElement::EmptySpace);
         for (row, column) in landed.iter() {
             let result = landed.get(row, column);
@@ -574,7 +574,7 @@ mod landed_blocks_tests {
     fn inserting_a_block_into_landed_blocks_and_getting_it_back_yields_the_same_elements() {
         let block = GooglyBlock::new(GooglyBlockPiece::J, GooglyBlockRotation::R0);
         let shape = block.shape();
-        let mut landed = LandedBlocks::new();
+        let mut landed = LandedBlocksGrid::new();
         let top_left_row = 5;
         let top_left_column = 6;
         landed.insert_block(top_left_row, top_left_column, block);
@@ -588,25 +588,25 @@ mod landed_blocks_tests {
 
     #[test]
     fn getting_an_element_from_a_negative_valued_row_should_be_out_of_bounds() {
-        let landed = LandedBlocks::new();
+        let landed = LandedBlocksGrid::new();
         assert!(landed.get(-1, 1).is_out_of_bounds());
     }
 
     #[test]
     fn getting_an_element_from_a_negative_valued_column_should_be_out_of_bounds() {
-        let landed = LandedBlocks::new();
+        let landed = LandedBlocksGrid::new();
         assert!(landed.get(1, -1).is_out_of_bounds());
     }
 
     #[test]
     fn getting_an_element_from_a_row_larger_than_the_number_of_rows_should_be_out_of_bounds() {
-        let landed = LandedBlocks::new();
+        let landed = LandedBlocksGrid::new();
         assert!(landed.get(20, 1).is_out_of_bounds());
     }
 
     #[test]
     fn getting_an_element_from_a_column_larger_than_the_number_of_columns_should_be_out_of_bounds() {
-        let landed = LandedBlocks::new();
+        let landed = LandedBlocksGrid::new();
         assert!(landed.get(1, 10).is_out_of_bounds());
     }
 }
@@ -615,7 +615,7 @@ mod landed_blocks_tests {
 mod collision_tests {
     use super::{
         GooglyBlock, GooglyBlockPiece, GooglyBlockElement, 
-        GooglyBlockRotation, LandedBlocks, LandedBlocksQuery,
+        GooglyBlockRotation, LandedBlocksGrid, LandedBlocksQuery,
         BlockPosition
     };
 
@@ -625,12 +625,12 @@ mod collision_tests {
     }
 
     struct CollisionDetectionTestCase {
-        landed: LandedBlocks,
+        landed: LandedBlocksGrid,
         occupied_cells: Vec<(isize, isize)>,
     }
 
     fn test_case() -> CollisionDetectionTestCase {
-        let mut landed = LandedBlocks::new();
+        let mut landed = LandedBlocksGrid::new();
         landed.insert(19, 8, GooglyBlockElement::J);
         landed.insert(19, 9, GooglyBlockElement::J);
         landed.insert(18, 9, GooglyBlockElement::J);
@@ -679,7 +679,7 @@ mod collision_tests {
         }
     }
 
-    fn failed(piece: GooglyBlock, top_left: BlockPosition, landed: &LandedBlocks) -> String {
+    fn failed(piece: GooglyBlock, top_left: BlockPosition, landed: &LandedBlocksGrid) -> String {
         let mut new_landed = (*landed).clone();
         new_landed.insert_block(top_left.row, top_left.column, piece);
         format!("{}", new_landed)
@@ -687,7 +687,7 @@ mod collision_tests {
 
     #[test]
     fn block_elements_should_not_collide_with_unoccupied_cells() {
-        let empty_landed = LandedBlocks::new();
+        let empty_landed = LandedBlocksGrid::new();
         let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
         for (row, column) in empty_landed.iter() {
             assert!(!super::collides_with_element(
@@ -708,7 +708,7 @@ mod collision_tests {
 
     #[test]
     fn blocks_crossing_leftmost_column_should_collide_with_left_wall() {
-        let landed = LandedBlocks::new();
+        let landed = LandedBlocksGrid::new();
         let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
         for row in 0..landed.rows() {
             let top_left = BlockPosition { row: row as isize, column: -1 };
@@ -718,7 +718,7 @@ mod collision_tests {
     
     #[test]
     fn blocks_with_elements_in_leftmost_column_should_not_collide_with_left_wall() {
-        let landed = LandedBlocks::new();
+        let landed = LandedBlocksGrid::new();
         let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
         for row in 0..landed.rows() {
             let top_left = BlockPosition { row: row as isize, column: 0 };
@@ -730,7 +730,7 @@ mod collision_tests {
 
     #[test]
     fn blocks_crossing_rightmost_column_should_collide_with_right_wall() {
-        let landed = LandedBlocks::new();
+        let landed = LandedBlocksGrid::new();
         let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
         for row in 0..landed.rows() {
             let top_left = BlockPosition { row: row as isize, column: landed.columns() as isize - 1 };
@@ -742,7 +742,7 @@ mod collision_tests {
 
     #[test]
     fn blocks_with_elements_in_rightmost_column_should_not_collide_with_right_wall() {
-        let landed = LandedBlocks::new();
+        let landed = LandedBlocksGrid::new();
         let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
         for row in 0..landed.rows() {
             let top_left = BlockPosition { row: row as isize, column: 7 };
@@ -754,7 +754,7 @@ mod collision_tests {
 
     #[test]
     fn blocks_crossing_floor_should_collide_with_floor() {
-        let landed = LandedBlocks::new();
+        let landed = LandedBlocksGrid::new();
         let piece = GooglyBlock::new(GooglyBlockPiece::I, GooglyBlockRotation::R0);
         for column in 0..landed.columns() {
             let row = (landed.rows() - 1) as isize;
@@ -765,7 +765,7 @@ mod collision_tests {
 
     #[test]
     fn blocks_whose_bottom_elements_occupy_bottommost_row_should_not_collide_with_floor() {
-        let landed = LandedBlocks::new();
+        let landed = LandedBlocksGrid::new();
         let piece = GooglyBlock::new(GooglyBlockPiece::I, GooglyBlockRotation::R0);
         for column in 0..landed.columns() {
             let row = (landed.rows() - 3) as isize;
