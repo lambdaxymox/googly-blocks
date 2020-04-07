@@ -834,7 +834,6 @@ mod playing_field_tests {
 
     struct PlayingFieldTestCase {
         playing_field: PlayingFieldState,
-        occupied_cells: Vec<(isize, isize)>,
     }
 
     fn test_case() -> PlayingFieldTestCase {
@@ -876,11 +875,6 @@ mod playing_field_tests {
         landed_blocks.insert(19, 1, GooglyBlockElement::T);
         landed_blocks.insert(19, 2, GooglyBlockElement::T);
 
-        let mut occupied_cells = landed_blocks.iter()
-            .filter(|(row, column)| landed_blocks.get(*row, *column).is_in_of_bounds())
-            .filter(|(row, column)| !landed_blocks.get(*row, *column).is_empty_space())
-            .collect::<Vec<(isize, isize)>>();
-
         let starting_block = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
         let starting_position = BlockPosition { row: 0, column: 6 };
         let mut playing_field = PlayingFieldState::new(starting_block, starting_position);
@@ -889,7 +883,16 @@ mod playing_field_tests {
 
         PlayingFieldTestCase {
             playing_field: playing_field,
-            occupied_cells: occupied_cells,
+        }
+    }
+
+    fn empty_playing_field_test_case() -> PlayingFieldTestCase {
+        let starting_block = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
+        let starting_position = BlockPosition { row: 0, column: 6 };
+        let playing_field = PlayingFieldState::new(starting_block, starting_position);
+
+        PlayingFieldTestCase {
+            playing_field: playing_field,
         }
     }
 
@@ -898,6 +901,17 @@ mod playing_field_tests {
             let old_position = playing_field.current_position;
             playing_field.update_block_position(*mv);
             if playing_field.current_position == old_position {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    fn moves_collide_with_floor(playing_field: &mut PlayingFieldState, moves: Vec<GooglyBlockMove>) -> bool {
+        for mv in moves.iter() {
+            playing_field.update_block_position(*mv);
+            if playing_field.current_position.row == playing_field.landed_blocks.rows() as isize - 1 {
                 return true;
             }
         }
@@ -914,6 +928,8 @@ mod playing_field_tests {
 
     #[test]
     fn fall_in_an_empty_playing_field_should_stop_on_floor() {
-        assert!(false);
+        let mut test = empty_playing_field_test_case();
+        let moves = vec![GooglyBlockMove::Fall; 20];
+        assert!(moves_collide_with_floor(&mut test.playing_field, moves));
     }
 }
