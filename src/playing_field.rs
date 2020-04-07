@@ -461,7 +461,7 @@ impl fmt::Display for LandedBlocksGrid {
 
 }
 
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 struct BlockPosition {
     row: isize,
     column: isize,
@@ -557,7 +557,19 @@ impl PlayingFieldState {
     }
     
     fn update_block_position(&mut self, block_move: GooglyBlockMove) {
-        
+        match block_move {
+            GooglyBlockMove::Fall => {
+                let potential_top_left = BlockPosition { row: self.current_position.row + 1, column: self.current_position.column };
+                let collides_with_element = collides_with_element(self.current_block, potential_top_left, &self.landed_blocks);
+                let collides_with_floor = collides_with_floor(self.current_block, potential_top_left, &self.landed_blocks);
+                if collides_with_element || collides_with_floor {
+
+                } else {
+                    self.current_position = potential_top_left;
+                }
+            }
+            _ => {},
+        }
     }
     
     fn update_new_block(&mut self, block: GooglyBlock) {
@@ -906,8 +918,13 @@ mod playing_field_tests {
     fn moves_collide_with_floor(playing_field: &mut PlayingFieldState, moves: Vec<GooglyBlockMove>) -> bool {
         for mv in moves.iter() {
             playing_field.update_block_position(*mv);
-            if playing_field.current_position.row == playing_field.landed_blocks.rows() as isize - 1 {
-                return true;
+            let top_left = playing_field.current_position;
+            let shape = playing_field.current_block.shape();
+            let last_row = playing_field.landed_blocks.rows() as isize - 1;
+            for element in shape.iter() {
+                if top_left.row + element.0 as isize == last_row {
+                    return true;
+                }
             }
         }
 
@@ -922,7 +939,7 @@ mod playing_field_tests {
     }
 
     #[test]
-    fn fall_in_an_empty_playing_field_should_stop_on_floor() {
+    fn falling_in_an_empty_playing_field_should_stop_on_floor() {
         let mut test = empty_playing_field_test_case();
         let moves = vec![GooglyBlockMove::Fall; 20];
         assert!(moves_collide_with_floor(&mut test.playing_field, moves));
