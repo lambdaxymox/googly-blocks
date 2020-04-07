@@ -461,7 +461,7 @@ impl fmt::Display for LandedBlocksGrid {
 
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 struct BlockPosition {
     row: isize,
     column: isize,
@@ -519,6 +519,7 @@ fn collides_with_floor(piece: GooglyBlock, top_left: BlockPosition, landed: &Lan
     false
 }
 
+#[derive(Copy, Clone, PartialEq, Eq)]
 enum GooglyBlockMove {
     Left,
     Right,
@@ -828,7 +829,7 @@ mod playing_field_tests {
     use super::{
         GooglyBlock, GooglyBlockPiece, GooglyBlockElement, 
         GooglyBlockRotation, LandedBlocksGrid, LandedBlocksQuery,
-        BlockPosition, PlayingFieldState,
+        BlockPosition, PlayingFieldState, GooglyBlockMove,
     };
 
     struct PlayingFieldTestCase {
@@ -892,9 +893,23 @@ mod playing_field_tests {
         }
     }
 
+    fn moves_collide_with_elements(playing_field: &mut PlayingFieldState, moves: Vec<GooglyBlockMove>) -> bool {
+        for mv in moves.iter() {
+            let old_position = playing_field.current_position;
+            playing_field.update_block_position(*mv);
+            if playing_field.current_position == old_position {
+                return true;
+            }
+        }
+
+        false
+    }
+
     #[test]
     fn falls_should_collide_with_element_in_playing_field() {
-        assert!(false);
+        let mut test = test_case();
+        let moves = vec![GooglyBlockMove::Fall; 20];
+        assert!(moves_collide_with_elements(&mut test.playing_field, moves));
     }
 
     #[test]
