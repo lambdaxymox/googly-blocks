@@ -568,6 +568,16 @@ impl PlayingFieldState {
                     self.current_position = potential_top_left;
                 }
             }
+            GooglyBlockMove::Right => {
+                let potential_top_left = BlockPosition { row: self.current_position.row, column: self.current_position.column + 1 };
+                let collides_with_element = collides_with_element(self.current_block, potential_top_left, &self.landed_blocks);
+                let collides_with_right_wall = collides_with_floor(self.current_block, potential_top_left, &self.landed_blocks);
+                if collides_with_element || collides_with_right_wall {
+
+                } else {
+                    self.current_position = potential_top_left;
+                }
+            }
             _ => {},
         }
     }
