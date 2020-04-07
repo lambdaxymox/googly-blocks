@@ -722,7 +722,7 @@ mod collision_tests {
         landed.insert(19, 1, GooglyBlockElement::T);
         landed.insert(19, 2, GooglyBlockElement::T);
 
-        let mut occupied_cells = landed.iter()
+        let occupied_cells = landed.iter()
             .filter(|(row, column)| landed.get(*row, *column).is_in_of_bounds())
             .filter(|(row, column)| !landed.get(*row, *column).is_empty_space())
             .collect::<Vec<(isize, isize)>>();
