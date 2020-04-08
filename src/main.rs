@@ -1945,6 +1945,13 @@ struct PlayingFieldTimers {
 }
 
 impl PlayingFieldTimers {
+    fn new() -> PlayingFieldTimers {
+        PlayingFieldTimers {
+            fall_timer: Duration::from_millis(0),
+            collision_timer: Duration::from_millis(0),
+        }
+    }
+
     fn update(&mut self, elapsed: Duration) {
         self.fall_timer += elapsed;
         self.collision_timer += elapsed;
@@ -1971,6 +1978,7 @@ struct Game {
     atlas: Rc<BitmapFontAtlas>,
     playing_field_state: PlayingFieldState,
     playing_field: PlayingField,
+    timers: PlayingFieldTimers,
     ui: UI,
     background: BackgroundPanel,
     score: usize,
@@ -2098,6 +2106,10 @@ impl Game {
                 self, viewport_width as u32, viewport_height as u32
             );
         }
+    }
+
+    fn update_timers_playing_field(&mut self, elapsed: Duration) {
+        self.timers.update(elapsed);
     }
 
     fn update_playing_field(&mut self) {
@@ -2230,11 +2242,14 @@ fn init_game() -> Game {
     let playing_field_state = PlayingFieldState::new(starting_block, starting_position);
     let playing_field = PlayingField::new(gl_context.clone(), playing_field_handle);
 
+    let timers = PlayingFieldTimers::new();
+
     Game {
         gl: gl_context,
         atlas: atlas,
         playing_field_state: playing_field_state,
         playing_field: playing_field,
+        timers: timers,
         ui: ui,
         background: background,
         score: 0,
