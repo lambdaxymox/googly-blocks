@@ -1067,10 +1067,10 @@ fn create_geometry_playing_field(rows: usize, columns: usize) -> ObjMesh {
         for column in 0..columns {
             let row_f32 = row as f32;
             let col_f32 = column as f32;
-            let top_left = [top_left_x + row_f32 * width, top_left_y - col_f32 * height];
-            let bottom_left = [top_left_x + row_f32 * width, top_left_y - col_f32 * height - height];
-            let top_right = [top_left_x + row_f32 * width + width, top_left_y - col_f32 * height];
-            let bottom_right = [top_left_x + row_f32 * width + width, top_left_y - col_f32 * height - height];
+            let top_left = [top_left_x + col_f32 * width, top_left_y - row_f32 * height];
+            let bottom_left = [top_left_x + col_f32 * width, top_left_y - row_f32 * height - height];
+            let top_right = [top_left_x + col_f32 * width + width, top_left_y - row_f32 * height];
+            let bottom_right = [top_left_x + col_f32 * width + width, top_left_y - row_f32 * height - height];
             vertices.push(bottom_left);
             vertices.push(top_right);
             vertices.push(top_left);
@@ -1185,7 +1185,7 @@ fn create_uniforms_playing_field(scale: u32, viewport_width: u32, viewport_heigh
     let gui_scale_x = 2.0 * (scale as f32) / (viewport_width as f32);
     let gui_scale_y = 2.0 * (scale as f32) / (viewport_height as f32);
     let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 1.0);
-    let trans_mat = Matrix4::from_translation(cgmath::vec3((-0.5, -0.9, 0.0)));
+    let trans_mat = Matrix4::from_translation(cgmath::vec3((0.1, 0.0, 0.0)));
     
     PlayingFieldUniforms { gui_scale_mat: gui_scale_mat, trans_mat: trans_mat }
 }
