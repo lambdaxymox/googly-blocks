@@ -2265,7 +2265,7 @@ fn main() {
         let dims = game.viewport_dimensions();
         gl::Viewport(0, 0, dims.width, dims.height);
     }
-    let mut dt = 0.0;
+
     while !game.window_should_close() {
         // Check input.
         let elapsed_seconds = game.update_timers();
