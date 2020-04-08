@@ -1368,7 +1368,7 @@ fn load_playing_field(game: &mut glh::GLState, spec: PlayingFieldSpec, uniforms:
 
 fn update_uniforms_playing_field(game: &mut Game) {
     let (viewport_width, viewport_height) = game.get_framebuffer_size();
-    let scale = 480;
+    let scale = 50;
     let gui_scale_x = 2.0 * (scale as f32) / (viewport_width as f32);
     let gui_scale_y = 2.0 * (scale as f32) / (viewport_height as f32);
     let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 1.0);
@@ -2038,10 +2038,13 @@ impl Game {
         unsafe {
             gl::UseProgram(self.playing_field.handle.sp);
             gl::Disable(gl::DEPTH_TEST);
+            gl::Enable(gl::BLEND);
+            gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, self.playing_field.handle.tex);
             gl::BindVertexArray(self.playing_field.handle.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 2 * 6 * 20 * 10);
+            gl::Disable(gl::BLEND);
         }
     }
 }
