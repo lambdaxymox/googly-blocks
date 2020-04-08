@@ -531,6 +531,7 @@ pub struct PlayingFieldState {
     pub current_block: GooglyBlock,
     pub current_position: BlockPosition,
     pub landed_blocks: LandedBlocksGrid,
+    starting_position: BlockPosition,
 }
 
 impl PlayingFieldState {
@@ -539,6 +540,7 @@ impl PlayingFieldState {
             current_block: starting_block,
             current_position: starting_position,
             landed_blocks: LandedBlocksGrid::new(),
+            starting_position: starting_position,
         }
     }
     
@@ -579,7 +581,8 @@ impl PlayingFieldState {
     }
     
     pub fn update_new_block(&mut self, block: GooglyBlock) {
-        
+        self.current_block = block;
+        self.current_position = self.starting_position;
     }
 }
 
