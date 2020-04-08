@@ -1224,21 +1224,12 @@ struct PlayingFieldHandle {
 impl PlayingFieldHandle {
     fn write(&mut self, tex_coords: &[[GLfloat; 2]]) -> io::Result<usize> {
         unsafe {
-            gl::BindBuffer(gl::ARRAY_BUFFER, self.v_tex_vbo);
-            gl::BufferData(
-                gl::ARRAY_BUFFER, 
-                (mem::size_of::<[GLfloat; 2]>() * tex_coords.len()) as GLsizeiptr,
-                tex_coords.as_ptr() as *const GLvoid,
-                gl::DYNAMIC_DRAW
-            );
-            /*
             gl::NamedBufferSubData(
                 self.v_tex_vbo, 
                 0,
                 (mem::size_of::<[GLfloat; 2]>() * tex_coords.len()) as GLsizeiptr,
                 tex_coords.as_ptr() as *const GLvoid,
             );
-            */
         }
         let bytes_written = mem::size_of::<GLfloat>() * tex_coords.len();
         
