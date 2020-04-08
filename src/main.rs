@@ -1095,7 +1095,7 @@ fn create_geometry_playing_field(rows: usize, columns: usize) -> ObjMesh {
 }
 
 #[derive(Copy, Clone)]
-struct PlayingFieldHandle {
+struct PlayingFieldBuffers {
     vao: GLuint,
     v_pos_vbo: GLuint,
     v_tex_vbo: GLuint,
@@ -1103,7 +1103,7 @@ struct PlayingFieldHandle {
     v_tex_loc: GLuint,
 }
 
-fn create_buffers_geometry_playing_field(sp: GLuint) -> PlayingFieldHandle {
+fn create_buffers_geometry_playing_field(sp: GLuint) -> PlayingFieldBuffers {
     let v_pos_loc = 0;
     let v_tex_loc = 1;
 
@@ -1135,7 +1135,7 @@ fn create_buffers_geometry_playing_field(sp: GLuint) -> PlayingFieldHandle {
         gl::EnableVertexAttribArray(v_tex_loc);
     }
 
-    PlayingFieldHandle {
+    PlayingFieldBuffers {
         vao: vao,
         v_pos_vbo: v_pos_vbo,
         v_tex_vbo: v_tex_vbo,
@@ -1144,7 +1144,7 @@ fn create_buffers_geometry_playing_field(sp: GLuint) -> PlayingFieldHandle {
     }
 }
 
-fn send_to_gpu_geometry_playing_field(sp: GLuint, handle: PlayingFieldHandle, mesh: &ObjMesh) {
+fn send_to_gpu_geometry_playing_field(sp: GLuint, handle: PlayingFieldBuffers, mesh: &ObjMesh) {
     unsafe {
         gl::NamedBufferData(
             handle.v_pos_vbo, 
@@ -1206,7 +1206,7 @@ struct PlayingFieldSpec {
     columns: usize,
 }
 
-struct PlayingField {
+struct PlayingFieldHandle {
     sp: GLuint,
     vao: GLuint,
     v_pos_vbo: GLuint,
@@ -1216,7 +1216,7 @@ struct PlayingField {
     v_tex_loc: GLuint,
 }
 
-fn load_playing_field(game: &mut glh::GLState, spec: PlayingFieldSpec, uniforms: PlayingFieldUniforms) -> PlayingField {
+fn load_playing_field(game: &mut glh::GLState, spec: PlayingFieldSpec, uniforms: PlayingFieldUniforms) -> PlayingFieldHandle {
     let shader_source = create_shaders_playing_field();
     let mesh = create_geometry_playing_field(spec.rows, spec.columns);
     let teximage = create_textures_playing_field();
@@ -1226,7 +1226,7 @@ fn load_playing_field(game: &mut glh::GLState, spec: PlayingFieldSpec, uniforms:
     let tex = send_to_gpu_textures_playing_field(&teximage);
     send_to_gpu_uniforms_playing_field(sp, uniforms);
 
-    PlayingField {
+    PlayingFieldHandle {
         sp: sp,
         vao: handle.vao,
         v_pos_vbo: handle.v_pos_vbo,
