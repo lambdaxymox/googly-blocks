@@ -48,7 +48,7 @@ use teximage2d::TexImage2D;
 use playing_field::{
     BlockPosition, GooglyBlock, PlayingFieldState,
     GooglyBlockPiece, GooglyBlockRotation, GooglyBlockElement,
-    LandedBlocksQuery,
+    LandedBlocksQuery, LandedBlocksGrid,
 };
 
 use std::io;
@@ -1220,12 +1220,21 @@ struct PlayingFieldHandle {
 impl PlayingFieldHandle {
     fn write(&mut self, tex_coords: &[[GLfloat; 2]]) -> io::Result<usize> {
         unsafe {
-            gl::NamedBufferData(
-                self.v_tex_vbo,
+            gl::BindBuffer(gl::ARRAY_BUFFER, self.v_tex_vbo);
+            gl::BufferData(
+                gl::ARRAY_BUFFER, 
                 (mem::size_of::<[GLfloat; 2]>() * tex_coords.len()) as GLsizeiptr,
                 tex_coords.as_ptr() as *const GLvoid,
-                gl::DYNAMIC_DRAW,
+                gl::DYNAMIC_DRAW
             );
+            /*
+            gl::NamedBufferSubData(
+                self.v_tex_vbo, 
+                0,
+                (mem::size_of::<[GLfloat; 2]>() * tex_coords.len()) as GLsizeiptr,
+                tex_coords.as_ptr() as *const GLvoid,
+            );
+            */
         }
         let bytes_written = mem::size_of::<GLfloat>() * tex_coords.len();
         
@@ -2015,11 +2024,19 @@ impl Game {
     }
 
     fn update_playing_field(&mut self) {
-        
+        self.playing_field.write(&self.playing_field_state).unwrap();
+        self.playing_field.send_to_gpu();
     }
 
     fn render_playing_field(&mut self) {
-
+        unsafe {
+            gl::UseProgram(self.playing_field.handle.sp);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, self.playing_field.handle.tex);
+            gl::BindVertexArray(self.playing_field.handle.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 3 * 20 * 10);
+        }
     }
 }
 
@@ -2200,6 +2217,45 @@ fn main() {
             };
             dt = 0.0;
         }
+
+        let mut landed_blocks = LandedBlocksGrid::new();
+        landed_blocks.insert(19, 8, GooglyBlockElement::J);
+        landed_blocks.insert(19, 9, GooglyBlockElement::J);
+        landed_blocks.insert(18, 9, GooglyBlockElement::J);
+        landed_blocks.insert(17, 9, GooglyBlockElement::J);
+        landed_blocks.insert(16, 6, GooglyBlockElement::I);
+        landed_blocks.insert(17, 6, GooglyBlockElement::I);
+        landed_blocks.insert(18, 6, GooglyBlockElement::I);
+        landed_blocks.insert(19, 6, GooglyBlockElement::I);
+        landed_blocks.insert(15, 4, GooglyBlockElement::O);
+        landed_blocks.insert(15, 5, GooglyBlockElement::O);
+        landed_blocks.insert(16, 4, GooglyBlockElement::O);
+        landed_blocks.insert(16, 5, GooglyBlockElement::O);
+        landed_blocks.insert(17, 4, GooglyBlockElement::S);
+        landed_blocks.insert(18, 4, GooglyBlockElement::S);
+        landed_blocks.insert(18, 5, GooglyBlockElement::S);
+        landed_blocks.insert(19, 5, GooglyBlockElement::S);
+        landed_blocks.insert(17, 3, GooglyBlockElement::L);
+        landed_blocks.insert(16, 3, GooglyBlockElement::L);
+        landed_blocks.insert(15, 3, GooglyBlockElement::L);
+        landed_blocks.insert(15, 2, GooglyBlockElement::L);
+        landed_blocks.insert(18, 2, GooglyBlockElement::Z);
+        landed_blocks.insert(18, 3, GooglyBlockElement::Z);
+        landed_blocks.insert(19, 3, GooglyBlockElement::Z);
+        landed_blocks.insert(19, 4, GooglyBlockElement::Z);
+        landed_blocks.insert(15, 1, GooglyBlockElement::J);
+        landed_blocks.insert(15, 0, GooglyBlockElement::J);
+        landed_blocks.insert(16, 0, GooglyBlockElement::J);
+        landed_blocks.insert(17, 0, GooglyBlockElement::J);
+        landed_blocks.insert(16, 1, GooglyBlockElement::O);
+        landed_blocks.insert(16, 2, GooglyBlockElement::O);
+        landed_blocks.insert(17, 1, GooglyBlockElement::O);
+        landed_blocks.insert(17, 2, GooglyBlockElement::O);
+        landed_blocks.insert(18, 1, GooglyBlockElement::T);
+        landed_blocks.insert(19, 0, GooglyBlockElement::T);
+        landed_blocks.insert(19, 1, GooglyBlockElement::T);
+        landed_blocks.insert(19, 2, GooglyBlockElement::T);
+        game.playing_field_state.landed_blocks = landed_blocks;
 
         // Render the results.
         unsafe {

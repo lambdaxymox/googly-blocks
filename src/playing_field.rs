@@ -395,7 +395,7 @@ impl Iterator for LandedBlocksIterator {
 }
 
 impl LandedBlocksGrid {
-    fn new() -> Self {
+    pub fn new() -> Self {
         LandedBlocksGrid {
             landed: [[GooglyBlockElement::EmptySpace; 10]; 20],
         }
@@ -411,7 +411,7 @@ impl LandedBlocksGrid {
         }
     }
 
-    fn insert(&mut self, row: isize, column: isize, element: GooglyBlockElement) {
+    pub fn insert(&mut self, row: isize, column: isize, element: GooglyBlockElement) {
         let rows = self.rows() as isize;
         let columns = self.columns() as isize;
         if row >= 0 && row < rows && column >= 0 && column < columns {
