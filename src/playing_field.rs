@@ -52,12 +52,12 @@ impl fmt::Display for GooglyBlockElement {
 
 pub struct GooglyBlockShape {
     shape: [(usize, usize); 4],
-    element: GooglyBlockElement,
+    pub element: GooglyBlockElement,
     rows: usize,
     columns: usize,
 }
 
-struct GooglyBlockShapeIterator<'a> {
+pub struct GooglyBlockShapeIterator<'a> {
     index: usize,
     shape: &'a GooglyBlockShape
 }
@@ -77,7 +77,7 @@ impl<'a> Iterator for GooglyBlockShapeIterator<'a> {
 }
 
 impl GooglyBlockShape {
-    fn iter(&self) -> GooglyBlockShapeIterator {
+    pub fn iter(&self) -> GooglyBlockShapeIterator {
         GooglyBlockShapeIterator {
             index: 0,
             shape: self,
@@ -138,7 +138,7 @@ impl GooglyBlock {
         }
     }
 
-    fn shape(&self) -> GooglyBlockShape {
+    pub fn shape(&self) -> GooglyBlockShape {
         use self::GooglyBlockPiece::*;
         use self::GooglyBlockRotation::*;
         match self.piece {
@@ -527,15 +527,9 @@ enum GooglyBlockMove {
     Fall,
 }
 
-struct PlayingFieldTimers {
-    fall_timer: Duration,
-    collision_timer: Duration,
-}
-
 pub struct PlayingFieldState {
     pub current_block: GooglyBlock,
     pub current_position: BlockPosition,
-    timers: PlayingFieldTimers,
     pub landed_blocks: LandedBlocksGrid,
 }
 
@@ -544,16 +538,8 @@ impl PlayingFieldState {
         PlayingFieldState {
             current_block: starting_block,
             current_position: starting_position,
-            timers: PlayingFieldTimers {
-                fall_timer: Duration::from_millis(0),
-                collision_timer: Duration::from_millis(0),
-            },
             landed_blocks: LandedBlocksGrid::new(),
         }
-    }
-    
-    pub fn update_timers(&mut self, elapsed: Duration) {
-
     }
     
     pub fn update_block_position(&mut self, block_move: GooglyBlockMove) {

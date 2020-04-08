@@ -56,6 +56,7 @@ use std::mem;
 use std::ptr;
 use std::rc::Rc;
 use std::cell::RefCell;
+use std::time::Duration;
 
 // OpenGL extension constants.
 const GL_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FE;
@@ -1294,7 +1295,7 @@ impl PlayingField {
                     LandedBlocksQuery::InOfBounds(GooglyBlockElement::T) => {
                         let quad = TextureQuad::new(
                             [0_f32 / 3_f32, 3_f32 / 3_f32], [0_f32 / 3_f32, 2_f32 / 3_f32],
-                            [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32]
+                            [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32],
                         );
                         self.tex_coords[row][column] = quad;
                     }
@@ -1315,28 +1316,28 @@ impl PlayingField {
                     LandedBlocksQuery::InOfBounds(GooglyBlockElement::O) => {
                         let quad = TextureQuad::new(
                             [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 0_f32 / 3_f32],
-                            [3_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32]
+                            [3_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32],
                         );
                         self.tex_coords[row][column] = quad;
                     }
                     LandedBlocksQuery::InOfBounds(GooglyBlockElement::S) => {
                         let quad = TextureQuad::new(
                             [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 0_f32 / 3_f32],
-                            [2_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32]
+                            [2_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
                         );
                         self.tex_coords[row][column] = quad;
                     }
                     LandedBlocksQuery::InOfBounds(GooglyBlockElement::L) => {
                         let quad = TextureQuad::new(
                             [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
-                            [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32]
+                            [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
                         );
                         self.tex_coords[row][column] = quad;
                     }
                     LandedBlocksQuery::InOfBounds(GooglyBlockElement::I) => {
                         let quad = TextureQuad::new(
                             [0_f32 / 3_f32, 0_f32 / 3_f32], [0_f32 / 3_f32, 0_f32 / 3_f32],
-                            [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32]
+                            [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
                         );
                         self.tex_coords[row][column] = quad;
                     }
@@ -1345,14 +1346,62 @@ impl PlayingField {
             } 
         }
 
-        /*
         let shape = playing_field.current_block.shape();
-        let top_left_row = playing_field.current_position.row;
-        let top_left_column = playing_field.current_position.column;
-        for element in shape.iter() {
-
+        let top_left_row = playing_field.current_position.row as usize;
+        let top_left_column = playing_field.current_position.column as usize;
+        let quad = match shape.element {
+            GooglyBlockElement::EmptySpace => {
+                TextureQuad::new(
+                    [1_f32 / 3_f32, 3_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
+                    [2_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 3_f32 / 3_f32],               
+                )
+            }
+            GooglyBlockElement::T => {
+                TextureQuad::new(
+                    [0_f32 / 3_f32, 3_f32 / 3_f32], [0_f32 / 3_f32, 2_f32 / 3_f32],
+                    [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32],
+                )
+            }
+            GooglyBlockElement::J => {
+                TextureQuad::new(
+                    [0_f32 / 3_f32, 2_f32 / 3_f32], [0_f32 / 3_f32, 1_f32 / 3_f32],
+                    [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],                    
+                )
+            }
+            GooglyBlockElement::Z => {
+                TextureQuad::new(
+                    [2_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
+                    [3_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32],                    
+                )
+            }
+            GooglyBlockElement::O => {
+                TextureQuad::new(
+                    [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 0_f32 / 3_f32],
+                    [3_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32],                    
+                )
+            }
+            GooglyBlockElement::S => {
+                TextureQuad::new(
+                    [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 0_f32 / 3_f32],
+                    [2_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],                    
+                )
+            }
+            GooglyBlockElement::L => {
+                TextureQuad::new(
+                    [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
+                    [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],                    
+                )
+            }
+            GooglyBlockElement::I => {
+                TextureQuad::new(
+                    [0_f32 / 3_f32, 0_f32 / 3_f32], [0_f32 / 3_f32, 0_f32 / 3_f32],
+                    [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],                    
+                )
+            }
+        };
+        for (row, column) in shape.iter().map(|(r, c)| (r as usize, c as usize)) { 
+            self.tex_coords[top_left_row + row][top_left_column + column] = quad;
         }
-        */
 
         let bytes_written = mem::size_of::<TextureQuad>() * rows * columns;
 
@@ -1890,6 +1939,18 @@ impl UI {
     }
 }
 
+struct PlayingFieldTimers {
+    fall_timer: Duration,
+    collision_timer: Duration,
+}
+
+impl PlayingFieldTimers {
+    fn update(&mut self, elapsed: Duration) {
+        self.fall_timer += elapsed;
+        self.collision_timer += elapsed;
+    }
+}
+
 struct Statistics {
     t_pieces: usize,
     j_pieces: usize,
@@ -2165,7 +2226,7 @@ fn init_game() -> Game {
         load_playing_field(&mut *context, playing_field_spec, playing_field_uniforms)
     };
     let starting_block = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
-    let starting_position = BlockPosition { row: 0, column: 6 };
+    let starting_position = BlockPosition { row: 0, column: 4 };
     let playing_field_state = PlayingFieldState::new(starting_block, starting_position);
     let playing_field = PlayingField::new(gl_context.clone(), playing_field_handle);
 
