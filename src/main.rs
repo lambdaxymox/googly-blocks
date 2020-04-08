@@ -1182,12 +1182,23 @@ struct PlayingFieldUniforms {
 }
 
 fn create_uniforms_playing_field(scale: u32, viewport_width: u32, viewport_height: u32) -> PlayingFieldUniforms {
-    let gui_scale_x = 2.0 * (scale as f32) / (viewport_width as f32);
-    let gui_scale_y = 2.0 * (scale as f32) / (viewport_height as f32);
+    let gui_scale_x = (scale as f32) / (viewport_width as f32);
+    let gui_scale_y = (scale as f32) / (viewport_height as f32);
     let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 1.0);
-    let trans_mat = Matrix4::from_translation(cgmath::vec3((0.1, 0.0, 0.0)));
+    let trans_mat = Matrix4::from_translation(cgmath::vec3((0.085, 0.0, 0.0)));
     
     PlayingFieldUniforms { gui_scale_mat: gui_scale_mat, trans_mat: trans_mat }
+}
+
+fn update_uniforms_playing_field(game: &mut Game) {
+    let viewport = game.viewport_dimensions();
+    let scale = 488;
+    let gui_scale_x = (scale as f32) / (viewport.width as f32);
+    let gui_scale_y = (scale as f32) / (viewport.height as f32);
+    let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 1.0);
+    let trans_mat = Matrix4::from_translation(cgmath::vec3((0.085, 0.0, 0.0)));
+    let uniforms = PlayingFieldUniforms { gui_scale_mat: gui_scale_mat, trans_mat: trans_mat };
+    send_to_gpu_uniforms_playing_field(game.ui.next_piece_panel.buffer.sp, uniforms);
 }
 
 fn send_to_gpu_uniforms_playing_field(sp: GLuint, uniforms: PlayingFieldUniforms) {
@@ -1364,17 +1375,6 @@ fn load_playing_field(game: &mut glh::GLState, spec: PlayingFieldSpec, uniforms:
         v_pos_loc: handle.v_pos_loc,
         v_tex_loc: handle.v_tex_loc,
     }
-}
-
-fn update_uniforms_playing_field(game: &mut Game) {
-    let (viewport_width, viewport_height) = game.get_framebuffer_size();
-    let scale = 50;
-    let gui_scale_x = 2.0 * (scale as f32) / (viewport_width as f32);
-    let gui_scale_y = 2.0 * (scale as f32) / (viewport_height as f32);
-    let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 1.0);
-    let trans_mat = Matrix4::from_translation(cgmath::vec3((-0.5, 0.5, 0.0)));
-    let uniforms = PlayingFieldUniforms { gui_scale_mat: gui_scale_mat, trans_mat: trans_mat };
-    send_to_gpu_uniforms_playing_field(game.ui.next_piece_panel.buffer.sp, uniforms);
 }
 
 
@@ -2144,7 +2144,7 @@ fn init_game() -> Game {
         next_piece_panel: next_piece_panel,
     };
     
-    let playing_field_uniforms = create_uniforms_playing_field(240, viewport_width as u32, viewport_height as u32);
+    let playing_field_uniforms = create_uniforms_playing_field(488, viewport_width as u32, viewport_height as u32);
     let playing_field_spec = PlayingFieldSpec {
         rows: 20,
         columns: 10,
