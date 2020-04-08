@@ -1290,14 +1290,6 @@ impl PlayingField {
                             [2_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 3_f32 / 3_f32]
                         );
                         self.tex_coords[row][column] = quad;
-                        /*
-                        self.tex_coords.push([1_f32 / 3_f32, 2_f32 / 3_f32]); bottom left
-                        self.tex_coords.push([2_f32 / 3_f32, 3_f32 / 3_f32]); top right
-                        self.tex_coords.push([1_f32 / 3_f32, 3_f32 / 3_f32]); top left
-                        self.tex_coords.push([1_f32 / 3_f32, 2_f32 / 3_f32]); bottom left
-                        self.tex_coords.push([2_f32 / 3_f32, 2_f32 / 3_f32]); bottom right
-                        self.tex_coords.push([2_f32 / 3_f32, 3_f32 / 3_f32]); top right
-                        */
                     }
                     LandedBlocksQuery::InOfBounds(GooglyBlockElement::T) => {
                         let quad = TextureQuad::new(
@@ -1305,14 +1297,6 @@ impl PlayingField {
                             [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32]
                         );
                         self.tex_coords[row][column] = quad;
-                        /*
-                        self.tex_coords.push([0_f32 / 3_f32, 2_f32 / 3_f32]); bottom left
-                        self.tex_coords.push([1_f32 / 3_f32, 3_f32 / 3_f32]); top right
-                        self.tex_coords.push([0_f32 / 3_f32, 3_f32 / 3_f32]); top left
-                        self.tex_coords.push([0_f32 / 3_f32, 2_f32 / 3_f32]); bottom left
-                        self.tex_coords.push([1_f32 / 3_f32, 2_f32 / 3_f32]); bottom right
-                        self.tex_coords.push([1_f32 / 3_f32, 3_f32 / 3_f32]); top right
-                        */
                     }
                     LandedBlocksQuery::InOfBounds(GooglyBlockElement::J) => {
                         let quad = TextureQuad::new(
@@ -1320,14 +1304,6 @@ impl PlayingField {
                             [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
                         );
                         self.tex_coords[row][column] = quad;
-                        /*
-                        self.tex_coords.push([0_f32 / 3_f32, 1_f32 / 3_f32]); bottom left
-                        self.tex_coords.push([1_f32 / 3_f32, 2_f32 / 3_f32]); top right
-                        self.tex_coords.push([0_f32 / 3_f32, 2_f32 / 3_f32]); top left
-                        self.tex_coords.push([0_f32 / 3_f32, 1_f32 / 3_f32]); bottom left
-                        self.tex_coords.push([1_f32 / 3_f32, 1_f32 / 3_f32]); bottom right
-                        self.tex_coords.push([1_f32 / 3_f32, 2_f32 / 3_f32]); top right
-                        */
                     }
                     LandedBlocksQuery::InOfBounds(GooglyBlockElement::Z) => {
                         let quad = TextureQuad::new(
@@ -1335,14 +1311,6 @@ impl PlayingField {
                             [3_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32],
                         );
                         self.tex_coords[row][column] = quad;
-                        /*
-                        self.tex_coords.push([2_f32 / 3_f32, 1_f32 / 3_f32]); bottom left
-                        self.tex_coords.push([3_f32 / 3_f32, 2_f32 / 3_f32]); top right
-                        self.tex_coords.push([2_f32 / 3_f32, 2_f32 / 3_f32]); top left
-                        self.tex_coords.push([2_f32 / 3_f32, 1_f32 / 3_f32]); bottom left
-                        self.tex_coords.push([3_f32 / 3_f32, 1_f32 / 3_f32]); bottom right
-                        self.tex_coords.push([3_f32 / 3_f32, 2_f32 / 3_f32]); top right
-                        */
                     }
                     LandedBlocksQuery::InOfBounds(GooglyBlockElement::O) => {
                         let quad = TextureQuad::new(
@@ -1350,14 +1318,6 @@ impl PlayingField {
                             [3_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32]
                         );
                         self.tex_coords[row][column] = quad;
-                        /*
-                        self.tex_coords.push([2_f32 / 3_f32, 0_f32 / 3_f32]); bottom left
-                        self.tex_coords.push([3_f32 / 3_f32, 1_f32 / 3_f32]); top right
-                        self.tex_coords.push([2_f32 / 3_f32, 1_f32 / 3_f32]); top left
-                        self.tex_coords.push([2_f32 / 3_f32, 0_f32 / 3_f32]); bottom left
-                        self.tex_coords.push([3_f32 / 3_f32, 0_f32 / 3_f32]); bottom right
-                        self.tex_coords.push([3_f32 / 3_f32, 1_f32 / 3_f32]); top right
-                        */
                     }
                     LandedBlocksQuery::InOfBounds(GooglyBlockElement::S) => {
                         let quad = TextureQuad::new(
@@ -1365,14 +1325,6 @@ impl PlayingField {
                             [2_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32]
                         );
                         self.tex_coords[row][column] = quad;
-                        /*
-                        self.tex_coords.push([1_f32 / 3_f32, 0_f32 / 3_f32]); bottom left
-                        self.tex_coords.push([2_f32 / 3_f32, 1_f32 / 3_f32]); top right
-                        self.tex_coords.push([1_f32 / 3_f32, 1_f32 / 3_f32]); top left
-                        self.tex_coords.push([1_f32 / 3_f32, 0_f32 / 3_f32]); bottom left
-                        self.tex_coords.push([2_f32 / 3_f32, 0_f32 / 3_f32]); bottom right
-                        self.tex_coords.push([2_f32 / 3_f32, 1_f32 / 3_f32]); top right
-                        */
                     }
                     LandedBlocksQuery::InOfBounds(GooglyBlockElement::L) => {
                         let quad = TextureQuad::new(
@@ -1380,14 +1332,6 @@ impl PlayingField {
                             [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32]
                         );
                         self.tex_coords[row][column] = quad;
-                        /*
-                        self.tex_coords.push([1_f32 / 3_f32, 1_f32 / 3_f32]); bottom left
-                        self.tex_coords.push([2_f32 / 3_f32, 2_f32 / 3_f32]); top right
-                        self.tex_coords.push([1_f32 / 3_f32, 2_f32 / 3_f32]); top left
-                        self.tex_coords.push([1_f32 / 3_f32, 1_f32 / 3_f32]); bottom left
-                        self.tex_coords.push([2_f32 / 3_f32, 1_f32 / 3_f32]); bottom right
-                        self.tex_coords.push([2_f32 / 3_f32, 2_f32 / 3_f32]); top right
-                        */
                     }
                     LandedBlocksQuery::InOfBounds(GooglyBlockElement::I) => {
                         let quad = TextureQuad::new(
@@ -1395,14 +1339,6 @@ impl PlayingField {
                             [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32]
                         );
                         self.tex_coords[row][column] = quad;
-                        /*
-                        self.tex_coords.push([0_f32 / 3_f32, 0_f32 / 3_f32]); bottom left
-                        self.tex_coords.push([1_f32 / 3_f32, 1_f32 / 3_f32]); top right
-                        self.tex_coords.push([0_f32 / 3_f32, 1_f32 / 3_f32]); top left
-                        self.tex_coords.push([0_f32 / 3_f32, 0_f32 / 3_f32]); bottom left
-                        self.tex_coords.push([1_f32 / 3_f32, 0_f32 / 3_f32]); bottom right
-                        self.tex_coords.push([1_f32 / 3_f32, 1_f32 / 3_f32]); top right
-                        */
                     }
                     _ => {}
                 }
