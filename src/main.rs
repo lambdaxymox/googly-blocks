@@ -1922,22 +1922,44 @@ impl UI {
     }
 }
 
+struct Timer {
+    time: Duration,
+}
+
+impl Timer {
+    fn new() -> Timer {
+        Timer {
+            time: Duration::from_millis(0),
+        }
+    }
+
+    #[inline]
+    fn update(&mut self, elapsed: Duration) {
+        self.time += elapsed;
+    }
+
+    #[inline]
+    fn reset(&mut self) {
+        self.time = Duration::from_millis(0);
+    }
+}
+
 struct PlayingFieldTimers {
-    fall_timer: Duration,
-    collision_timer: Duration,
+    fall_timer: Timer,
+    collision_timer: Timer,
 }
 
 impl PlayingFieldTimers {
     fn new() -> PlayingFieldTimers {
         PlayingFieldTimers {
-            fall_timer: Duration::from_millis(0),
-            collision_timer: Duration::from_millis(0),
+            fall_timer: Timer::new(),
+            collision_timer: Timer::new(),
         }
     }
 
     fn update(&mut self, elapsed: Duration) {
-        self.fall_timer += elapsed;
-        self.collision_timer += elapsed;
+        self.fall_timer.update(elapsed);
+        self.collision_timer.update(elapsed);
     }
 }
 
@@ -2252,6 +2274,36 @@ fn init_game() -> Game {
     }
 }
 
+fn collides_with_element_below(playing_field_state: &PlayingFieldState) -> bool {
+    let shape = playing_field_state.current_block.shape();
+    let top_left = playing_field_state.current_position;
+    let landed = &playing_field_state.landed_blocks;
+    for (row, column) in shape.iter() {
+        let element_row = row as isize;
+        let element_column = column as isize;
+        match landed.get(top_left.row + element_row + 1, top_left.column + element_column) {
+            LandedBlocksQuery::InOfBounds(GooglyBlockElement::EmptySpace) => {}
+            LandedBlocksQuery::OutOfBounds(_, _) => {}
+            LandedBlocksQuery::InOfBounds(_) => return true,
+        }
+    }
+    
+    false
+}
+
+fn collides_with_floor_below(playing_field_state: &PlayingFieldState) -> bool {
+    let shape = playing_field_state.current_block.shape();
+    let top_left = playing_field_state.current_position;
+    for (row, _) in shape.iter() {
+        let part_row = row as isize;
+        if top_left.row + part_row + 1 >= playing_field_state.landed_blocks.rows() as isize {
+            return true;
+        }
+    }
+
+    false
+}
+
 fn main() {
     let mut game = init_game();
     unsafe {
@@ -2270,7 +2322,6 @@ fn main() {
         // Check input.
         let elapsed_seconds = game.update_timers();
         let elapsed_milliseconds = Duration::from_millis((elapsed_seconds * 1000_f64) as u64);
-        game.update_timers_playing_field(elapsed_milliseconds);
 
         game.poll_events();
         match game.get_key(Key::Escape) {
@@ -2280,11 +2331,26 @@ fn main() {
             _ => {}
         }
 
-        if game.timers.fall_timer >= Duration::from_millis(500) {
-            game.playing_field_state.update_block_position(GooglyBlockMove::Fall);
-            game.timers.fall_timer = Duration::from_millis(0);
+
+        let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
+        let collides_with_element = collides_with_element_below(&game.playing_field_state);
+
+        game.timers.fall_timer.update(elapsed_milliseconds);
+        // Update the game world.
+        if collides_with_floor || collides_with_element {
+            game.timers.collision_timer.update(elapsed_milliseconds);
+        } else {
+            game.timers.collision_timer.reset();
         }
-        if game.timers.collision_timer >= Duration::from_millis(500) {
+
+        if game.timers.fall_timer.time >= Duration::from_millis(500) {
+            println!("FALL TIMER: {} ms", game.timers.fall_timer.time.as_millis());
+            game.playing_field_state.update_block_position(GooglyBlockMove::Fall);
+            game.timers.fall_timer.reset();
+        }
+
+        if game.timers.collision_timer.time >= Duration::from_millis(500) {
+            println!("COLLISION TIMER: {} ms", game.timers.collision_timer.time.as_millis());
             let block = game.playing_field_state.current_block;
             let position = game.playing_field_state.current_position;
             game.playing_field_state.landed_blocks.insert_block(position.row, position.column, block);
@@ -2296,14 +2362,13 @@ fn main() {
                 GooglyBlockPiece::O => GooglyBlockPiece::S,
                 GooglyBlockPiece::S => GooglyBlockPiece::L,
                 GooglyBlockPiece::L => GooglyBlockPiece::I,
-                GooglyBlockPiece::I => GooglyBlockPiece::T,              
+                GooglyBlockPiece::I => GooglyBlockPiece::T,
             };
             let next_block = GooglyBlock::new(next_piece, GooglyBlockRotation::R0);
             game.playing_field_state.update_new_block(next_block);
-            game.timers.collision_timer = Duration::from_millis(0);
+            game.timers.collision_timer.reset();
         }
 
-        // Update the game world.
         game.update_fps_counter();
         game.update_framebuffer_size();
 
