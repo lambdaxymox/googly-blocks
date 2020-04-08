@@ -2321,45 +2321,6 @@ fn main() {
             dt = 0.0;
         }
 
-        let mut landed_blocks = LandedBlocksGrid::new();
-        landed_blocks.insert(19, 8, GooglyBlockElement::J);
-        landed_blocks.insert(19, 9, GooglyBlockElement::J);
-        landed_blocks.insert(18, 9, GooglyBlockElement::J);
-        landed_blocks.insert(17, 9, GooglyBlockElement::J);
-        landed_blocks.insert(16, 6, GooglyBlockElement::I);
-        landed_blocks.insert(17, 6, GooglyBlockElement::I);
-        landed_blocks.insert(18, 6, GooglyBlockElement::I);
-        landed_blocks.insert(19, 6, GooglyBlockElement::I);
-        landed_blocks.insert(15, 4, GooglyBlockElement::O);
-        landed_blocks.insert(15, 5, GooglyBlockElement::O);
-        landed_blocks.insert(16, 4, GooglyBlockElement::O);
-        landed_blocks.insert(16, 5, GooglyBlockElement::O);
-        landed_blocks.insert(17, 4, GooglyBlockElement::S);
-        landed_blocks.insert(18, 4, GooglyBlockElement::S);
-        landed_blocks.insert(18, 5, GooglyBlockElement::S);
-        landed_blocks.insert(19, 5, GooglyBlockElement::S);
-        landed_blocks.insert(17, 3, GooglyBlockElement::L);
-        landed_blocks.insert(16, 3, GooglyBlockElement::L);
-        landed_blocks.insert(15, 3, GooglyBlockElement::L);
-        landed_blocks.insert(15, 2, GooglyBlockElement::L);
-        landed_blocks.insert(18, 2, GooglyBlockElement::Z);
-        landed_blocks.insert(18, 3, GooglyBlockElement::Z);
-        landed_blocks.insert(19, 3, GooglyBlockElement::Z);
-        landed_blocks.insert(19, 4, GooglyBlockElement::Z);
-        landed_blocks.insert(15, 1, GooglyBlockElement::J);
-        landed_blocks.insert(15, 0, GooglyBlockElement::J);
-        landed_blocks.insert(16, 0, GooglyBlockElement::J);
-        landed_blocks.insert(17, 0, GooglyBlockElement::J);
-        landed_blocks.insert(16, 1, GooglyBlockElement::O);
-        landed_blocks.insert(16, 2, GooglyBlockElement::O);
-        landed_blocks.insert(17, 1, GooglyBlockElement::O);
-        landed_blocks.insert(17, 2, GooglyBlockElement::O);
-        landed_blocks.insert(18, 1, GooglyBlockElement::T);
-        landed_blocks.insert(19, 0, GooglyBlockElement::T);
-        landed_blocks.insert(19, 1, GooglyBlockElement::T);
-        landed_blocks.insert(19, 2, GooglyBlockElement::T);
-        game.playing_field_state.landed_blocks = landed_blocks;
-
         // Render the results.
         unsafe {
             // Clear the screen and the depth buffer.
