@@ -2297,7 +2297,6 @@ fn main() {
             _ => {}
         }
 
-        println!("FALL TIMER: {} ms", game.timers.fall_timer.as_millis());
         if game.timers.fall_timer >= Duration::from_millis(500) {
             game.playing_field_state.update_block_position(GooglyBlockMove::Fall);
             game.timers.fall_timer = Duration::from_millis(0);
