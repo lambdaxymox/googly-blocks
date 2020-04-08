@@ -883,22 +883,8 @@ struct PieceUniformsData {
     trans_mat: Matrix4,
 }
 
-
-#[derive(Copy, Clone, PartialEq, Eq)]
-enum TetrisPiece { 
-    T,
-    J, 
-    Z, 
-    O, 
-    S, 
-    L, 
-    I,
-}
-
 fn create_uniforms_next_piece_panel(
-    piece: TetrisPiece, scale: u32, viewport_width: u32, viewport_height: u32) -> PieceUniformsData {
-    
-    use TetrisPiece::*;
+    piece: GooglyBlockPiece, scale: u32, viewport_width: u32, viewport_height: u32) -> PieceUniformsData {
 
     // FIXME: MAGIC NUMBERS IN USE HERE.
     let block_width = 2.0 * (scale as f32 / viewport_width as f32);
@@ -906,13 +892,13 @@ fn create_uniforms_next_piece_panel(
     let gui_scale_mat = Matrix4::from_nonuniform_scale(block_width, block_height, 1.0);
     
     let trans_mat = match piece {
-        T => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-        J => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-        Z => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-        O => Matrix4::from_translation(cgmath::vec3((0.50, 0.43, 0.0))),
-        S => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-        L => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-        I => Matrix4::from_translation(cgmath::vec3((0.555, 0.48, 0.0))),
+        GooglyBlockPiece::T => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
+        GooglyBlockPiece::J => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
+        GooglyBlockPiece::Z => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
+        GooglyBlockPiece::O => Matrix4::from_translation(cgmath::vec3((0.50, 0.43, 0.0))),
+        GooglyBlockPiece::S => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
+        GooglyBlockPiece::L => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
+        GooglyBlockPiece::I => Matrix4::from_translation(cgmath::vec3((0.555, 0.48, 0.0))),
     };
 
     PieceUniformsData {
@@ -942,21 +928,19 @@ fn send_to_gpu_uniforms_next_piece_panel(sp: GLuint, uniforms: &PieceUniformsDat
 }
 
 fn update_uniforms_next_piece_panel(game: &mut Game) {
-    use TetrisPiece::*;
-
     let (viewport_width, viewport_height) = game.get_framebuffer_size();
     let scale = 50;
     let gui_scale_x = 2.0 * (scale as f32) / (viewport_width as f32);
     let gui_scale_y = 2.0 * (scale as f32) / (viewport_height as f32);
     let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 1.0);
     let trans_mat = match game.next_piece {
-        T => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-        J => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-        Z => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-        O => Matrix4::from_translation(cgmath::vec3((0.50, 0.43, 0.0))),
-        S => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-        L => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-        I => Matrix4::from_translation(cgmath::vec3((0.555, 0.48, 0.0))),
+        GooglyBlockPiece::T => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
+        GooglyBlockPiece::J => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
+        GooglyBlockPiece::Z => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
+        GooglyBlockPiece::O => Matrix4::from_translation(cgmath::vec3((0.50, 0.43, 0.0))),
+        GooglyBlockPiece::S => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
+        GooglyBlockPiece::L => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
+        GooglyBlockPiece::I => Matrix4::from_translation(cgmath::vec3((0.555, 0.48, 0.0))),
     };
     let uniforms = PieceUniformsData { gui_scale_mat: gui_scale_mat, trans_mat: trans_mat };
     send_to_gpu_uniforms_next_piece_panel(game.ui.next_piece_panel.buffer.sp, &uniforms);
@@ -979,16 +963,15 @@ struct GLNextPiecePanel {
 }
 
 impl GLNextPiecePanel {
-    fn handle(&self, piece: TetrisPiece) -> NextPiecePanelHandle {
-        use TetrisPiece::*;
+    fn handle(&self, piece: GooglyBlockPiece) -> NextPiecePanelHandle {
         match piece {
-            T => self.t_handle, 
-            J => self.j_handle,
-            Z => self.z_handle,
-            O => self.o_handle,
-            S => self.s_handle,
-            L => self.l_handle,
-            I => self.i_handle,
+            GooglyBlockPiece::T => self.t_handle, 
+            GooglyBlockPiece::J => self.j_handle,
+            GooglyBlockPiece::Z => self.z_handle,
+            GooglyBlockPiece::O => self.o_handle,
+            GooglyBlockPiece::S => self.s_handle,
+            GooglyBlockPiece::L => self.l_handle,
+            GooglyBlockPiece::I => self.i_handle,
         }
     }
 }
@@ -1016,18 +999,18 @@ fn create_next_piece_panel_buffer(gl_context: &mut glh::GLState, uniforms: &Piec
 }
 
 struct NextPiecePanel {
-    current_piece: TetrisPiece,
+    current_piece: GooglyBlockPiece,
     buffer: GLNextPiecePanel,
 }
 
 impl NextPiecePanel {
-    fn update(&mut self, piece: TetrisPiece) {
+    fn update(&mut self, piece: GooglyBlockPiece) {
         self.current_piece = piece;
     }
 }
 
 struct NextPiecePanelSpec {
-    piece: TetrisPiece,
+    piece: GooglyBlockPiece,
 }
 
 fn load_next_piece_panel(
@@ -1934,7 +1917,7 @@ impl UI {
         self.text_panel.update_statistics(statistics);
     }
 
-    fn update_next_piece(&mut self, piece: TetrisPiece) {
+    fn update_next_piece(&mut self, piece: GooglyBlockPiece) {
         self.next_piece_panel.update(piece);
     }
 }
@@ -1986,7 +1969,7 @@ struct Game {
     lines: usize,
     tetrises: usize,
     statistics: Statistics,
-    next_piece: TetrisPiece,
+    next_piece: GooglyBlockPiece,
 }
 
 impl Game {
@@ -2213,7 +2196,7 @@ fn init_game() -> Game {
     };
     let text_panel = load_text_panel(gl_context.clone(), &text_panel_spec, text_panel_uniforms);
     
-    let next_piece = TetrisPiece::T;
+    let next_piece = GooglyBlockPiece::T;
     let next_piece_panel_spec = NextPiecePanelSpec {
         piece: next_piece,
     };
@@ -2301,25 +2284,28 @@ fn main() {
             game.playing_field_state.update_block_position(GooglyBlockMove::Fall);
             game.timers.fall_timer = Duration::from_millis(0);
         }
+        if game.timers.collision_timer >= Duration::from_millis(500) {
+            let block = game.playing_field_state.current_block;
+            let position = game.playing_field_state.current_position;
+            game.playing_field_state.landed_blocks.insert_block(position.row, position.column, block);
+            let next_piece = game.next_piece;
+            game.next_piece = match game.next_piece {
+                GooglyBlockPiece::T => GooglyBlockPiece::J,
+                GooglyBlockPiece::J => GooglyBlockPiece::Z,
+                GooglyBlockPiece::Z => GooglyBlockPiece::O,
+                GooglyBlockPiece::O => GooglyBlockPiece::S,
+                GooglyBlockPiece::S => GooglyBlockPiece::L,
+                GooglyBlockPiece::L => GooglyBlockPiece::I,
+                GooglyBlockPiece::I => GooglyBlockPiece::T,              
+            };
+            let next_block = GooglyBlock::new(next_piece, GooglyBlockRotation::R0);
+            game.playing_field_state.update_new_block(next_block);
+            game.timers.collision_timer = Duration::from_millis(0);
+        }
 
         // Update the game world.
         game.update_fps_counter();
         game.update_framebuffer_size();
-
-        dt += elapsed_seconds;
-        if dt >= 1.0 {
-            use TetrisPiece::*;
-            game.next_piece = match game.next_piece {
-                T => J,
-                J => Z,
-                Z => O,
-                O => S,
-                S => L,
-                L => I,
-                I => T,
-            };
-            dt = 0.0;
-        }
 
         // Render the results.
         unsafe {

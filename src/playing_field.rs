@@ -421,7 +421,7 @@ impl LandedBlocksGrid {
         }
     }
 
-    fn insert_block(&mut self, tl_row: isize, tl_column: isize, block: GooglyBlock) {
+    pub fn insert_block(&mut self, tl_row: isize, tl_column: isize, block: GooglyBlock) {
         let shape = block.shape();
         for (row, column) in shape.iter().map(|(r, c)| (r as isize, c as isize)) {
             self.insert(tl_row + row, tl_column + column, shape.element);
