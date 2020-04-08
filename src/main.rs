@@ -47,7 +47,8 @@ use mesh::ObjMesh;
 use teximage2d::TexImage2D;
 use playing_field::{
     BlockPosition, GooglyBlock, PlayingFieldState,
-    GooglyBlockPiece, GooglyBlockRotation,
+    GooglyBlockPiece, GooglyBlockRotation, GooglyBlockElement,
+    LandedBlocksQuery,
 };
 
 use std::io;
@@ -1216,6 +1217,130 @@ struct PlayingFieldHandle {
     v_tex_loc: GLuint,
 }
 
+impl PlayingFieldHandle {
+    fn write(&mut self, tex_coords: &[[GLfloat; 2]]) -> io::Result<usize> {
+        unsafe {
+            gl::NamedBufferData(
+                self.v_tex_vbo,
+                (mem::size_of::<[GLfloat; 2]>() * tex_coords.len()) as GLsizeiptr,
+                tex_coords.as_ptr() as *const GLvoid,
+                gl::DYNAMIC_DRAW,
+            );
+        }
+        let bytes_written = mem::size_of::<GLfloat>() * tex_coords.len();
+        
+        Ok(bytes_written)
+    }
+}
+
+struct PlayingField {
+    tex_coords: Vec<[f32; 2]>,
+    gl_state: Rc<RefCell<glh::GLState>>,
+    handle: PlayingFieldHandle,
+}
+
+impl PlayingField {
+    fn new(gl_state: Rc<RefCell<glh::GLState>>, handle: PlayingFieldHandle) -> PlayingField {
+        PlayingField {
+            tex_coords: vec![],
+            gl_state: gl_state,
+            handle: handle,
+        }
+    }
+
+    fn clear(&mut self) {
+        self.tex_coords.clear();
+    }
+
+    fn write(&mut self, playing_field: &PlayingFieldState) -> io::Result<usize> {
+        self.clear();
+        let rows = playing_field.landed_blocks.rows();
+        let columns = playing_field.landed_blocks.columns();
+        for row in 0..rows {
+            for column in 0..columns {
+                match playing_field.landed_blocks.get(row as isize, column as isize) {
+                    LandedBlocksQuery::InOfBounds(GooglyBlockElement::EmptySpace) => {
+                        self.tex_coords.push([1_f32 / 3_f32, 2_f32 / 3_f32]);
+                        self.tex_coords.push([2_f32 / 3_f32, 3_f32 / 3_f32]);
+                        self.tex_coords.push([1_f32 / 3_f32, 3_f32 / 3_f32]);
+                        self.tex_coords.push([1_f32 / 3_f32, 2_f32 / 3_f32]);
+                        self.tex_coords.push([2_f32 / 3_f32, 2_f32 / 3_f32]);
+                        self.tex_coords.push([2_f32 / 3_f32, 3_f32 / 3_f32]);
+                    }
+                    LandedBlocksQuery::InOfBounds(GooglyBlockElement::T) => {
+                        self.tex_coords.push([0_f32 / 3_f32, 2_f32 / 3_f32]);
+                        self.tex_coords.push([1_f32 / 3_f32, 3_f32 / 3_f32]);
+                        self.tex_coords.push([0_f32 / 3_f32, 3_f32 / 3_f32]);
+                        self.tex_coords.push([0_f32 / 3_f32, 2_f32 / 3_f32]);
+                        self.tex_coords.push([1_f32 / 3_f32, 2_f32 / 3_f32]);
+                        self.tex_coords.push([1_f32 / 3_f32, 3_f32 / 3_f32]);
+                    }
+                    LandedBlocksQuery::InOfBounds(GooglyBlockElement::J) => {
+                        self.tex_coords.push([0_f32 / 3_f32, 1_f32 / 3_f32]);
+                        self.tex_coords.push([1_f32 / 3_f32, 2_f32 / 3_f32]);
+                        self.tex_coords.push([0_f32 / 3_f32, 2_f32 / 3_f32]);
+                        self.tex_coords.push([0_f32 / 3_f32, 1_f32 / 3_f32]);
+                        self.tex_coords.push([1_f32 / 3_f32, 1_f32 / 3_f32]);
+                        self.tex_coords.push([1_f32 / 3_f32, 2_f32 / 3_f32]);
+                    }
+                    LandedBlocksQuery::InOfBounds(GooglyBlockElement::Z) => {
+                        self.tex_coords.push([2_f32 / 3_f32, 1_f32 / 3_f32]);
+                        self.tex_coords.push([3_f32 / 3_f32, 2_f32 / 3_f32]);
+                        self.tex_coords.push([2_f32 / 3_f32, 2_f32 / 3_f32]);
+                        self.tex_coords.push([2_f32 / 3_f32, 1_f32 / 3_f32]);
+                        self.tex_coords.push([3_f32 / 3_f32, 1_f32 / 3_f32]);
+                        self.tex_coords.push([3_f32 / 3_f32, 2_f32 / 3_f32]);
+                    }
+                    LandedBlocksQuery::InOfBounds(GooglyBlockElement::O) => {
+                        self.tex_coords.push([2_f32 / 3_f32, 0_f32 / 3_f32]);
+                        self.tex_coords.push([3_f32 / 3_f32, 1_f32 / 3_f32]);
+                        self.tex_coords.push([2_f32 / 3_f32, 1_f32 / 3_f32]);
+                        self.tex_coords.push([2_f32 / 3_f32, 0_f32 / 3_f32]);
+                        self.tex_coords.push([3_f32 / 3_f32, 0_f32 / 3_f32]);
+                        self.tex_coords.push([3_f32 / 3_f32, 1_f32 / 3_f32]);
+                    }
+                    LandedBlocksQuery::InOfBounds(GooglyBlockElement::S) => {
+                        self.tex_coords.push([1_f32 / 3_f32, 0_f32 / 3_f32]);
+                        self.tex_coords.push([2_f32 / 3_f32, 1_f32 / 3_f32]);
+                        self.tex_coords.push([1_f32 / 3_f32, 1_f32 / 3_f32]);
+                        self.tex_coords.push([1_f32 / 3_f32, 0_f32 / 3_f32]);
+                        self.tex_coords.push([2_f32 / 3_f32, 0_f32 / 3_f32]);
+                        self.tex_coords.push([2_f32 / 3_f32, 1_f32 / 3_f32]);
+                    }
+                    LandedBlocksQuery::InOfBounds(GooglyBlockElement::L) => {
+                        self.tex_coords.push([1_f32 / 3_f32, 1_f32 / 3_f32]);
+                        self.tex_coords.push([2_f32 / 3_f32, 2_f32 / 3_f32]);
+                        self.tex_coords.push([1_f32 / 3_f32, 2_f32 / 3_f32]);
+                        self.tex_coords.push([1_f32 / 3_f32, 1_f32 / 3_f32]);
+                        self.tex_coords.push([2_f32 / 3_f32, 1_f32 / 3_f32]);
+                        self.tex_coords.push([2_f32 / 3_f32, 2_f32 / 3_f32]);
+                    }
+                    LandedBlocksQuery::InOfBounds(GooglyBlockElement::I) => {
+                        self.tex_coords.push([0_f32 / 3_f32, 0_f32 / 3_f32]);
+                        self.tex_coords.push([1_f32 / 3_f32, 1_f32 / 3_f32]);
+                        self.tex_coords.push([0_f32 / 3_f32, 1_f32 / 3_f32]);
+                        self.tex_coords.push([0_f32 / 3_f32, 0_f32 / 3_f32]);
+                        self.tex_coords.push([1_f32 / 3_f32, 0_f32 / 3_f32]);
+                        self.tex_coords.push([1_f32 / 3_f32, 1_f32 / 3_f32]);
+                    }
+                    _ => {}
+                }
+            } 
+        }
+
+        let bytes_written = 6 * mem::size_of::<GLfloat>() * rows * columns;
+
+        Ok(bytes_written)
+    }
+
+    fn send_to_gpu(&mut self) -> io::Result<usize> {
+        self.handle.write(&self.tex_coords)?;
+        let tex_coords_written = self.tex_coords.len();
+
+        Ok(tex_coords_written)
+    }
+}
+
 fn load_playing_field(game: &mut glh::GLState, spec: PlayingFieldSpec, uniforms: PlayingFieldUniforms) -> PlayingFieldHandle {
     let shader_source = create_shaders_playing_field();
     let mesh = create_geometry_playing_field(spec.rows, spec.columns);
@@ -1236,6 +1361,8 @@ fn load_playing_field(game: &mut glh::GLState, spec: PlayingFieldSpec, uniforms:
         v_tex_loc: handle.v_tex_loc,
     }
 }
+
+
 
 
 #[derive(Copy, Clone, Debug)]
@@ -1756,7 +1883,8 @@ struct ViewportDimensions {
 struct Game {
     gl: Rc<RefCell<glh::GLState>>,
     atlas: Rc<BitmapFontAtlas>,
-    playing_field: PlayingFieldState,
+    playing_field_state: PlayingFieldState,
+    playing_field: PlayingField,
     ui: UI,
     background: BackgroundPanel,
     score: usize,
@@ -2001,12 +2129,13 @@ fn init_game() -> Game {
     };
     let starting_block = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
     let starting_position = BlockPosition { row: 0, column: 6 };
-    let playing_field = PlayingFieldState::new(starting_block, starting_position);
-
+    let playing_field_state = PlayingFieldState::new(starting_block, starting_position);
+    let playing_field = PlayingField::new(gl_context.clone(), playing_field_handle);
 
     Game {
         gl: gl_context,
         atlas: atlas,
+        playing_field_state: playing_field_state,
         playing_field: playing_field,
         ui: ui,
         background: background,

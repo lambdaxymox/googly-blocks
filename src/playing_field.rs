@@ -21,7 +21,7 @@ use std::time::Duration;
 
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
-enum GooglyBlockElement {
+pub enum GooglyBlockElement {
     EmptySpace,
     T,
     J,
@@ -335,7 +335,7 @@ impl fmt::Display for GooglyBlock {
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-enum LandedBlocksQuery {
+pub enum LandedBlocksQuery {
     InOfBounds(GooglyBlockElement),
     OutOfBounds(isize, isize),
 }
@@ -364,7 +364,7 @@ impl LandedBlocksQuery {
 }
 
 #[derive(Clone, Debug)]
-struct LandedBlocksGrid {
+pub struct LandedBlocksGrid {
     landed: [[GooglyBlockElement; 10]; 20],
 }
 
@@ -401,7 +401,7 @@ impl LandedBlocksGrid {
         }
     }
 
-    fn get(&self, row: isize, column: isize) -> LandedBlocksQuery {
+    pub fn get(&self, row: isize, column: isize) -> LandedBlocksQuery {
         let rows = self.rows() as isize;
         let columns = self.columns() as isize;
         if row < 0 || row >= rows || column < 0 || column >= columns {
@@ -429,10 +429,10 @@ impl LandedBlocksGrid {
     }
 
     #[inline]
-    fn rows(&self) -> usize { 20 }
+    pub fn rows(&self) -> usize { 20 }
 
     #[inline]
-    fn columns(&self) -> usize { 10 }
+    pub fn columns(&self) -> usize { 10 }
 
     fn iter(&self) -> LandedBlocksIterator {
         LandedBlocksIterator {
@@ -533,10 +533,10 @@ struct PlayingFieldTimers {
 }
 
 pub struct PlayingFieldState {
-    current_block: GooglyBlock,
-    current_position: BlockPosition,
+    pub current_block: GooglyBlock,
+    pub current_position: BlockPosition,
     timers: PlayingFieldTimers,
-    landed_blocks: LandedBlocksGrid,
+    pub landed_blocks: LandedBlocksGrid,
 }
 
 impl PlayingFieldState {
