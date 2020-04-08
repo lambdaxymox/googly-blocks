@@ -47,7 +47,7 @@ use mesh::ObjMesh;
 use teximage2d::TexImage2D;
 use playing_field::{
     BlockPosition, GooglyBlock, PlayingFieldState,
-    GooglyBlockPiece, GooglyBlockRotation, GooglyBlockElement,
+    GooglyBlockPiece, GooglyBlockRotation, GooglyBlockElement, GooglyBlockMove,
     LandedBlocksQuery, LandedBlocksGrid,
 };
 
@@ -2286,6 +2286,8 @@ fn main() {
     while !game.window_should_close() {
         // Check input.
         let elapsed_seconds = game.update_timers();
+        let elapsed_milliseconds = Duration::from_millis((elapsed_seconds * 1000_f64) as u64);
+        game.update_timers_playing_field(elapsed_milliseconds);
 
         game.poll_events();
         match game.get_key(Key::Escape) {
@@ -2293,6 +2295,12 @@ fn main() {
                 game.window_set_should_close(true);
             }
             _ => {}
+        }
+
+        println!("FALL TIMER: {} ms", game.timers.fall_timer.as_millis());
+        if game.timers.fall_timer >= Duration::from_millis(500) {
+            game.playing_field_state.update_block_position(GooglyBlockMove::Fall);
+            game.timers.fall_timer = Duration::from_millis(0);
         }
 
         // Update the game world.

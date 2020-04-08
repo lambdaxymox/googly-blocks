@@ -520,7 +520,7 @@ fn collides_with_floor(piece: GooglyBlock, top_left: BlockPosition, landed: &Lan
 }
 
 #[derive(Copy, Clone, PartialEq, Eq)]
-enum GooglyBlockMove {
+pub enum GooglyBlockMove {
     Left,
     Right,
     Down,
