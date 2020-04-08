@@ -45,6 +45,10 @@ use log::{info};
 use math::{Array, One, Matrix4};
 use mesh::ObjMesh;
 use teximage2d::TexImage2D;
+use playing_field::{
+    BlockPosition, GooglyBlock, PlayingFieldState,
+    GooglyBlockPiece, GooglyBlockRotation,
+};
 
 use std::io;
 use std::mem;
@@ -1752,6 +1756,7 @@ struct ViewportDimensions {
 struct Game {
     gl: Rc<RefCell<glh::GLState>>,
     atlas: Rc<BitmapFontAtlas>,
+    playing_field: PlayingFieldState,
     ui: UI,
     background: BackgroundPanel,
     score: usize,
@@ -1990,14 +1995,19 @@ fn init_game() -> Game {
         rows: 20,
         columns: 10,
     };
-    let playing_field = {
+    let playing_field_handle = {
         let mut context = gl_context.borrow_mut();
         load_playing_field(&mut *context, playing_field_spec, playing_field_uniforms)
     };
+    let starting_block = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
+    let starting_position = BlockPosition { row: 0, column: 6 };
+    let playing_field = PlayingFieldState::new(starting_block, starting_position);
+
 
     Game {
         gl: gl_context,
         atlas: atlas,
+        playing_field: playing_field,
         ui: ui,
         background: background,
         score: 0,

@@ -50,7 +50,7 @@ impl fmt::Display for GooglyBlockElement {
     }
 }
 
-struct GooglyBlockShape {
+pub struct GooglyBlockShape {
     shape: [(usize, usize); 4],
     element: GooglyBlockElement,
     rows: usize,
@@ -106,7 +106,7 @@ impl fmt::Display for GooglyBlockShape {
 }
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
-enum GooglyBlockRotation {
+pub enum GooglyBlockRotation {
     R0,
     R1,
     R2,
@@ -114,7 +114,7 @@ enum GooglyBlockRotation {
 }
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
-enum GooglyBlockPiece {
+pub enum GooglyBlockPiece {
     T,
     J,
     Z,
@@ -125,13 +125,13 @@ enum GooglyBlockPiece {
 }
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
-struct GooglyBlock {
+pub struct GooglyBlock {
     piece: GooglyBlockPiece,
     rotation: GooglyBlockRotation,
 }
 
 impl GooglyBlock {
-    fn new(piece: GooglyBlockPiece, rotation: GooglyBlockRotation) -> Self {
+    pub fn new(piece: GooglyBlockPiece, rotation: GooglyBlockRotation) -> Self {
         GooglyBlock {
             piece: piece,
             rotation: rotation,
@@ -462,9 +462,9 @@ impl fmt::Display for LandedBlocksGrid {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-struct BlockPosition {
-    row: isize,
-    column: isize,
+pub struct BlockPosition {
+    pub row: isize,
+    pub column: isize,
 }
 
 
@@ -532,7 +532,7 @@ struct PlayingFieldTimers {
     collision_timer: Duration,
 }
 
-struct PlayingFieldState {
+pub struct PlayingFieldState {
     current_block: GooglyBlock,
     current_position: BlockPosition,
     timers: PlayingFieldTimers,
@@ -540,7 +540,7 @@ struct PlayingFieldState {
 }
 
 impl PlayingFieldState {
-    fn new(starting_block: GooglyBlock, starting_position: BlockPosition) -> PlayingFieldState {
+    pub fn new(starting_block: GooglyBlock, starting_position: BlockPosition) -> PlayingFieldState {
         PlayingFieldState {
             current_block: starting_block,
             current_position: starting_position,
@@ -552,11 +552,11 @@ impl PlayingFieldState {
         }
     }
     
-    fn update_timers(&mut self, elapsed: Duration) {
+    pub fn update_timers(&mut self, elapsed: Duration) {
 
     }
     
-    fn update_block_position(&mut self, block_move: GooglyBlockMove) {
+    pub fn update_block_position(&mut self, block_move: GooglyBlockMove) {
         match block_move {
             GooglyBlockMove::Fall => {
                 let potential_top_left = BlockPosition { row: self.current_position.row + 1, column: self.current_position.column };
@@ -592,7 +592,7 @@ impl PlayingFieldState {
         }
     }
     
-    fn update_new_block(&mut self, block: GooglyBlock) {
+    pub fn update_new_block(&mut self, block: GooglyBlock) {
         
     }
 }
