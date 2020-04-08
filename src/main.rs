@@ -2050,7 +2050,7 @@ impl Game {
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, self.playing_field.handle.tex);
             gl::BindVertexArray(self.playing_field.handle.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 3 * 20 * 10);
+            gl::DrawArrays(gl::TRIANGLES, 0, 2 * 6 * 20 * 10);
         }
     }
 }
