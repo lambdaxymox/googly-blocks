@@ -237,6 +237,7 @@ pub fn start_gl(width: u32, height: u32) -> Result<GLState, String> {
     window.set_size_polling(true);
     window.set_refresh_polling(true);
     window.set_size_polling(true);
+    window.set_sticky_keys(true);
 
     // Load the OpenGl function pointers.
     gl::load_with(|symbol| { window.get_proc_address(symbol) as *const _ });

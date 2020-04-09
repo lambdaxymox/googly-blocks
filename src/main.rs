@@ -1947,6 +1947,8 @@ impl Timer {
 struct PlayingFieldTimers {
     fall_timer: Timer,
     collision_timer: Timer,
+    left_hold_timer: Timer,
+    right_hold_timer: Timer,
 }
 
 impl PlayingFieldTimers {
@@ -1954,12 +1956,19 @@ impl PlayingFieldTimers {
         PlayingFieldTimers {
             fall_timer: Timer::new(),
             collision_timer: Timer::new(),
+            left_hold_timer: Timer::new(),
+            right_hold_timer: Timer::new(),
         }
     }
 
     fn update(&mut self, elapsed: Duration) {
         self.fall_timer.update(elapsed);
         self.collision_timer.update(elapsed);
+    }
+
+    fn reset_input_timers(&mut self) {
+        self.left_hold_timer.reset();
+        self.right_hold_timer.reset();
     }
 }
 
@@ -2341,6 +2350,7 @@ fn collides_with_right_wall(playing_field_state: &PlayingFieldState) -> bool {
 
 fn main() {
     let mut game = init_game();
+    let mut last_key_pressed = Key::Left;
     unsafe {
         // Enable depth testing.
         gl::Enable(gl::DEPTH_TEST);
@@ -2365,18 +2375,25 @@ fn main() {
             }
             _ => {}
         }
+
         match game.get_key(Key::Left) {
             Action::Press | Action::Repeat => {
-                let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
-                let collides_with_element = collides_with_element_below(&game.playing_field_state);
-                let collides_with_left_element = collides_with_element_to_the_left(&game.playing_field_state);
-                let collides_with_left_wall = collides_with_left_wall(&game.playing_field_state);
-                if !collides_with_left_element || !collides_with_left_wall {
-                    if collides_with_floor || collides_with_element {
-                        game.timers.collision_timer.reset();
-                        game.timers.fall_timer.reset();
+                if last_key_pressed == Key::Left {    
+                    game.timers.left_hold_timer.update(elapsed_milliseconds);
+                    if game.timers.left_hold_timer.time > Duration::from_millis(50) {
+                        let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
+                        let collides_with_element = collides_with_element_below(&game.playing_field_state);
+                        let collides_with_left_element = collides_with_element_to_the_left(&game.playing_field_state);
+                        let collides_with_left_wall = collides_with_left_wall(&game.playing_field_state);
+                        if !collides_with_left_element || !collides_with_left_wall {
+                            if collides_with_floor || collides_with_element {
+                                game.timers.collision_timer.reset();
+                                game.timers.fall_timer.reset();
+                            }
+                            game.playing_field_state.update_block_position(GooglyBlockMove::Left);
+                        }
+                        game.timers.left_hold_timer.reset();
                     }
-                    game.playing_field_state.update_block_position(GooglyBlockMove::Left);
                 }
             }
             _ => {}
@@ -2397,7 +2414,6 @@ fn main() {
             }
             _ => {}
         }
-
 
         let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
         let collides_with_element = collides_with_element_below(&game.playing_field_state);
