@@ -2418,7 +2418,7 @@ fn main() {
         match game.get_key(Key::Down) {
             Action::Press | Action::Repeat => {
                 game.timers.down_hold_timer.update(elapsed_milliseconds);
-                if game.timers.down_hold_timer.time > Duration::from_millis(50) {
+                if game.timers.down_hold_timer.time > Duration::from_millis(40) {
                     let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
                     let collides_with_element = collides_with_element_below(&game.playing_field_state);
                     if collides_with_floor || collides_with_element {
