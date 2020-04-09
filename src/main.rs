@@ -2304,6 +2304,41 @@ fn collides_with_floor_below(playing_field_state: &PlayingFieldState) -> bool {
     false
 }
 
+fn collides_with_element_to_the_left(playing_field_state: &PlayingFieldState) -> bool {
+    false
+}
+
+fn collides_with_left_wall(playing_field_state: &PlayingFieldState) -> bool {
+    let shape = playing_field_state.current_block.shape();
+    let top_left = playing_field_state.current_position;
+    for (_, column) in shape.iter() {
+        let element_column = column as isize;
+        if top_left.column + element_column - 1 < 0 {
+            return true;
+        }
+    }
+
+    false
+}
+
+fn collides_with_element_to_the_right(playing_field_state: &PlayingFieldState) -> bool {
+    false
+}
+
+fn collides_with_right_wall(playing_field_state: &PlayingFieldState) -> bool {
+    let shape = playing_field_state.current_block.shape();
+    let top_left = playing_field_state.current_position;
+    let landed = &playing_field_state.landed_blocks;
+    for (_, column) in shape.iter() {
+        let element_column = column as isize;
+        if top_left.column + element_column >= landed.columns() as isize {
+            return true;
+        }
+    }
+
+    false
+}
+
 fn main() {
     let mut game = init_game();
     unsafe {
@@ -2327,6 +2362,38 @@ fn main() {
         match game.get_key(Key::Escape) {
             Action::Press | Action::Repeat => {
                 game.window_set_should_close(true);
+            }
+            _ => {}
+        }
+        match game.get_key(Key::Left) {
+            Action::Press | Action::Repeat => {
+                let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
+                let collides_with_element = collides_with_element_below(&game.playing_field_state);
+                let collides_with_left_element = collides_with_element_to_the_left(&game.playing_field_state);
+                let collides_with_left_wall = collides_with_left_wall(&game.playing_field_state);
+                if !collides_with_left_element || !collides_with_left_wall {
+                    if collides_with_floor || collides_with_element {
+                        game.timers.collision_timer.reset();
+                        game.timers.fall_timer.reset();
+                    }
+                    game.playing_field_state.update_block_position(GooglyBlockMove::Left);
+                }
+            }
+            _ => {}
+        }
+        match game.get_key(Key::Right) {
+            Action::Press | Action::Repeat => {
+                let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
+                let collides_with_element = collides_with_element_below(&game.playing_field_state);
+                let collides_with_right_element = collides_with_element_to_the_right(&game.playing_field_state);
+                let collides_with_right_wall = collides_with_right_wall(&game.playing_field_state);
+                if !collides_with_right_element || !collides_with_right_wall {
+                    if collides_with_floor || collides_with_element {
+                        game.timers.collision_timer.reset();
+                        game.timers.fall_timer.reset();
+                    }
+                    game.playing_field_state.update_block_position(GooglyBlockMove::Right);
+                }
             }
             _ => {}
         }
