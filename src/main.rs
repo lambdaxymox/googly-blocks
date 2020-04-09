@@ -1949,6 +1949,7 @@ struct PlayingFieldTimers {
     collision_timer: Timer,
     left_hold_timer: Timer,
     right_hold_timer: Timer,
+    down_hold_timer: Timer,
 }
 
 impl PlayingFieldTimers {
@@ -1958,6 +1959,7 @@ impl PlayingFieldTimers {
             collision_timer: Timer::new(),
             left_hold_timer: Timer::new(),
             right_hold_timer: Timer::new(),
+            down_hold_timer: Timer::new(),
         }
     }
 
@@ -1969,6 +1971,7 @@ impl PlayingFieldTimers {
     fn reset_input_timers(&mut self) {
         self.left_hold_timer.reset();
         self.right_hold_timer.reset();
+        self.down_hold_timer.reset();
     }
 }
 
@@ -2410,6 +2413,26 @@ fn main() {
                         game.playing_field_state.update_block_position(GooglyBlockMove::Right);
                     }
                     game.timers.right_hold_timer.reset();
+                }
+            }
+            _ => {}
+        }
+        match game.get_key(Key::Down) {
+            Action::Press | Action::Repeat => {
+                game.timers.down_hold_timer.update(elapsed_milliseconds);
+                if game.timers.down_hold_timer.time > Duration::from_millis(50) {
+                    let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
+                    let collides_with_element = collides_with_element_below(&game.playing_field_state);
+                    let collides_with_right_element = collides_with_element_to_the_right(&game.playing_field_state);
+                    let collides_with_right_wall = collides_with_right_wall(&game.playing_field_state);
+                    if !collides_with_right_element || !collides_with_right_wall {
+                        if collides_with_floor || collides_with_element {
+                            game.timers.collision_timer.reset();
+                            game.timers.fall_timer.reset();
+                        }
+                        game.playing_field_state.update_block_position(GooglyBlockMove::Down);
+                    }
+                    game.timers.down_hold_timer.reset();
                 }
             }
             _ => {}
