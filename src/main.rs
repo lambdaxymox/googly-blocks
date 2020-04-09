@@ -2423,15 +2423,11 @@ fn main() {
                 if game.timers.down_hold_timer.time > Duration::from_millis(50) {
                     let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
                     let collides_with_element = collides_with_element_below(&game.playing_field_state);
-                    let collides_with_right_element = collides_with_element_to_the_right(&game.playing_field_state);
-                    let collides_with_right_wall = collides_with_right_wall(&game.playing_field_state);
-                    if !collides_with_right_element || !collides_with_right_wall {
-                        if collides_with_floor || collides_with_element {
-                            game.timers.collision_timer.reset();
-                            game.timers.fall_timer.reset();
-                        }
-                        game.playing_field_state.update_block_position(GooglyBlockMove::Down);
+                    if collides_with_floor || collides_with_element {
+                        game.timers.collision_timer.reset();
+                        game.timers.fall_timer.reset();
                     }
+                    game.playing_field_state.update_block_position(GooglyBlockMove::Down);
                     game.timers.down_hold_timer.reset();
                 }
             }
