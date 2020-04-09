@@ -2350,7 +2350,6 @@ fn collides_with_right_wall(playing_field_state: &PlayingFieldState) -> bool {
 
 fn main() {
     let mut game = init_game();
-    let mut last_key_pressed = Key::Left;
     unsafe {
         // Enable depth testing.
         gl::Enable(gl::DEPTH_TEST);
@@ -2375,41 +2374,42 @@ fn main() {
             }
             _ => {}
         }
-
         match game.get_key(Key::Left) {
-            Action::Press | Action::Repeat => {
-                if last_key_pressed == Key::Left {    
-                    game.timers.left_hold_timer.update(elapsed_milliseconds);
-                    if game.timers.left_hold_timer.time > Duration::from_millis(50) {
-                        let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
-                        let collides_with_element = collides_with_element_below(&game.playing_field_state);
-                        let collides_with_left_element = collides_with_element_to_the_left(&game.playing_field_state);
-                        let collides_with_left_wall = collides_with_left_wall(&game.playing_field_state);
-                        if !collides_with_left_element || !collides_with_left_wall {
-                            if collides_with_floor || collides_with_element {
-                                game.timers.collision_timer.reset();
-                                game.timers.fall_timer.reset();
-                            }
-                            game.playing_field_state.update_block_position(GooglyBlockMove::Left);
+            Action::Press | Action::Repeat => {   
+                game.timers.left_hold_timer.update(elapsed_milliseconds);
+                if game.timers.left_hold_timer.time > Duration::from_millis(50) {
+                    let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
+                    let collides_with_element = collides_with_element_below(&game.playing_field_state);
+                    let collides_with_left_element = collides_with_element_to_the_left(&game.playing_field_state);
+                    let collides_with_left_wall = collides_with_left_wall(&game.playing_field_state);
+                    if !collides_with_left_element || !collides_with_left_wall {
+                        if collides_with_floor || collides_with_element {
+                            game.timers.collision_timer.reset();
+                            game.timers.fall_timer.reset();
                         }
-                        game.timers.left_hold_timer.reset();
+                        game.playing_field_state.update_block_position(GooglyBlockMove::Left);
                     }
+                    game.timers.left_hold_timer.reset();
                 }
             }
             _ => {}
         }
         match game.get_key(Key::Right) {
             Action::Press | Action::Repeat => {
-                let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
-                let collides_with_element = collides_with_element_below(&game.playing_field_state);
-                let collides_with_right_element = collides_with_element_to_the_right(&game.playing_field_state);
-                let collides_with_right_wall = collides_with_right_wall(&game.playing_field_state);
-                if !collides_with_right_element || !collides_with_right_wall {
-                    if collides_with_floor || collides_with_element {
-                        game.timers.collision_timer.reset();
-                        game.timers.fall_timer.reset();
+                game.timers.right_hold_timer.update(elapsed_milliseconds);
+                if game.timers.right_hold_timer.time > Duration::from_millis(50) {
+                    let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
+                    let collides_with_element = collides_with_element_below(&game.playing_field_state);
+                    let collides_with_right_element = collides_with_element_to_the_right(&game.playing_field_state);
+                    let collides_with_right_wall = collides_with_right_wall(&game.playing_field_state);
+                    if !collides_with_right_element || !collides_with_right_wall {
+                        if collides_with_floor || collides_with_element {
+                            game.timers.collision_timer.reset();
+                            game.timers.fall_timer.reset();
+                        }
+                        game.playing_field_state.update_block_position(GooglyBlockMove::Right);
                     }
-                    game.playing_field_state.update_block_position(GooglyBlockMove::Right);
+                    game.timers.right_hold_timer.reset();
                 }
             }
             _ => {}
