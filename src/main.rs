@@ -2387,7 +2387,6 @@ fn main() {
                     let collides_with_left_wall = collides_with_left_wall(&game.playing_field_state);
                     if !collides_with_left_element || !collides_with_left_wall {
                         if collides_with_floor || collides_with_element {
-                            game.timers.collision_timer.reset();
                             game.timers.fall_timer.reset();
                         }
                         game.playing_field_state.update_block_position(GooglyBlockMove::Left);
@@ -2407,7 +2406,6 @@ fn main() {
                     let collides_with_right_wall = collides_with_right_wall(&game.playing_field_state);
                     if !collides_with_right_element || !collides_with_right_wall {
                         if collides_with_floor || collides_with_element {
-                            game.timers.collision_timer.reset();
                             game.timers.fall_timer.reset();
                         }
                         game.playing_field_state.update_block_position(GooglyBlockMove::Right);
@@ -2424,7 +2422,6 @@ fn main() {
                     let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
                     let collides_with_element = collides_with_element_below(&game.playing_field_state);
                     if collides_with_floor || collides_with_element {
-                        game.timers.collision_timer.reset();
                         game.timers.fall_timer.reset();
                     }
                     game.playing_field_state.update_block_position(GooglyBlockMove::Down);
