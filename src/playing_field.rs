@@ -467,6 +467,16 @@ pub struct BlockPosition {
     pub column: isize,
 }
 
+impl BlockPosition {
+    #[inline]
+    pub fn new(row: isize, column: isize) -> BlockPosition {
+        BlockPosition {
+            row: row,
+            column: column,
+        }
+    }
+}
+
 
 fn collides_with_element(piece: GooglyBlock, top_left: BlockPosition, landed: &LandedBlocksGrid) -> bool {
     let shape = piece.shape();
@@ -547,7 +557,7 @@ impl PlayingFieldState {
     pub fn update_block_position(&mut self, block_move: GooglyBlockMove) {
         match block_move {
             GooglyBlockMove::Fall => {
-                let potential_top_left = BlockPosition { row: self.current_position.row + 1, column: self.current_position.column };
+                let potential_top_left = BlockPosition::new(self.current_position.row + 1, self.current_position.column);
                 let collides_with_element = collides_with_element(self.current_block, potential_top_left, &self.landed_blocks);
                 let collides_with_floor = collides_with_floor(self.current_block, potential_top_left, &self.landed_blocks);
                 if collides_with_element || collides_with_floor {
@@ -557,7 +567,7 @@ impl PlayingFieldState {
                 }
             }
             GooglyBlockMove::Right => {
-                let potential_top_left = BlockPosition { row: self.current_position.row, column: self.current_position.column + 1 };
+                let potential_top_left = BlockPosition::new(self.current_position.row, self.current_position.column + 1);
                 let collides_with_element = collides_with_element(self.current_block, potential_top_left, &self.landed_blocks);
                 let collides_with_right_wall = collides_with_right_wall(self.current_block, potential_top_left, &self.landed_blocks);
                 if collides_with_element || collides_with_right_wall {
@@ -567,7 +577,7 @@ impl PlayingFieldState {
                 }
             }
             GooglyBlockMove::Left => {
-                let potential_top_left = BlockPosition { row: self.current_position.row, column: self.current_position.column - 1 };
+                let potential_top_left = BlockPosition::new(self.current_position.row, self.current_position.column - 1);
                 let collides_with_element = collides_with_element(self.current_block, potential_top_left, &self.landed_blocks);
                 let collides_with_right_wall = collides_with_left_wall(self.current_block, potential_top_left, &self.landed_blocks);
                 if collides_with_element || collides_with_right_wall {
@@ -577,7 +587,7 @@ impl PlayingFieldState {
                 }                
             }
             GooglyBlockMove::Down => {
-                let potential_top_left = BlockPosition { row: self.current_position.row + 1, column: self.current_position.column };
+                let potential_top_left = BlockPosition::new(self.current_position.row + 1, self.current_position.column);
                 let collides_with_element = collides_with_element(self.current_block, potential_top_left, &self.landed_blocks);
                 let collides_with_floor = collides_with_floor(self.current_block, potential_top_left, &self.landed_blocks);
                 if collides_with_element || collides_with_floor {
@@ -763,7 +773,7 @@ mod collision_tests {
         let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
         for (row, column) in empty_landed.iter() {
             assert!(!super::collides_with_element(
-                piece, BlockPosition { row, column }, &empty_landed)
+                piece, BlockPosition::new(row, column), &empty_landed)
             );
         }
     }
@@ -773,7 +783,7 @@ mod collision_tests {
         let test = test_case();
         let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
         for (oc_row, oc_column) in test.occupied_cells.iter() {
-            let top_left = BlockPosition { row: *oc_row, column: *oc_column };
+            let top_left = BlockPosition::new(*oc_row, *oc_column);
             assert!(super::collides_with_element(piece, top_left, &test.landed));
         }
     }
@@ -783,7 +793,7 @@ mod collision_tests {
         let landed = LandedBlocksGrid::new();
         let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
         for row in 0..landed.rows() {
-            let top_left = BlockPosition { row: row as isize, column: -1 };
+            let top_left = BlockPosition::new(row as isize, -1);
             assert!(super::collides_with_left_wall(piece, top_left, &landed));
         }
     }
@@ -793,7 +803,7 @@ mod collision_tests {
         let landed = LandedBlocksGrid::new();
         let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
         for row in 0..landed.rows() {
-            let top_left = BlockPosition { row: row as isize, column: 0 };
+            let top_left = BlockPosition::new(row as isize, 0);
             assert!(!super::collides_with_left_wall(piece, top_left, &landed), 
                 "row: {}; column: {}", top_left.row, top_left.column
             );
@@ -805,7 +815,7 @@ mod collision_tests {
         let landed = LandedBlocksGrid::new();
         let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
         for row in 0..landed.rows() {
-            let top_left = BlockPosition { row: row as isize, column: landed.columns() as isize - 1 };
+            let top_left = BlockPosition::new(row as isize, landed.columns() as isize - 1);
             assert!(super::collides_with_right_wall(piece, top_left, &landed),
                 "row: {}; column: {}", top_left.row, top_left.column
             );
@@ -817,7 +827,7 @@ mod collision_tests {
         let landed = LandedBlocksGrid::new();
         let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
         for row in 0..landed.rows() {
-            let top_left = BlockPosition { row: row as isize, column: 7 };
+            let top_left = BlockPosition::new(row as isize, 7);
             assert!(!super::collides_with_right_wall(piece, top_left, &landed), 
                 "row: {}; column: {}", top_left.row, top_left.column
             );
@@ -830,7 +840,7 @@ mod collision_tests {
         let piece = GooglyBlock::new(GooglyBlockPiece::I, GooglyBlockRotation::R0);
         for column in 0..landed.columns() {
             let row = (landed.rows() - 1) as isize;
-            let top_left = BlockPosition { row: row, column: column as isize };
+            let top_left = BlockPosition::new(row, column as isize);
             assert!(super::collides_with_floor(piece, top_left, &landed));
         }
     }
@@ -841,7 +851,7 @@ mod collision_tests {
         let piece = GooglyBlock::new(GooglyBlockPiece::I, GooglyBlockRotation::R0);
         for column in 0..landed.columns() {
             let row = (landed.rows() - 3) as isize;
-            let top_left = BlockPosition { row: row, column: column as isize };
+            let top_left = BlockPosition::new(row, column as isize);
             assert!(!super::collides_with_floor(piece, top_left, &landed), 
                 "{}", failed(piece, top_left, &landed)
             );
@@ -901,7 +911,7 @@ mod playing_field_tests {
         landed_blocks.insert(19, 2, GooglyBlockElement::T);
 
         let starting_block = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
-        let starting_position = BlockPosition { row: 0, column: 6 };
+        let starting_position = BlockPosition::new(0, 6);
         let mut playing_field = PlayingFieldState::new(starting_block, starting_position);
         playing_field.landed_blocks = landed_blocks;
 
@@ -913,7 +923,7 @@ mod playing_field_tests {
 
     fn empty_playing_field_test_case() -> PlayingFieldTestCase {
         let starting_block = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
-        let starting_position = BlockPosition { row: 0, column: 6 };
+        let starting_position = BlockPosition::new(0, 6);
         let playing_field = PlayingFieldState::new(starting_block, starting_position);
 
         PlayingFieldTestCase {

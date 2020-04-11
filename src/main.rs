@@ -2255,7 +2255,7 @@ fn init_game() -> Game {
         load_playing_field(&mut *context, playing_field_spec, playing_field_uniforms)
     };
     let starting_block = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
-    let starting_position = BlockPosition { row: 0, column: 4 };
+    let starting_position = BlockPosition::new(0, 4);
     let playing_field_state = PlayingFieldState::new(starting_block, starting_position);
     let playing_field = PlayingField::new(gl_context.clone(), playing_field_handle);
 
