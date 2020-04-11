@@ -2383,7 +2383,7 @@ fn main() {
         match game.get_key(Key::Left) {
             Action::Press | Action::Repeat => {   
                 game.timers.left_hold_timer.update(elapsed_milliseconds);
-                if game.timers.left_hold_timer.time > Duration::from_millis(50) {
+                if game.timers.left_hold_timer.time > Duration::from_millis(70) {
                     let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
                     let collides_with_element = collides_with_element_below(&game.playing_field_state);
                     let collides_with_left_element = collides_with_element_to_the_left(&game.playing_field_state);
@@ -2402,7 +2402,7 @@ fn main() {
         match game.get_key(Key::Right) {
             Action::Press | Action::Repeat => {
                 game.timers.right_hold_timer.update(elapsed_milliseconds);
-                if game.timers.right_hold_timer.time > Duration::from_millis(50) {
+                if game.timers.right_hold_timer.time > Duration::from_millis(70) {
                     let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
                     let collides_with_element = collides_with_element_below(&game.playing_field_state);
                     let collides_with_right_element = collides_with_element_to_the_right(&game.playing_field_state);
@@ -2421,7 +2421,7 @@ fn main() {
         match game.get_key(Key::Down) {
             Action::Press | Action::Repeat => {
                 game.timers.down_hold_timer.update(elapsed_milliseconds);
-                if game.timers.down_hold_timer.time > Duration::from_millis(40) {
+                if game.timers.down_hold_timer.time > Duration::from_millis(50) {
                     let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
                     let collides_with_element = collides_with_element_below(&game.playing_field_state);
                     if collides_with_floor || collides_with_element {
@@ -2436,7 +2436,7 @@ fn main() {
         match game.get_key(Key::R) {
             Action::Press | Action::Repeat => {
                 game.timers.rotate_timer.update(elapsed_milliseconds);
-                if game.timers.rotate_timer.time > Duration::from_millis(60) {
+                if game.timers.rotate_timer.time > Duration::from_millis(100) {
                     game.playing_field_state.update_block_position(GooglyBlockMove::Rotate);
                     game.timers.rotate_timer.reset();
                 }
