@@ -1950,6 +1950,7 @@ struct PlayingFieldTimers {
     left_hold_timer: Timer,
     right_hold_timer: Timer,
     down_hold_timer: Timer,
+    rotate_timer: Timer,
 }
 
 impl PlayingFieldTimers {
@@ -1960,6 +1961,7 @@ impl PlayingFieldTimers {
             left_hold_timer: Timer::new(),
             right_hold_timer: Timer::new(),
             down_hold_timer: Timer::new(),
+            rotate_timer: Timer::new(),
         }
     }
 
@@ -1972,6 +1974,7 @@ impl PlayingFieldTimers {
         self.left_hold_timer.reset();
         self.right_hold_timer.reset();
         self.down_hold_timer.reset();
+        self.rotate_timer.reset();
     }
 }
 
@@ -2432,7 +2435,11 @@ fn main() {
         }
         match game.get_key(Key::R) {
             Action::Press | Action::Repeat => {
-                game.playing_field_state.update_block_position(GooglyBlockMove::Rotate);
+                game.timers.rotate_timer.update(elapsed_milliseconds);
+                if game.timers.rotate_timer.time > Duration::from_millis(60) {
+                    game.playing_field_state.update_block_position(GooglyBlockMove::Rotate);
+                    game.timers.rotate_timer.reset();
+                }
             }
             _ => {}
         }
