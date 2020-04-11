@@ -222,28 +222,28 @@ impl GooglyBlock {
             }
             O => match self.rotation {
                 R0 => GooglyBlockShape {
-                    shape: [(1, 1), (1, 2), (2, 1), (2, 2)],
+                    shape: [(0, 0), (0, 1), (1, 0), (1, 1)],
                     element: GooglyBlockElement::O,
-                    rows: 4,
-                    columns: 4,
+                    rows: 2,
+                    columns: 2,
                 },
                 R1 => GooglyBlockShape {
-                    shape: [(1, 1), (1, 2), (2, 1), (2, 2)],
+                    shape: [(0, 0), (0, 1), (1, 0), (1, 1)],
                     element: GooglyBlockElement::O,
-                    rows: 4,
-                    columns: 4,
+                    rows: 2,
+                    columns: 2,
                 },
                 R2 => GooglyBlockShape {
-                    shape: [(1, 1), (1, 2), (2, 1), (2, 2)],
+                    shape: [(0, 0), (0, 1), (1, 0), (1, 1)],
                     element: GooglyBlockElement::O,
-                    rows: 4,
-                    columns: 4,
+                    rows: 2,
+                    columns: 2,
                 },
                 R3 => GooglyBlockShape {
-                    shape: [(1, 1), (1, 2), (2, 1), (2, 2)],
+                    shape: [(0, 0), (0, 1), (1, 0), (1, 1)],
                     element: GooglyBlockElement::O,
-                    rows: 4,
-                    columns: 4,
+                    rows: 2,
+                    columns: 2,
                 },              
             }
             S => match self.rotation {
