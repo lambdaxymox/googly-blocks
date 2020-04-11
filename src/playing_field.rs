@@ -131,7 +131,8 @@ pub struct GooglyBlock {
 }
 
 impl GooglyBlock {
-    pub fn new(piece: GooglyBlockPiece, rotation: GooglyBlockRotation) -> Self {
+    #[inline]
+    pub fn new(piece: GooglyBlockPiece, rotation: GooglyBlockRotation) -> GooglyBlock {
         GooglyBlock {
             piece: piece,
             rotation: rotation,
@@ -324,6 +325,15 @@ impl GooglyBlock {
                     columns: 4,
                 },           
             }
+        }
+    }
+
+    pub fn rotate(&self) -> GooglyBlock {
+        match self.rotation {
+            GooglyBlockRotation::R0 => GooglyBlock::new(self.piece, GooglyBlockRotation::R1),
+            GooglyBlockRotation::R1 => GooglyBlock::new(self.piece, GooglyBlockRotation::R2),
+            GooglyBlockRotation::R2 => GooglyBlock::new(self.piece, GooglyBlockRotation::R3),
+            GooglyBlockRotation::R3 => GooglyBlock::new(self.piece, GooglyBlockRotation::R0),
         }
     }
 }
@@ -535,6 +545,7 @@ pub enum GooglyBlockMove {
     Right,
     Down,
     Fall,
+    Rotate,
 }
 
 pub struct PlayingFieldState {
@@ -595,6 +606,21 @@ impl PlayingFieldState {
                 } else {
                     self.current_position = potential_top_left;
                 }   
+            }
+            GooglyBlockMove::Rotate => {
+                let potential_top_left = self.current_position;
+                let potential_block = self.current_block.rotate();
+                let collides_with_element = collides_with_element(potential_block, potential_top_left, &self.landed_blocks);
+                let collides_with_floor = collides_with_floor(potential_block, potential_top_left, &self.landed_blocks);
+                let collides_with_left_wall = collides_with_left_wall(potential_block, potential_top_left, &self.landed_blocks);
+                let collides_with_right_wall = collides_with_right_wall(potential_block, potential_top_left, &self.landed_blocks);
+                if collides_with_element || collides_with_floor || 
+                    collides_with_left_wall || collides_with_right_wall {
+
+                    
+                } else {
+                    self.current_block = potential_block;
+                }
             }
         }
     }
