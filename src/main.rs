@@ -36,7 +36,7 @@ mod gl_help;
 mod playing_field;
 
 use gl_help as glh;
-use cgmath as math;
+use cgmath as math; 
 
 use bmfa::BitmapFontAtlas;
 use glfw::{Action, Context, Key};
@@ -2480,19 +2480,14 @@ fn main() {
             let dims = game.viewport_dimensions();
             gl::Viewport(0, 0, dims.width, dims.height);
 
-            // Render the background.
             game.update_background();
             game.render_background();
 
-            // TODO: Render the UI completely.
             game.update_ui();
             game.render_ui();
 
-            // TODO: Render the blocks.
             game.update_playing_field();
             game.render_playing_field();
-
-            // TODO: Render the googly eyes.
         }
 
         // Send the results to the output.
