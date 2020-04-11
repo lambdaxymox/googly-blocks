@@ -792,8 +792,8 @@ mod collision_tests {
     fn blocks_crossing_leftmost_column_should_collide_with_left_wall() {
         let landed = LandedBlocksGrid::new();
         let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
-        for row in 0..landed.rows() {
-            let top_left = BlockPosition::new(row as isize, -1);
+        for row in (0..landed.rows()).map(|r| r as isize) {
+            let top_left = BlockPosition::new(row, -1);
             assert!(super::collides_with_left_wall(piece, top_left, &landed));
         }
     }
@@ -802,8 +802,8 @@ mod collision_tests {
     fn blocks_with_elements_in_leftmost_column_should_not_collide_with_left_wall() {
         let landed = LandedBlocksGrid::new();
         let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
-        for row in 0..landed.rows() {
-            let top_left = BlockPosition::new(row as isize, 0);
+        for row in (0..landed.rows()).map(|r| r as isize) {
+            let top_left = BlockPosition::new(row, 0);
             assert!(!super::collides_with_left_wall(piece, top_left, &landed), 
                 "row: {}; column: {}", top_left.row, top_left.column
             );
@@ -814,8 +814,9 @@ mod collision_tests {
     fn blocks_crossing_rightmost_column_should_collide_with_right_wall() {
         let landed = LandedBlocksGrid::new();
         let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
-        for row in 0..landed.rows() {
-            let top_left = BlockPosition::new(row as isize, landed.columns() as isize - 1);
+        for row in (0..landed.rows()).map(|r| r as isize) {
+            let last_column = landed.columns() as isize - 1;
+            let top_left = BlockPosition::new(row, last_column);
             assert!(super::collides_with_right_wall(piece, top_left, &landed),
                 "row: {}; column: {}", top_left.row, top_left.column
             );
@@ -826,8 +827,8 @@ mod collision_tests {
     fn blocks_with_elements_in_rightmost_column_should_not_collide_with_right_wall() {
         let landed = LandedBlocksGrid::new();
         let piece = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
-        for row in 0..landed.rows() {
-            let top_left = BlockPosition::new(row as isize, 7);
+        for row in (0..landed.rows()).map(|r| r as isize) {
+            let top_left = BlockPosition::new(row, 7);
             assert!(!super::collides_with_right_wall(piece, top_left, &landed), 
                 "row: {}; column: {}", top_left.row, top_left.column
             );
@@ -838,9 +839,9 @@ mod collision_tests {
     fn blocks_crossing_floor_should_collide_with_floor() {
         let landed = LandedBlocksGrid::new();
         let piece = GooglyBlock::new(GooglyBlockPiece::I, GooglyBlockRotation::R0);
-        for column in 0..landed.columns() {
-            let row = (landed.rows() - 1) as isize;
-            let top_left = BlockPosition::new(row, column as isize);
+        for column in (0..landed.columns()).map(|c| c as isize) {
+            let last_row = (landed.rows() - 1) as isize;
+            let top_left = BlockPosition::new(last_row, column);
             assert!(super::collides_with_floor(piece, top_left, &landed));
         }
     }
@@ -849,9 +850,9 @@ mod collision_tests {
     fn blocks_whose_bottom_elements_occupy_bottommost_row_should_not_collide_with_floor() {
         let landed = LandedBlocksGrid::new();
         let piece = GooglyBlock::new(GooglyBlockPiece::I, GooglyBlockRotation::R0);
-        for column in 0..landed.columns() {
+        for column in (0..landed.columns()).map(|c| c as isize) {
             let row = (landed.rows() - 3) as isize;
-            let top_left = BlockPosition::new(row, column as isize);
+            let top_left = BlockPosition::new(row, column);
             assert!(!super::collides_with_floor(piece, top_left, &landed), 
                 "{}", failed(piece, top_left, &landed)
             );
