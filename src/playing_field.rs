@@ -17,7 +17,6 @@
  */
 use std::fmt;
 use std::iter::Iterator;
-use std::time::Duration;
 
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]

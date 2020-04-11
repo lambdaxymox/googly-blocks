@@ -1330,8 +1330,8 @@ impl PlayingField {
         }
 
         let shape = playing_field.current_block.shape();
-        let top_left_row = playing_field.current_position.row as usize;
-        let top_left_column = playing_field.current_position.column as usize;
+        let top_left_row = playing_field.current_position.row;
+        let top_left_column = playing_field.current_position.column;
         let quad = match shape.element {
             GooglyBlockElement::EmptySpace => {
                 TextureQuad::new(
@@ -1382,8 +1382,10 @@ impl PlayingField {
                 )
             }
         };
-        for (row, column) in shape.iter().map(|(r, c)| (r as usize, c as usize)) { 
-            self.tex_coords[top_left_row + row][top_left_column + column] = quad;
+        for (shape_row, shape_column) in shape.iter() {
+            let row = top_left_row + shape_row as isize;
+            let column = top_left_column + shape_column as isize;
+            self.tex_coords[row as usize][column as usize] = quad;
         }
 
         let bytes_written = mem::size_of::<TextureQuad>() * rows * columns;
