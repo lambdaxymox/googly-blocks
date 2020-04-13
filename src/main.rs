@@ -2413,7 +2413,7 @@ fn main() {
         match game.get_key(Key::Left) {
             Action::Press | Action::Repeat => {   
                 game.timers.left_hold_timer.update(elapsed_milliseconds);
-                if game.timers.left_hold_timer.time > Duration::from_millis(70) {
+                if game.timers.left_hold_timer.event_triggered() {
                     let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
                     let collides_with_element = collides_with_element_below(&game.playing_field_state);
                     let collides_with_left_element = collides_with_element_to_the_left(&game.playing_field_state);
@@ -2432,7 +2432,7 @@ fn main() {
         match game.get_key(Key::Right) {
             Action::Press | Action::Repeat => {
                 game.timers.right_hold_timer.update(elapsed_milliseconds);
-                if game.timers.right_hold_timer.time > Duration::from_millis(70) {
+                if game.timers.right_hold_timer.event_triggered() {
                     let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
                     let collides_with_element = collides_with_element_below(&game.playing_field_state);
                     let collides_with_right_element = collides_with_element_to_the_right(&game.playing_field_state);
@@ -2451,7 +2451,7 @@ fn main() {
         match game.get_key(Key::Down) {
             Action::Press | Action::Repeat => {
                 game.timers.down_hold_timer.update(elapsed_milliseconds);
-                if game.timers.down_hold_timer.time > Duration::from_millis(50) {
+                if game.timers.down_hold_timer.event_triggered() {
                     let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
                     let collides_with_element = collides_with_element_below(&game.playing_field_state);
                     if collides_with_floor || collides_with_element {
@@ -2466,7 +2466,7 @@ fn main() {
         match game.get_key(Key::R) {
             Action::Press | Action::Repeat => {
                 game.timers.rotate_timer.update(elapsed_milliseconds);
-                if game.timers.rotate_timer.time > Duration::from_millis(100) {
+                if game.timers.rotate_timer.event_triggered() {
                     game.playing_field_state.update_block_position(GooglyBlockMove::Rotate);
                     game.timers.rotate_timer.reset();
                 }
@@ -2485,13 +2485,13 @@ fn main() {
             game.timers.collision_timer.reset();
         }
 
-        if game.timers.fall_timer.time >= Duration::from_millis(500) {
+        if game.timers.fall_timer.event_triggered() {
             println!("FALL TIMER: {} ms", game.timers.fall_timer.time.as_millis());
             game.playing_field_state.update_block_position(GooglyBlockMove::Fall);
             game.timers.fall_timer.reset();
         }
 
-        if game.timers.collision_timer.time >= Duration::from_millis(500) {
+        if game.timers.collision_timer.event_triggered() {
             println!("COLLISION TIMER: {} ms", game.timers.collision_timer.time.as_millis());
             let block = game.playing_field_state.current_block;
             let position = game.playing_field_state.current_position;
