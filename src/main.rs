@@ -2540,19 +2540,14 @@ fn main() {
         game.update_framebuffer_size();
 
         // Render the results.
-        unsafe {
-            game.clear_frame_buffer();
-            game.update_viewport();
-            
-            game.update_background();
-            game.render_background();
-
-            game.update_ui();
-            game.render_ui();
-
-            game.update_playing_field();
-            game.render_playing_field();
-        }
+        game.clear_frame_buffer();
+        game.update_viewport();
+        game.update_background();
+        game.render_background();
+        game.update_ui();
+        game.render_ui();
+        game.update_playing_field();
+        game.render_playing_field();
 
         // Send the results to the output.
         game.swap_buffers();
