@@ -2205,6 +2205,21 @@ impl Game {
             gl::Viewport(0, 0, dims.width, dims.height);
         }
     }
+
+    #[inline]
+    fn init_gpu(&mut self) {
+        unsafe {
+            // Enable depth testing.
+            gl::Enable(gl::DEPTH_TEST);
+            gl::DepthFunc(gl::LESS);
+            // Clear the z-buffer and the frame buffer.
+            gl::ClearBufferfv(gl::DEPTH, 0, &CLEAR_DEPTH[0] as *const GLfloat);
+            gl::ClearBufferfv(gl::COLOR, 0, &CLEAR_COLOR[0] as *const GLfloat);
+    
+            let dims = self.viewport_dimensions();
+            gl::Viewport(0, 0, dims.width, dims.height);
+        }
+    }
 }
 
 /// The GLFW frame buffer size callback function. This is normally set using
@@ -2417,18 +2432,7 @@ fn collides_with_right_wall(playing_field_state: &PlayingFieldState) -> bool {
 
 fn main() {
     let mut game = init_game();
-    unsafe {
-        // Enable depth testing.
-        gl::Enable(gl::DEPTH_TEST);
-        gl::DepthFunc(gl::LESS);
-        // Clear the z-buffer and the frame buffer.
-        gl::ClearBufferfv(gl::DEPTH, 0, &CLEAR_DEPTH[0] as *const GLfloat);
-        gl::ClearBufferfv(gl::COLOR, 0, &CLEAR_COLOR[0] as *const GLfloat);
-
-        let dims = game.viewport_dimensions();
-        gl::Viewport(0, 0, dims.width, dims.height);
-    }
-
+    game.init_gpu();
     while !game.window_should_close() {
         // Check input.
         let elapsed_seconds = game.update_timers();
