@@ -2183,6 +2183,13 @@ impl Game {
             gl::Disable(gl::BLEND);
         }
     }
+
+    fn clear_frame_buffer(&mut self) {
+        unsafe {
+            gl::ClearBufferfv(gl::DEPTH, 0, &CLEAR_DEPTH[0] as *const GLfloat);
+            gl::ClearBufferfv(gl::COLOR, 0, &CLEAR_COLOR[0] as *const GLfloat);
+        }
+    }
 }
 
 /// The GLFW frame buffer size callback function. This is normally set using
@@ -2525,9 +2532,7 @@ fn main() {
 
         // Render the results.
         unsafe {
-            // Clear the screen and the depth buffer.
-            gl::ClearBufferfv(gl::DEPTH, 0, &CLEAR_DEPTH[0] as *const GLfloat);
-            gl::ClearBufferfv(gl::COLOR, 0, &CLEAR_COLOR[0] as *const GLfloat);
+            game.clear_frame_buffer();
             
             let dims = game.viewport_dimensions();
             gl::Viewport(0, 0, dims.width, dims.height);
