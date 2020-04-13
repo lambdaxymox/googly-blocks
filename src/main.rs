@@ -1924,6 +1924,11 @@ impl UI {
     }
 }
 
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+enum Interval {
+    Milliseconds(u64),
+}
+
 struct Timer {
     time: Duration,
     event_interval: Duration,
@@ -1931,7 +1936,11 @@ struct Timer {
 }
 
 impl Timer {
-    fn new(event_interval: Duration) -> Timer {
+    fn new(interval: Interval) -> Timer {
+        let event_interval = match interval {
+            Interval::Milliseconds(millis) => Duration::from_millis(millis)
+        };
+        
         Timer {
             time: Duration::from_millis(0),
             event_interval: event_interval,
@@ -1959,12 +1968,12 @@ impl Timer {
 
 #[derive(Copy, Clone)]
 struct PlayingFieldTimerSpec {
-    fall_interval: Duration,
-    collision_interval: Duration,
-    left_hold_interval: Duration,
-    right_hold_interval: Duration,
-    down_hold_interval: Duration,
-    rotate_interval: Duration,
+    fall_interval: Interval,
+    collision_interval: Interval,
+    left_hold_interval: Interval,
+    right_hold_interval: Interval,
+    down_hold_interval: Interval,
+    rotate_interval: Interval,
 }
 
 struct PlayingFieldTimers {
@@ -2285,12 +2294,12 @@ fn init_game() -> Game {
     let playing_field_state = PlayingFieldState::new(starting_block, starting_position);
     let playing_field = PlayingField::new(gl_context.clone(), playing_field_handle);
     let timer_spec = PlayingFieldTimerSpec {
-        fall_interval: Duration::from_millis(500),
-        collision_interval: Duration::from_millis(500),
-        left_hold_interval: Duration::from_millis(70),
-        right_hold_interval: Duration::from_millis(70),
-        down_hold_interval: Duration::from_millis(50),
-        rotate_interval: Duration::from_millis(100),
+        fall_interval: Interval::Milliseconds(500),
+        collision_interval: Interval::Milliseconds(500),
+        left_hold_interval: Interval::Milliseconds(70),
+        right_hold_interval: Interval::Milliseconds(70),
+        down_hold_interval: Interval::Milliseconds(50),
+        rotate_interval: Interval::Milliseconds(100),
     };
     let timers = PlayingFieldTimers::new(timer_spec);
 
