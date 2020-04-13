@@ -2184,10 +2184,19 @@ impl Game {
         }
     }
 
+    #[inline]
     fn clear_frame_buffer(&mut self) {
         unsafe {
             gl::ClearBufferfv(gl::DEPTH, 0, &CLEAR_DEPTH[0] as *const GLfloat);
             gl::ClearBufferfv(gl::COLOR, 0, &CLEAR_COLOR[0] as *const GLfloat);
+        }
+    }
+
+    #[inline]
+    fn update_viewport(&mut self) {
+        let dims = self.viewport_dimensions();
+        unsafe {
+            gl::Viewport(0, 0, dims.width, dims.height);
         }
     }
 }
@@ -2533,10 +2542,8 @@ fn main() {
         // Render the results.
         unsafe {
             game.clear_frame_buffer();
+            game.update_viewport();
             
-            let dims = game.viewport_dimensions();
-            gl::Viewport(0, 0, dims.width, dims.height);
-
             game.update_background();
             game.render_background();
 
