@@ -1201,7 +1201,7 @@ fn send_to_gpu_uniforms_playing_field(sp: GLuint, uniforms: PlayingFieldUniforms
     }    
 }
 
-struct PlayingFieldSpec {
+struct PlayingFieldHandleSpec {
     rows: usize,
     columns: usize,
 }
@@ -1401,7 +1401,7 @@ impl PlayingField {
     }
 }
 
-fn load_playing_field(game: &mut glh::GLState, spec: PlayingFieldSpec, uniforms: PlayingFieldUniforms) -> PlayingFieldHandle {
+fn load_playing_field(game: &mut glh::GLState, spec: PlayingFieldHandleSpec, uniforms: PlayingFieldUniforms) -> PlayingFieldHandle {
     let shader_source = create_shaders_playing_field();
     let mesh = create_geometry_playing_field(spec.rows, spec.columns);
     let teximage = create_textures_playing_field();
@@ -1926,24 +1926,45 @@ impl UI {
 
 struct Timer {
     time: Duration,
+    event_interval: Duration,
+    event_count: u128,
 }
 
 impl Timer {
-    fn new() -> Timer {
+    fn new(event_interval: Duration) -> Timer {
         Timer {
             time: Duration::from_millis(0),
+            event_interval: event_interval,
+            event_count: 0,
         }
     }
 
     #[inline]
     fn update(&mut self, elapsed: Duration) {
         self.time += elapsed;
+        self.event_count = self.time.as_millis() / self.event_interval.as_millis();
+    }
+
+    #[inline]
+    fn event_triggered(&self) -> bool {
+        self.event_count > 0
     }
 
     #[inline]
     fn reset(&mut self) {
         self.time = Duration::from_millis(0);
+        self.event_count = 0;
     }
+}
+
+#[derive(Copy, Clone)]
+struct PlayingFieldTimerSpec {
+    fall_interval: Duration,
+    collision_interval: Duration,
+    left_hold_interval: Duration,
+    right_hold_interval: Duration,
+    down_hold_interval: Duration,
+    rotate_interval: Duration,
 }
 
 struct PlayingFieldTimers {
@@ -1956,14 +1977,14 @@ struct PlayingFieldTimers {
 }
 
 impl PlayingFieldTimers {
-    fn new() -> PlayingFieldTimers {
+    fn new(spec: PlayingFieldTimerSpec) -> PlayingFieldTimers {
         PlayingFieldTimers {
-            fall_timer: Timer::new(),
-            collision_timer: Timer::new(),
-            left_hold_timer: Timer::new(),
-            right_hold_timer: Timer::new(),
-            down_hold_timer: Timer::new(),
-            rotate_timer: Timer::new(),
+            fall_timer: Timer::new(spec.fall_interval),
+            collision_timer: Timer::new(spec.collision_interval),
+            left_hold_timer: Timer::new(spec.left_hold_interval),
+            right_hold_timer: Timer::new(spec.right_hold_interval),
+            down_hold_timer: Timer::new(spec.down_hold_interval),
+            rotate_timer: Timer::new(spec.rotate_interval),
         }
     }
 
@@ -2251,7 +2272,7 @@ fn init_game() -> Game {
     };
     
     let playing_field_uniforms = create_uniforms_playing_field(488, viewport_width as u32, viewport_height as u32);
-    let playing_field_spec = PlayingFieldSpec {
+    let playing_field_spec = PlayingFieldHandleSpec {
         rows: 20,
         columns: 10,
     };
@@ -2263,8 +2284,15 @@ fn init_game() -> Game {
     let starting_position = BlockPosition::new(0, 4);
     let playing_field_state = PlayingFieldState::new(starting_block, starting_position);
     let playing_field = PlayingField::new(gl_context.clone(), playing_field_handle);
-
-    let timers = PlayingFieldTimers::new();
+    let timer_spec = PlayingFieldTimerSpec {
+        fall_interval: Duration::from_millis(500),
+        collision_interval: Duration::from_millis(500),
+        left_hold_interval: Duration::from_millis(70),
+        right_hold_interval: Duration::from_millis(70),
+        down_hold_interval: Duration::from_millis(50),
+        rotate_interval: Duration::from_millis(100),
+    };
+    let timers = PlayingFieldTimers::new(timer_spec);
 
     Game {
         gl: gl_context,
