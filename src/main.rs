@@ -2185,9 +2185,15 @@ impl Game {
     }
 
     #[inline]
-    fn clear_frame_buffer(&mut self) {
+    fn clear_depth_buffer(&mut self) {
         unsafe {
             gl::ClearBufferfv(gl::DEPTH, 0, &CLEAR_DEPTH[0] as *const GLfloat);
+        }
+    }
+
+    #[inline]
+    fn clear_frame_buffer(&mut self) {
+        unsafe {
             gl::ClearBufferfv(gl::COLOR, 0, &CLEAR_COLOR[0] as *const GLfloat);
         }
     }
@@ -2541,6 +2547,7 @@ fn main() {
 
         // Render the results.
         game.clear_frame_buffer();
+        game.clear_depth_buffer();
         game.update_viewport();
         game.update_background();
         game.render_background();
