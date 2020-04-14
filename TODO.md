@@ -4,3 +4,5 @@
 * Correct the placement of pieces at the top of the screen.
 * Implement clearing full rows.
 * Implement flashing background for a tetris.
+* Implement a start screen.
+* Implement a game over screen.
