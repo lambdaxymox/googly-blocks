@@ -655,12 +655,9 @@ impl PlayingFieldState {
                         self.current_block = potential_block;
                     }
                 } else if collides_with_right_wall {
-                    println!("BLOCK SHAPE: {:?}", potential_block);
-                    println!("BEFORE RIGHT WALL: {:?}", potential_top_left);
                     let potential_top_left = BlockPosition::new(
                         potential_top_left.row, potential_top_left.column - potential_block_shape.wall_kick_distance
                     );
-                    println!("AFTER RIGHT WALL: {:?}", potential_top_left);
                     let collides_with_element = collides_with_element(potential_block, potential_top_left, &self.landed_blocks);
                     let collides_with_floor = collides_with_floor(potential_block, potential_top_left, &self.landed_blocks);
                     if collides_with_element || collides_with_floor {
