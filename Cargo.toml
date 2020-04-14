@@ -1,11 +1,11 @@
 [package]
 name = "googly-blocks"
-version = "0.3.9"
+version = "0.3.10"
 authors = ["LambdaXymox <lambda.xymox@gmail.com>"]
 build = "build.rs"
 
 [dependencies]
-glfw = "0.36.0"
+glfw = "0.37.0"
 log = "0.4.8"
 toml = "0.4.8"
 bmfa = { git = "https://github.com/lambdaxymox/bmfa" }
