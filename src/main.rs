@@ -2558,13 +2558,11 @@ fn main() {
         }
 
         if game.timers.fall_timer.event_triggered() {
-            println!("FALL TIMER: {} ms", game.timers.fall_timer.time.as_millis());
             game.playing_field_state.update_block_position(GooglyBlockMove::Fall);
             game.timers.fall_timer.reset();
         }
 
         if game.timers.collision_timer.event_triggered() {
-            println!("COLLISION TIMER: {} ms", game.timers.collision_timer.time.as_millis());
             let block = game.playing_field_state.current_block;
             let position = game.playing_field_state.current_position;
             game.playing_field_state.landed_blocks.insert_block(position.row, position.column, block);
