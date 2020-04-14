@@ -2196,6 +2196,18 @@ impl Game {
         self.playing_field.send_to_gpu();
     }
 
+    fn update_next_piece(&mut self) {
+        self.next_piece = match self.next_piece {
+            GooglyBlockPiece::T => GooglyBlockPiece::J,
+            GooglyBlockPiece::J => GooglyBlockPiece::Z,
+            GooglyBlockPiece::Z => GooglyBlockPiece::O,
+            GooglyBlockPiece::O => GooglyBlockPiece::S,
+            GooglyBlockPiece::S => GooglyBlockPiece::L,
+            GooglyBlockPiece::L => GooglyBlockPiece::I,
+            GooglyBlockPiece::I => GooglyBlockPiece::T,
+        };
+    }
+
     fn render_playing_field(&mut self) {
         unsafe {
             gl::UseProgram(self.playing_field.handle.sp);
@@ -2551,15 +2563,7 @@ fn main() {
             game.playing_field_state.landed_blocks.insert_block(position.row, position.column, block);
             game.statistics.update(block);
             let next_piece = game.next_piece;
-            game.next_piece = match game.next_piece {
-                GooglyBlockPiece::T => GooglyBlockPiece::J,
-                GooglyBlockPiece::J => GooglyBlockPiece::Z,
-                GooglyBlockPiece::Z => GooglyBlockPiece::O,
-                GooglyBlockPiece::O => GooglyBlockPiece::S,
-                GooglyBlockPiece::S => GooglyBlockPiece::L,
-                GooglyBlockPiece::L => GooglyBlockPiece::I,
-                GooglyBlockPiece::I => GooglyBlockPiece::T,
-            };
+            game.update_next_piece();
             let next_block = GooglyBlock::new(next_piece, GooglyBlockRotation::R0);
             game.playing_field_state.update_new_block(next_block);
             game.timers.collision_timer.reset();
