@@ -2378,15 +2378,7 @@ fn init_game() -> Game {
         level: 0,
         lines: 0,
         tetrises: 0,
-        statistics: Statistics {
-            t_pieces: 0,
-            j_pieces: 0,
-            z_pieces: 0,
-            o_pieces: 0,
-            s_pieces: 0,
-            l_pieces: 0,
-            i_pieces: 0, 
-        },
+        statistics: Statistics::new(),
         next_piece: next_piece,
     }
 }
