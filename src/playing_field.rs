@@ -52,7 +52,7 @@ impl fmt::Display for GooglyBlockElement {
 pub struct GooglyBlockShape {
     shape: [(usize, usize); 4],
     pub element: GooglyBlockElement,
-    wall_kick_distance: usize,
+    wall_kick_distance: isize,
     rows: usize,
     columns: usize,
 }
@@ -147,7 +147,7 @@ impl GooglyBlock {
                 R0 => GooglyBlockShape {
                     shape: [(0, 0), (0, 1), (0, 2), (1, 1)],
                     element: GooglyBlockElement::T,
-                    wall_kick_distance: 0,
+                    wall_kick_distance: 1,
                     rows: 3,
                     columns: 3,
                 },
@@ -161,14 +161,14 @@ impl GooglyBlock {
                 R2 => GooglyBlockShape {
                     shape: [(0, 1), (1, 0), (1, 1), (1, 2)],
                     element: GooglyBlockElement::T,
-                    wall_kick_distance: 0,
+                    wall_kick_distance: 1,
                     rows: 3,
                     columns: 3,
                 },
                 R3 => GooglyBlockShape {
                     shape: [(0, 1), (1, 1), (1, 2), (2, 1)],
                     element: GooglyBlockElement::T,
-                    wall_kick_distance: 1,
+                    wall_kick_distance: 0,
                     rows: 3,
                     columns: 3,
                 },
@@ -638,16 +638,45 @@ impl PlayingFieldState {
             GooglyBlockMove::Rotate => {
                 let potential_top_left = self.current_position;
                 let potential_block = self.current_block.rotate();
-                let collides_with_element = collides_with_element(potential_block, potential_top_left, &self.landed_blocks);
-                let collides_with_floor = collides_with_floor(potential_block, potential_top_left, &self.landed_blocks);
+                let potential_block_shape = potential_block.shape();
+
                 let collides_with_left_wall = collides_with_left_wall(potential_block, potential_top_left, &self.landed_blocks);
                 let collides_with_right_wall = collides_with_right_wall(potential_block, potential_top_left, &self.landed_blocks);
-                if collides_with_element || collides_with_floor || 
-                    collides_with_left_wall || collides_with_right_wall {
+                if collides_with_left_wall {
+                    let potential_top_left = BlockPosition::new(
+                        potential_top_left.row, potential_top_left.column + potential_block_shape.wall_kick_distance
+                    );
+                    let collides_with_element = collides_with_element(potential_block, potential_top_left, &self.landed_blocks);
+                    let collides_with_floor = collides_with_floor(potential_block, potential_top_left, &self.landed_blocks);
+                    if collides_with_element || collides_with_floor {
 
-                    
+                    } else {
+                        self.current_position = potential_top_left;
+                        self.current_block = potential_block;
+                    }
+                } else if collides_with_right_wall {
+                    println!("BLOCK SHAPE: {:?}", potential_block);
+                    println!("BEFORE RIGHT WALL: {:?}", potential_top_left);
+                    let potential_top_left = BlockPosition::new(
+                        potential_top_left.row, potential_top_left.column - potential_block_shape.wall_kick_distance
+                    );
+                    println!("AFTER RIGHT WALL: {:?}", potential_top_left);
+                    let collides_with_element = collides_with_element(potential_block, potential_top_left, &self.landed_blocks);
+                    let collides_with_floor = collides_with_floor(potential_block, potential_top_left, &self.landed_blocks);
+                    if collides_with_element || collides_with_floor {
+
+                    } else {
+                        self.current_position = potential_top_left;
+                        self.current_block = potential_block;
+                    }
                 } else {
-                    self.current_block = potential_block;
+                    let collides_with_element = collides_with_element(potential_block, potential_top_left, &self.landed_blocks);
+                    let collides_with_floor = collides_with_floor(potential_block, potential_top_left, &self.landed_blocks);
+                    if collides_with_element || collides_with_floor {
+
+                    } else {
+                        self.current_block = potential_block;
+                    }
                 }
             }
         }
