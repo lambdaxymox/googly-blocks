@@ -244,11 +244,9 @@ pub fn start_gl(width: u32, height: u32) -> Result<GLState, String> {
 
     // Get renderer and version information.
     let renderer = glubyte_ptr_to_string(unsafe { gl::GetString(gl::RENDERER) });
-    println!("Renderer: {}", renderer);
     info!("Renderer: {}", renderer);
 
     let version = glubyte_ptr_to_string(unsafe { gl::GetString(gl::VERSION) });
-    println!("OpenGL version supported: {}", version);
     info!("OpenGL version supported: {}", version);
     info!("{}", gl_params());
 
@@ -505,7 +503,7 @@ pub fn create_program(
         gl::GetProgramiv(program, gl::LINK_STATUS, &mut params);
     }
     if params != gl::TRUE as i32 {
-        error!("ERROR: could not link shader programme GL index {}\n", program);
+        error!("ERROR: could not link shader program GL index {}\n", program);
         error!("{}", program_info_log(program));
         return Err(ShaderCompilationError::CouldNotLinkShader);
     }
