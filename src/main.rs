@@ -2093,9 +2093,11 @@ impl Game {
     }
 
     #[inline]
-    fn update_timers(&mut self) -> f64 {
+    fn update_timers(&mut self) -> Duration {
         let mut context = self.gl.borrow_mut();
-        glh::update_timers(&mut *context)
+        let elapsed_seconds = glh::update_timers(&mut *context);
+
+        Duration::from_millis((elapsed_seconds * 1000_f64) as u64)
     }
 
     #[inline]
@@ -2471,8 +2473,7 @@ fn main() {
     game.init_gpu();
     while !game.window_should_close() {
         // Check input.
-        let elapsed_seconds = game.update_timers();
-        let elapsed_milliseconds = Duration::from_millis((elapsed_seconds * 1000_f64) as u64);
+        let elapsed_milliseconds = game.update_timers();
 
         game.poll_events();
         match game.get_key(Key::Escape) {
