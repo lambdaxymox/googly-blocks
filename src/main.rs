@@ -2020,6 +2020,32 @@ struct Statistics {
     i_pieces: usize, 
 }
 
+impl Statistics {
+    fn new() -> Statistics {
+        Statistics {
+            t_pieces: 0,
+            j_pieces: 0,
+            z_pieces: 0,
+            o_pieces: 0,
+            s_pieces: 0,
+            l_pieces: 0,
+            i_pieces: 0,
+        }
+    }
+
+    fn update(&mut self, block: GooglyBlock) {
+        match block.piece {
+            GooglyBlockPiece::T => self.t_pieces += 1,
+            GooglyBlockPiece::J => self.j_pieces += 1,
+            GooglyBlockPiece::Z => self.z_pieces += 1,
+            GooglyBlockPiece::O => self.o_pieces += 1,
+            GooglyBlockPiece::S => self.s_pieces += 1,
+            GooglyBlockPiece::L => self.l_pieces += 1,
+            GooglyBlockPiece::I => self.i_pieces += 1,
+        }
+    }
+}
+
 struct ViewportDimensions {
     width: i32,
     height: i32,
@@ -2531,6 +2557,7 @@ fn main() {
             let block = game.playing_field_state.current_block;
             let position = game.playing_field_state.current_position;
             game.playing_field_state.landed_blocks.insert_block(position.row, position.column, block);
+            game.statistics.update(block);
             let next_piece = game.next_piece;
             game.next_piece = match game.next_piece {
                 GooglyBlockPiece::T => GooglyBlockPiece::J,

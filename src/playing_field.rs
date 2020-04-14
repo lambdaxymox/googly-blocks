@@ -126,7 +126,7 @@ pub enum GooglyBlockPiece {
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 pub struct GooglyBlock {
-    piece: GooglyBlockPiece,
+    pub piece: GooglyBlockPiece,
     rotation: GooglyBlockRotation,
 }
 
