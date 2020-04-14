@@ -20,6 +20,7 @@ extern crate bmfa;
 extern crate cgmath;
 extern crate toml;
 extern crate log;
+extern crate rand;
 extern crate file_logger;
 extern crate teximage2d;
 
@@ -50,6 +51,8 @@ use playing_field::{
     GooglyBlockPiece, GooglyBlockRotation, GooglyBlockElement, GooglyBlockMove,
     LandedBlocksQuery, LandedBlocksGrid,
 };
+use rand::prelude as rng;
+use rand::Rng;
 
 use std::io;
 use std::mem;
@@ -2197,14 +2200,17 @@ impl Game {
     }
 
     fn update_next_piece(&mut self) {
-        self.next_piece = match self.next_piece {
-            GooglyBlockPiece::T => GooglyBlockPiece::J,
-            GooglyBlockPiece::J => GooglyBlockPiece::Z,
-            GooglyBlockPiece::Z => GooglyBlockPiece::O,
-            GooglyBlockPiece::O => GooglyBlockPiece::S,
-            GooglyBlockPiece::S => GooglyBlockPiece::L,
-            GooglyBlockPiece::L => GooglyBlockPiece::I,
-            GooglyBlockPiece::I => GooglyBlockPiece::T,
+        let mut rng = rng::thread_rng();
+        let random = rng.gen_range::<u32, u32, u32>(0, 7);
+        self.next_piece = match random {
+            0 => GooglyBlockPiece::T,
+            1 => GooglyBlockPiece::J,
+            2 => GooglyBlockPiece::Z,
+            3 => GooglyBlockPiece::O,
+            4 => GooglyBlockPiece::S,
+            5 => GooglyBlockPiece::L,
+            6 => GooglyBlockPiece::I,
+            _ => GooglyBlockPiece::T,
         };
     }
 
