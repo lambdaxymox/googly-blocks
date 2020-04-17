@@ -2078,7 +2078,9 @@ struct Input {
     action: InputAction,
 }
 
-struct FallingState {}
+struct FallingState {
+    
+}
 
 impl FallingState {
     fn enter(&self) {
@@ -2118,13 +2120,18 @@ enum GameState {
 impl GameState {
     fn handle_input(&mut self, input: Input) {
         match *self {
-        GameState::Falling(ref mut s) => s.handle_input(input),
+            GameState::Falling(ref mut s) => s.handle_input(input),
         }
     }
 }
 
-struct Game {
+struct GameContext {
     gl: Rc<RefCell<glh::GLState>>,
+}
+
+struct Game {
+    //gl: Rc<RefCell<glh::GLState>>,
+    context: Rc<RefCell<GameContext>>,
     state: GameState,
     atlas: Rc<BitmapFontAtlas>,
     playing_field_state: PlayingFieldState,
@@ -2143,36 +2150,38 @@ struct Game {
 impl Game {
     #[inline]
     fn get_framebuffer_size(&self) -> (i32, i32) {
-        self.gl.borrow().window.get_framebuffer_size()
+        self.context.borrow().gl.borrow_mut().window.get_framebuffer_size()
     }
 
     #[inline]
     fn window_should_close(&self) -> bool {
-        self.gl.borrow().window.should_close()
+        self.context.borrow().gl.borrow_mut().window.should_close()
     }
 
     #[inline]
     fn window_set_should_close(&mut self, close: bool) {
-        self.gl.borrow_mut().window.set_should_close(close);
+        self.context.borrow_mut().gl.borrow_mut().window.set_should_close(close);
     }
 
     #[inline]
     fn update_fps_counter(&mut self) {
-        let mut context = self.gl.borrow_mut();
-        glh::update_fps_counter(&mut *context);
+        let game_context = self.context.borrow_mut();
+        let mut gpu_context = game_context.gl.borrow_mut();
+        glh::update_fps_counter(&mut gpu_context);
     }
 
     #[inline]
     fn update_timers(&mut self) -> Duration {
-        let mut context = self.gl.borrow_mut();
-        let elapsed_seconds = glh::update_timers(&mut *context);
+        let game_context = self.context.borrow_mut();
+        let mut gpu_context = game_context.gl.borrow_mut();
+        let elapsed_seconds = glh::update_timers(&mut gpu_context);
 
         Duration::from_millis((elapsed_seconds * 1000_f64) as u64)
     }
 
     #[inline]
     fn swap_buffers(&mut self) {
-        self.gl.borrow_mut().window.swap_buffers();
+        self.context.borrow_mut().gl.borrow_mut().window.swap_buffers();
     }
 
     #[inline]
@@ -2232,22 +2241,26 @@ impl Game {
 
     #[inline]
     fn poll_events(&mut self) {
-        self.gl.borrow_mut().glfw.poll_events();
+        self.context.borrow_mut().gl.borrow_mut().glfw.poll_events();
     }
 
     #[inline]
     fn get_key(&self, key: Key) -> Action {
-        self.gl.borrow().window.get_key(key)
+        self.context.borrow().gl.borrow().window.get_key(key)
     }
 
     #[inline]
     fn viewport_dimensions(&self) -> ViewportDimensions {
         let (width, height) = {
-            let context = self.gl.borrow();
+            let game_context = self.context.borrow();
+            let context = game_context.gl.borrow();
             (context.width as i32, context.height as i32)
         };
         
-        ViewportDimensions { width, height }
+        ViewportDimensions { 
+            width: width, 
+            height: height,
+        }
     }
 
     #[inline]
@@ -2344,7 +2357,8 @@ impl Game {
 /// whenever the size of the viewport changes.
 #[inline]
 fn glfw_framebuffer_size_callback(game: &mut Game, width: u32, height: u32) {
-    let mut context = game.gl.borrow_mut();
+    let game_context = game.context.borrow_mut();
+    let mut context = game_context.gl.borrow_mut();
     context.width = width;
     context.height = height;
 }
@@ -2439,7 +2453,7 @@ fn init_game() -> Game {
         columns: 10,
     };
     let playing_field_handle = {
-        let mut context = gl_context.borrow_mut();
+        let mut context = gl_context.borrow_mut();    
         load_playing_field(&mut *context, playing_field_spec, playing_field_uniforms)
     };
     let starting_block = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
@@ -2457,8 +2471,12 @@ fn init_game() -> Game {
     let timers = PlayingFieldTimers::new(timer_spec);
     let state = GameState::Falling(FallingState {});
 
-    Game {
+    let context = Rc::new(RefCell::new(GameContext {
         gl: gl_context,
+    }));
+
+    Game {
+        context: context,
         state: state,
         atlas: atlas,
         playing_field_state: playing_field_state,

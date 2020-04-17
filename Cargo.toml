@@ -1,6 +1,6 @@
 [package]
 name = "googly-blocks"
-version = "0.3.17"
+version = "0.3.18"
 authors = ["LambdaXymox <lambda.xymox@gmail.com>"]
 build = "build.rs"
 
