@@ -49,7 +49,7 @@ use teximage2d::TexImage2D;
 use playing_field::{
     BlockPosition, GooglyBlock, PlayingFieldState,
     GooglyBlockPiece, GooglyBlockRotation, GooglyBlockElement, GooglyBlockMove,
-    LandedBlocksQuery, LandedBlocksGrid,
+    LandedBlocksQuery
 };
 use rand::prelude as rng;
 use rand::Rng;
@@ -166,7 +166,7 @@ struct BackgroundPanelHandle {
     v_tex_loc: GLuint,
 }
 
-fn create_buffers_geometry_background(sp: GLuint) -> BackgroundPanelHandle {
+fn create_buffers_geometry_background() -> BackgroundPanelHandle {
     let v_pos_loc = 0;
     let v_tex_loc = 1;
 
@@ -206,7 +206,7 @@ fn create_buffers_geometry_background(sp: GLuint) -> BackgroundPanelHandle {
     }    
 }
 
-fn send_to_gpu_geometry_background(sp: GLuint, handle: BackgroundPanelHandle, mesh: &ObjMesh) {
+fn send_to_gpu_geometry_background(handle: BackgroundPanelHandle, mesh: &ObjMesh) {
     unsafe {
         // Load position data.
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
@@ -290,8 +290,8 @@ fn load_background_panel(game: &mut glh::GLState, spec: BackgroundPanelSpec) -> 
     let mesh = create_geometry_background();
     let tex_image = create_textures_background();
     let sp = send_to_gpu_shaders_background(game, shader_source);
-    let handle = create_buffers_geometry_background(sp);
-    send_to_gpu_geometry_background(sp, handle, &mesh);
+    let handle = create_buffers_geometry_background();
+    send_to_gpu_geometry_background(handle, &mesh);
     let tex = send_to_gpu_textures_background(&tex_image);
     let buffer = GLBackgroundPanel {
         sp: sp,
@@ -357,7 +357,7 @@ struct UIPanelHandle {
     v_tex_loc: GLuint,
 }
 
-fn create_buffers_geometry_ui_panel(sp: GLuint) -> UIPanelHandle {
+fn create_buffers_geometry_ui_panel() -> UIPanelHandle {
     let v_pos_loc = 0;
     let v_tex_loc = 1;
 
@@ -397,7 +397,7 @@ fn create_buffers_geometry_ui_panel(sp: GLuint) -> UIPanelHandle {
     }
 }
 
-fn send_to_gpu_geometry_ui_panel(sp: GLuint, handle: UIPanelHandle, mesh: &ObjMesh) {
+fn send_to_gpu_geometry_ui_panel(handle: UIPanelHandle, mesh: &ObjMesh) {
     unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
         gl::BufferData(
@@ -521,8 +521,8 @@ fn load_ui_panel(game: &mut glh::GLState, spec: UIPanelSpec, uniforms: UIPanelUn
     let shader_source = create_shaders_ui_panel();
     let sp = send_to_gpu_shaders_ui_panel(game, shader_source);
     let mesh = create_geometry_ui_panel();
-    let handle = create_buffers_geometry_ui_panel(sp);
-    send_to_gpu_geometry_ui_panel(sp, handle, &mesh);
+    let handle = create_buffers_geometry_ui_panel();
+    send_to_gpu_geometry_ui_panel(handle, &mesh);
     let tex_image = create_textures_ui_panel();
     let tex = send_to_gpu_textures_ui_panel(&tex_image);
     send_to_gpu_uniforms_ui_panel(sp, uniforms);
@@ -780,7 +780,7 @@ struct NextPiecePanelHandle {
     v_tex_loc: GLuint,
 }
 
-fn create_buffers_geometry_piece_mesh(sp: GLuint) -> NextPiecePanelHandle {
+fn create_buffers_geometry_piece_mesh() -> NextPiecePanelHandle {
     let v_pos_loc = 0;
     let v_tex_loc = 1;
 
@@ -820,7 +820,7 @@ fn create_buffers_geometry_piece_mesh(sp: GLuint) -> NextPiecePanelHandle {
     }
 }
 
-fn send_to_gpu_geometry_piece_mesh(sp: GLuint, handle: NextPiecePanelHandle, mesh: &ObjMesh) {
+fn send_to_gpu_geometry_piece_mesh(handle: NextPiecePanelHandle, mesh: &ObjMesh) {
     unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
         gl::BufferData(
@@ -855,20 +855,20 @@ struct NextPanelHandles {
 }
 
 fn send_to_gpu_geometry_next_panel(sp: GLuint, meshes: &PieceMeshes) -> NextPanelHandles {
-    let t_handle = create_buffers_geometry_piece_mesh(sp);
-    send_to_gpu_geometry_piece_mesh(sp, t_handle, &meshes.t);
-    let j_handle = create_buffers_geometry_piece_mesh(sp);
-    send_to_gpu_geometry_piece_mesh(sp, j_handle, &meshes.j);
-    let z_handle = create_buffers_geometry_piece_mesh(sp);
-    send_to_gpu_geometry_piece_mesh(sp, z_handle, &meshes.z);
-    let o_handle = create_buffers_geometry_piece_mesh(sp);
-    send_to_gpu_geometry_piece_mesh(sp, o_handle, &meshes.o);
-    let s_handle = create_buffers_geometry_piece_mesh(sp);
-    send_to_gpu_geometry_piece_mesh(sp, s_handle, &meshes.s);
-    let l_handle = create_buffers_geometry_piece_mesh(sp);
-    send_to_gpu_geometry_piece_mesh(sp, l_handle, &meshes.l);
-    let i_handle = create_buffers_geometry_piece_mesh(sp);
-    send_to_gpu_geometry_piece_mesh(sp, i_handle, &meshes.i);
+    let t_handle = create_buffers_geometry_piece_mesh();
+    send_to_gpu_geometry_piece_mesh(t_handle, &meshes.t);
+    let j_handle = create_buffers_geometry_piece_mesh();
+    send_to_gpu_geometry_piece_mesh(j_handle, &meshes.j);
+    let z_handle = create_buffers_geometry_piece_mesh();
+    send_to_gpu_geometry_piece_mesh(z_handle, &meshes.z);
+    let o_handle = create_buffers_geometry_piece_mesh();
+    send_to_gpu_geometry_piece_mesh(o_handle, &meshes.o);
+    let s_handle = create_buffers_geometry_piece_mesh();
+    send_to_gpu_geometry_piece_mesh(s_handle, &meshes.s);
+    let l_handle = create_buffers_geometry_piece_mesh();
+    send_to_gpu_geometry_piece_mesh(l_handle, &meshes.l);
+    let i_handle = create_buffers_geometry_piece_mesh();
+    send_to_gpu_geometry_piece_mesh(i_handle, &meshes.i);
 
     NextPanelHandles {
         t: t_handle,
@@ -1091,7 +1091,7 @@ struct PlayingFieldBuffers {
     v_tex_loc: GLuint,
 }
 
-fn create_buffers_geometry_playing_field(sp: GLuint) -> PlayingFieldBuffers {
+fn create_buffers_geometry_playing_field() -> PlayingFieldBuffers {
     let v_pos_loc = 0;
     let v_tex_loc = 1;
 
@@ -1132,7 +1132,7 @@ fn create_buffers_geometry_playing_field(sp: GLuint) -> PlayingFieldBuffers {
     }
 }
 
-fn send_to_gpu_geometry_playing_field(sp: GLuint, handle: PlayingFieldBuffers, mesh: &ObjMesh) {
+fn send_to_gpu_geometry_playing_field(handle: PlayingFieldBuffers, mesh: &ObjMesh) {
     unsafe {
         gl::NamedBufferData(
             handle.v_pos_vbo, 
@@ -1409,8 +1409,8 @@ fn load_playing_field(game: &mut glh::GLState, spec: PlayingFieldHandleSpec, uni
     let mesh = create_geometry_playing_field(spec.rows, spec.columns);
     let teximage = create_textures_playing_field();
     let sp = send_to_gpu_shaders_playing_field(game, shader_source);
-    let handle = create_buffers_geometry_playing_field(sp);
-    send_to_gpu_geometry_playing_field(sp, handle, &mesh);
+    let handle = create_buffers_geometry_playing_field();
+    send_to_gpu_geometry_playing_field(handle, &mesh);
     let tex = send_to_gpu_textures_playing_field(&teximage);
     send_to_gpu_uniforms_playing_field(sp, uniforms);
 
@@ -1726,7 +1726,7 @@ struct TextBufferHandle {
 }
 
 /// Set up the geometry for rendering title screen text.
-fn create_buffers_text_buffer(sp: GLuint) -> TextBufferHandle {
+fn create_buffers_text_buffer() -> TextBufferHandle {
     let v_pos_loc = 0;
     let v_tex_loc = 1;
 
@@ -1807,7 +1807,7 @@ fn create_text_buffer(
         let mut context = gl_state.borrow_mut();
         send_to_gpu_shaders_text_buffer(&mut *context, shader_source)
     };
-    let handle = create_buffers_text_buffer(sp);
+    let handle = create_buffers_text_buffer();
     send_to_gpu_uniforms_text_buffer(sp, uniforms);
 
     let buffer = GLTextBuffer {
