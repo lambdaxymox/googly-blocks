@@ -2054,8 +2054,29 @@ struct ViewportDimensions {
     height: i32,
 }
 
+struct PlayingState {}
+
+impl PlayingState {
+    fn enter(&self) {
+
+    }
+
+    fn handle_input() {
+
+    }
+
+    fn exit() {
+
+    }
+}
+
+enum GameState {
+    Playing(PlayingState),
+}
+
 struct Game {
     gl: Rc<RefCell<glh::GLState>>,
+    state: GameState,
     atlas: Rc<BitmapFontAtlas>,
     playing_field_state: PlayingFieldState,
     playing_field: PlayingField,
@@ -2385,9 +2406,11 @@ fn init_game() -> Game {
         rotate_interval: Interval::Milliseconds(100),
     };
     let timers = PlayingFieldTimers::new(timer_spec);
+    let state = GameState::Playing(PlayingState {});
 
     Game {
         gl: gl_context,
+        state: state,
         atlas: atlas,
         playing_field_state: playing_field_state,
         playing_field: playing_field,
