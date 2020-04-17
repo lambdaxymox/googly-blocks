@@ -854,7 +854,7 @@ struct NextPanelHandles {
     i: NextPiecePanelHandle,
 }
 
-fn send_to_gpu_geometry_next_panel(sp: GLuint, meshes: &PieceMeshes) -> NextPanelHandles {
+fn send_to_gpu_geometry_next_panel(meshes: &PieceMeshes) -> NextPanelHandles {
     let t_handle = create_buffers_geometry_piece_mesh();
     send_to_gpu_geometry_piece_mesh(t_handle, &meshes.t);
     let j_handle = create_buffers_geometry_piece_mesh();
@@ -985,7 +985,7 @@ fn create_next_piece_panel_buffer(gl_context: &mut glh::GLState, uniforms: &Piec
     let tex_image = create_textures_next_piece_panel();
     let tex = send_to_gpu_textures_next_piece_panel(&tex_image);
     let meshes = create_geometry_next_piece_panel();
-    let handles = send_to_gpu_geometry_next_panel(sp, &meshes);
+    let handles = send_to_gpu_geometry_next_panel(&meshes);
     send_to_gpu_uniforms_next_piece_panel(sp, uniforms);
 
     GLNextPiecePanel {
@@ -2218,8 +2218,8 @@ impl Game {
 
     fn update_playing_field(&mut self) {
         update_uniforms_playing_field(self);
-        self.playing_field.write(&self.playing_field_state);
-        self.playing_field.send_to_gpu();
+        self.playing_field.write(&self.playing_field_state).unwrap();
+        self.playing_field.send_to_gpu().unwrap();
     }
 
     fn update_next_piece(&mut self) {
