@@ -2054,6 +2054,30 @@ struct ViewportDimensions {
     height: i32,
 }
 
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+enum InputAction {
+    Unit,
+    Press,
+    Repeat,
+    Release,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+enum InputKind {
+    Unit,
+    Left,
+    Right,
+    Down,
+    Exit,
+    Rotate,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+struct Input {
+    kind: InputKind,
+    action: InputAction,
+}
+
 struct FallingState {}
 
 impl FallingState {
@@ -2061,19 +2085,42 @@ impl FallingState {
 
     }
 
-    fn handle_input() {
+    fn handle_input(&mut self, input: Input) {
+        match input.kind {
+            InputKind::Left => {
 
+            }
+            InputKind::Right => {
+
+            }
+            InputKind::Rotate => {
+
+            }
+            InputKind::Down  => {
+
+            }
+            _ => {}
+        } 
     }
 
-    fn update() {}
+    fn update(&mut self) {}
 
-    fn exit() {
+    fn exit(&mut self) {
 
     }
 }
 
+
 enum GameState {
     Falling(FallingState),
+}
+
+impl GameState {
+    fn handle_input(&mut self, input: Input) {
+        match *self {
+        GameState::Falling(ref mut s) => s.handle_input(input),
+        }
+    }
 }
 
 struct Game {
