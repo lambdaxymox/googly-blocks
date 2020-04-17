@@ -2054,9 +2054,9 @@ struct ViewportDimensions {
     height: i32,
 }
 
-struct PlayingState {}
+struct FallingState {}
 
-impl PlayingState {
+impl FallingState {
     fn enter(&self) {
 
     }
@@ -2065,13 +2065,15 @@ impl PlayingState {
 
     }
 
+    fn update() {}
+
     fn exit() {
 
     }
 }
 
 enum GameState {
-    Playing(PlayingState),
+    Falling(FallingState),
 }
 
 struct Game {
@@ -2406,7 +2408,7 @@ fn init_game() -> Game {
         rotate_interval: Interval::Milliseconds(100),
     };
     let timers = PlayingFieldTimers::new(timer_spec);
-    let state = GameState::Playing(PlayingState {});
+    let state = GameState::Falling(FallingState {});
 
     Game {
         gl: gl_context,
