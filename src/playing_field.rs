@@ -669,6 +669,71 @@ impl PlayingFieldState {
         self.current_block = block;
         self.current_position = self.starting_position;
     }
+
+    pub fn collides_with_element_below(&self) -> bool {
+        let shape = self.current_block.shape();
+        let top_left = self.current_position;
+        let landed = &self.landed_blocks;
+        for (row, column) in shape.iter() {
+            let element_row = row as isize;
+            let element_column = column as isize;
+            match landed.get(top_left.row + element_row + 1, top_left.column + element_column) {
+                LandedBlocksQuery::InOfBounds(GooglyBlockElement::EmptySpace) => {}
+                LandedBlocksQuery::OutOfBounds(_, _) => {}
+                LandedBlocksQuery::InOfBounds(_) => return true,
+            }
+        }
+        
+        false
+    }
+    
+    pub fn collides_with_floor_below(&self) -> bool {
+        let shape = self.current_block.shape();
+        let top_left = self.current_position;
+        for (row, _) in shape.iter() {
+            let part_row = row as isize;
+            if top_left.row + part_row + 1 >= self.landed_blocks.rows() as isize {
+                return true;
+            }
+        }
+    
+        false
+    }
+    
+    pub fn collides_with_element_to_the_left(&self) -> bool {
+        false
+    }
+    
+    pub fn collides_with_left_wall(&self) -> bool {
+        let shape = self.current_block.shape();
+        let top_left = self.current_position;
+        for (_, column) in shape.iter() {
+            let element_column = column as isize;
+            if top_left.column + element_column - 1 < 0 {
+                return true;
+            }
+        }
+    
+        false
+    }
+    
+    pub fn collides_with_element_to_the_right(&self) -> bool {
+        false
+    }
+    
+    pub fn collides_with_right_wall(&self) -> bool {
+        let shape = self.current_block.shape();
+        let top_left = self.current_position;
+        let landed = &self.landed_blocks;
+        for (_, column) in shape.iter() {
+            let element_column = column as isize;
+            if top_left.column + element_column >= landed.columns() as isize {
+                return true;
+            }
+        }
+    
+        false
+    }
 }
 
 

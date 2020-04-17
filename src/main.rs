@@ -2475,71 +2475,6 @@ fn init_game() -> Game {
     }
 }
 
-fn collides_with_element_below(playing_field_state: &PlayingFieldState) -> bool {
-    let shape = playing_field_state.current_block.shape();
-    let top_left = playing_field_state.current_position;
-    let landed = &playing_field_state.landed_blocks;
-    for (row, column) in shape.iter() {
-        let element_row = row as isize;
-        let element_column = column as isize;
-        match landed.get(top_left.row + element_row + 1, top_left.column + element_column) {
-            LandedBlocksQuery::InOfBounds(GooglyBlockElement::EmptySpace) => {}
-            LandedBlocksQuery::OutOfBounds(_, _) => {}
-            LandedBlocksQuery::InOfBounds(_) => return true,
-        }
-    }
-    
-    false
-}
-
-fn collides_with_floor_below(playing_field_state: &PlayingFieldState) -> bool {
-    let shape = playing_field_state.current_block.shape();
-    let top_left = playing_field_state.current_position;
-    for (row, _) in shape.iter() {
-        let part_row = row as isize;
-        if top_left.row + part_row + 1 >= playing_field_state.landed_blocks.rows() as isize {
-            return true;
-        }
-    }
-
-    false
-}
-
-fn collides_with_element_to_the_left(playing_field_state: &PlayingFieldState) -> bool {
-    false
-}
-
-fn collides_with_left_wall(playing_field_state: &PlayingFieldState) -> bool {
-    let shape = playing_field_state.current_block.shape();
-    let top_left = playing_field_state.current_position;
-    for (_, column) in shape.iter() {
-        let element_column = column as isize;
-        if top_left.column + element_column - 1 < 0 {
-            return true;
-        }
-    }
-
-    false
-}
-
-fn collides_with_element_to_the_right(playing_field_state: &PlayingFieldState) -> bool {
-    false
-}
-
-fn collides_with_right_wall(playing_field_state: &PlayingFieldState) -> bool {
-    let shape = playing_field_state.current_block.shape();
-    let top_left = playing_field_state.current_position;
-    let landed = &playing_field_state.landed_blocks;
-    for (_, column) in shape.iter() {
-        let element_column = column as isize;
-        if top_left.column + element_column >= landed.columns() as isize {
-            return true;
-        }
-    }
-
-    false
-}
-
 fn main() {
     let mut game = init_game();
     game.init_gpu();
@@ -2558,10 +2493,10 @@ fn main() {
             Action::Press | Action::Repeat => {   
                 game.timers.left_hold_timer.update(elapsed_milliseconds);
                 if game.timers.left_hold_timer.event_triggered() {
-                    let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
-                    let collides_with_element = collides_with_element_below(&game.playing_field_state);
-                    let collides_with_left_element = collides_with_element_to_the_left(&game.playing_field_state);
-                    let collides_with_left_wall = collides_with_left_wall(&game.playing_field_state);
+                    let collides_with_floor = game.playing_field_state.collides_with_floor_below();
+                    let collides_with_element = game.playing_field_state.collides_with_element_below();
+                    let collides_with_left_element = game.playing_field_state.collides_with_element_to_the_left();
+                    let collides_with_left_wall = game.playing_field_state.collides_with_left_wall();
                     if !collides_with_left_element || !collides_with_left_wall {
                         if collides_with_floor || collides_with_element {
                             game.timers.fall_timer.reset();
@@ -2577,10 +2512,10 @@ fn main() {
             Action::Press | Action::Repeat => {
                 game.timers.right_hold_timer.update(elapsed_milliseconds);
                 if game.timers.right_hold_timer.event_triggered() {
-                    let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
-                    let collides_with_element = collides_with_element_below(&game.playing_field_state);
-                    let collides_with_right_element = collides_with_element_to_the_right(&game.playing_field_state);
-                    let collides_with_right_wall = collides_with_right_wall(&game.playing_field_state);
+                    let collides_with_floor = game.playing_field_state.collides_with_floor_below();
+                    let collides_with_element = game.playing_field_state.collides_with_element_below();
+                    let collides_with_right_element = game.playing_field_state.collides_with_element_to_the_right();
+                    let collides_with_right_wall = game.playing_field_state.collides_with_right_wall();
                     if !collides_with_right_element || !collides_with_right_wall {
                         if collides_with_floor || collides_with_element {
                             game.timers.fall_timer.reset();
@@ -2596,8 +2531,8 @@ fn main() {
             Action::Press | Action::Repeat => {
                 game.timers.down_hold_timer.update(elapsed_milliseconds);
                 if game.timers.down_hold_timer.event_triggered() {
-                    let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
-                    let collides_with_element = collides_with_element_below(&game.playing_field_state);
+                    let collides_with_floor = game.playing_field_state.collides_with_floor_below();
+                    let collides_with_element = game.playing_field_state.collides_with_element_below();
                     if collides_with_floor || collides_with_element {
                         game.timers.fall_timer.reset();
                     }
@@ -2618,8 +2553,8 @@ fn main() {
             _ => {}
         }
 
-        let collides_with_floor = collides_with_floor_below(&game.playing_field_state);
-        let collides_with_element = collides_with_element_below(&game.playing_field_state);
+        let collides_with_floor = game.playing_field_state.collides_with_floor_below();
+        let collides_with_element = game.playing_field_state.collides_with_element_below();
 
         game.timers.fall_timer.update(elapsed_milliseconds);
         // Update the game world.
