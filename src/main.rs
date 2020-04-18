@@ -2213,7 +2213,9 @@ impl FallingState {
             timers.collision_timer.reset();
         }
 
-
+        if playing_field_state.has_full_rows() {
+            println!("GOT A FULL ROW!");
+        }
     }
 }
 

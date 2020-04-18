@@ -17,6 +17,7 @@
  */
 use std::fmt;
 use std::iter::Iterator;
+use std::ops;
 
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
@@ -29,6 +30,18 @@ pub enum GooglyBlockElement {
     S,
     L,
     I,
+}
+
+impl GooglyBlockElement {
+    #[inline]
+    fn is_empty(self) -> bool {
+        self == GooglyBlockElement::EmptySpace
+    }
+
+    #[inline]
+    fn is_not_empty(self) -> bool {
+        self != GooglyBlockElement::EmptySpace
+    }
 }
 
 impl fmt::Display for GooglyBlockElement {
@@ -401,9 +414,53 @@ impl LandedBlocksQuery {
     }
 }
 
+#[derive(Copy, Clone, Debug)]
+struct LandedBlocksGridRow {
+    inner: [GooglyBlockElement; 10],
+    occupied: usize,
+}
+
+impl LandedBlocksGridRow {
+    fn new() -> LandedBlocksGridRow {
+        LandedBlocksGridRow {
+            inner: [GooglyBlockElement::EmptySpace; 10],
+            occupied: 0,
+        }
+    }
+
+    #[inline]
+    fn len(&self) -> usize { 10 }
+
+    #[inline]
+    fn is_full(&self) -> bool {
+        self.occupied == self.len()
+    }
+
+    #[inline]
+    fn is_empty(&self) -> bool {
+        self.occupied == 0
+    }
+}
+
+impl ops::Index<usize> for LandedBlocksGridRow {
+    type Output = GooglyBlockElement;
+
+    #[inline]
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.inner[index]
+    }
+}
+
+impl ops::IndexMut<usize> for LandedBlocksGridRow {
+    #[inline]
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.inner[index]
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct LandedBlocksGrid {
-    landed: [[GooglyBlockElement; 10]; 20],
+    landed: [LandedBlocksGridRow; 20],
 }
 
 struct LandedBlocksIterator {
@@ -435,7 +492,7 @@ impl Iterator for LandedBlocksIterator {
 impl LandedBlocksGrid {
     pub fn new() -> Self {
         LandedBlocksGrid {
-            landed: [[GooglyBlockElement::EmptySpace; 10]; 20],
+            landed: [LandedBlocksGridRow::new(); 20],
         }
     }
 
@@ -449,13 +506,19 @@ impl LandedBlocksGrid {
         }
     }
 
-    pub fn insert(&mut self, row: isize, column: isize, element: GooglyBlockElement) {
+    pub fn insert(&mut self, row: isize, column: isize, new_element: GooglyBlockElement) {
         let rows = self.rows() as isize;
         let columns = self.columns() as isize;
-        if row >= 0 && row < rows && column >= 0 && column < columns {
+        if (row >= 0) && (row < rows) && (column >= 0) && (column < columns) {
             let row_idx = row as usize;
             let column_idx = column as usize;
-            self.landed[row_idx][column_idx] = element;
+            let old_element = self.landed[row_idx][column_idx];
+            if old_element.is_empty() && new_element.is_not_empty() {
+                self.landed[row_idx].occupied += 1;
+            } else if old_element.is_not_empty() && new_element.is_empty() {
+                self.landed[row_idx].occupied -= 1;
+            }
+            self.landed[row_idx][column_idx] = new_element;
         }
     }
 
@@ -470,7 +533,25 @@ impl LandedBlocksGrid {
     pub fn rows(&self) -> usize { 20 }
 
     #[inline]
-    pub fn columns(&self) -> usize { 10 }
+    pub fn columns(&self) -> usize { 
+        self.landed[0].len()
+    }
+
+    fn full_row(&self, row: usize) -> bool {
+        if row < self.rows() {
+            self.landed[row].is_full()
+        } else {
+            false
+        }
+    }
+
+    fn empty_row(&self, row: usize) -> bool {
+        if row < self.rows() {
+            self.landed[row].is_empty()
+        } else {
+            false
+        }
+    }
 
     fn iter(&self) -> LandedBlocksIterator {
         LandedBlocksIterator {
@@ -479,10 +560,6 @@ impl LandedBlocksGrid {
             rows: self.rows(),
             columns: self.columns(),
         }
-    }
-
-    fn full_row(&mut self, row: usize) -> bool {
-        false
     }
 }
 
@@ -604,6 +681,16 @@ impl PlayingFieldState {
             self.full_rows[row] = self.landed_blocks.full_row(row);
         }
     }
+
+    pub fn has_full_rows(&self) -> bool {
+        for row in 0..self.full_rows.len() {
+            if self.full_rows[row] == true {
+                return true;
+            }
+        }
+
+        false
+    }
     
     pub fn update_block_position(&mut self, block_move: GooglyBlockMove) {
         match block_move {
@@ -681,6 +768,7 @@ impl PlayingFieldState {
         let block = self.current_block;
         let position = self.current_position;
         self.landed_blocks.insert_block(position.row, position.column, block);
+        self.update_full_rows();
     }
 
     pub fn update_new_block(&mut self, block: GooglyBlock) {
