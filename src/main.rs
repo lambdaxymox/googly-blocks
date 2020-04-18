@@ -2099,10 +2099,6 @@ impl FallingState {
         }
     }
 
-    fn enter(&self) {
-
-    }
-
     fn handle_input(&mut self, input: Input, elapsed_milliseconds: Duration) {
         let context = self.context.borrow_mut();
         let mut timers = context.timers.borrow_mut();
@@ -2217,9 +2213,27 @@ impl FallingState {
             playing_field_state.update_new_block(new_block);
             timers.collision_timer.reset();
         }
+
+
+    }
+}
+
+struct ClearingState {
+    context: Rc<RefCell<GameContext>>,
+}
+
+impl ClearingState {
+    fn new(context: Rc<RefCell<GameContext>>) -> ClearingState {
+        ClearingState {
+            context: context,
+        }
     }
 
-    fn exit(&mut self) {
+    fn handle_input(&mut self, input: Input, elapsed_milliseconds: Duration) {
+
+    }
+
+    fn update(&mut self, elapsed_milliseconds: Duration) {
 
     }
 }
@@ -2227,18 +2241,21 @@ impl FallingState {
 
 enum GameState {
     Falling(FallingState),
+    Clearing(ClearingState),
 }
 
 impl GameState {
     fn handle_input(&mut self, input: Input, elapsed_milliseconds: Duration) {
         match *self {
             GameState::Falling(ref mut s) => s.handle_input(input, elapsed_milliseconds),
+            GameState::Clearing(ref mut s) => s.handle_input(input, elapsed_milliseconds),
         }
     }
 
     fn update(&mut self, elapsed_milliseconds: Duration) {
         match *self {
             GameState::Falling(ref mut s) => s.update(elapsed_milliseconds),
+            GameState::Clearing(ref mut s) => s.update(elapsed_milliseconds),
         }
     }
 }
