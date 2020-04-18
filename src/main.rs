@@ -2689,39 +2689,6 @@ fn main() {
         }
 
         game.state.update(elapsed_milliseconds);
-        /*
-        let context = game.context.borrow();
-        let mut timers = context.timers.borrow_mut();
-        let mut playing_field_state = context.playing_field_state.borrow_mut();
-
-        let collides_with_floor = playing_field_state.collides_with_floor_below();
-        let collides_with_element = playing_field_state.collides_with_element_below();
-
-        timers.fall_timer.update(elapsed_milliseconds);
-        // Update the game world.
-        if collides_with_floor || collides_with_element {
-            timers.collision_timer.update(elapsed_milliseconds);
-        } else {
-            timers.collision_timer.reset();
-        }
-
-        if timers.fall_timer.event_triggered() {
-            playing_field_state.update_block_position(GooglyBlockMove::Fall);
-            timers.fall_timer.reset();
-        }
-
-        if timers.collision_timer.event_triggered() {
-            let block = playing_field_state.current_block;
-            let position = playing_field_state.current_position;
-            playing_field_state.landed_blocks.insert_block(position.row, position.column, block);
-            game.statistics.update(block);
-            let next_piece = game.next_piece;
-            game.update_next_piece();
-            let next_block = GooglyBlock::new(next_piece, GooglyBlockRotation::R0);
-            playing_field_state.update_new_block(next_block);
-            timers.collision_timer.reset();
-        }
-        */
         game.update_fps_counter();
         game.update_framebuffer_size();
 
