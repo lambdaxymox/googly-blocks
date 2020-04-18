@@ -2211,7 +2211,7 @@ impl FallingState {
             let position = playing_field_state.current_position;
             playing_field_state.landed_blocks.insert_block(position.row, position.column, block);
             statistics.update(block);
-            let old_block = context.next_block.borrow().block;
+            let old_block = next_block.block;
             next_block.update();
             let new_block = GooglyBlock::new(old_block, GooglyBlockRotation::R0);
             playing_field_state.update_new_block(new_block);
