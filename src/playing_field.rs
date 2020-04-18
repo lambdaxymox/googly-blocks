@@ -537,7 +537,7 @@ impl LandedBlocksGrid {
         self.landed[0].len()
     }
 
-    fn full_row(&self, row: usize) -> bool {
+    fn has_full_row(&self, row: usize) -> bool {
         if row < self.rows() {
             self.landed[row].is_full()
         } else {
@@ -545,7 +545,7 @@ impl LandedBlocksGrid {
         }
     }
 
-    fn empty_row(&self, row: usize) -> bool {
+    fn has_empty_row(&self, row: usize) -> bool {
         if row < self.rows() {
             self.landed[row].is_empty()
         } else {
@@ -678,7 +678,7 @@ impl PlayingFieldState {
 
     fn update_full_rows(&mut self) {
         for row in 0..self.full_rows.len() {
-            self.full_rows[row] = self.landed_blocks.full_row(row);
+            self.full_rows[row] = self.landed_blocks.has_full_row(row);
         }
     }
 
