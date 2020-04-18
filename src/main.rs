@@ -936,7 +936,7 @@ fn update_uniforms_next_piece_panel(game: &mut Game) {
     let gui_scale_x = 2.0 * (scale as f32) / (viewport_width as f32);
     let gui_scale_y = 2.0 * (scale as f32) / (viewport_height as f32);
     let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 1.0);
-    let trans_mat = match game.next_piece {
+    let trans_mat = match game.context.borrow().next_block.borrow().block {
         GooglyBlockPiece::T => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
         GooglyBlockPiece::J => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
         GooglyBlockPiece::Z => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
@@ -2183,7 +2183,41 @@ impl FallingState {
         } 
     }
 
-    fn update(&mut self) {}
+    fn update(&mut self, elapsed_milliseconds: Duration) {
+        let context = self.context.borrow();
+        let mut timers = context.timers.borrow_mut();
+        let mut playing_field_state = context.playing_field_state.borrow_mut();
+        let mut statistics = context.statistics.borrow_mut();
+        let mut next_block = context.next_block.borrow_mut();
+
+        let collides_with_floor = playing_field_state.collides_with_floor_below();
+        let collides_with_element = playing_field_state.collides_with_element_below();
+
+        timers.fall_timer.update(elapsed_milliseconds);
+        // Update the game world.
+        if collides_with_floor || collides_with_element {
+            timers.collision_timer.update(elapsed_milliseconds);
+        } else {
+            timers.collision_timer.reset();
+        }
+
+        if timers.fall_timer.event_triggered() {
+            playing_field_state.update_block_position(GooglyBlockMove::Fall);
+            timers.fall_timer.reset();
+        }
+
+        if timers.collision_timer.event_triggered() {
+            let block = playing_field_state.current_block;
+            let position = playing_field_state.current_position;
+            playing_field_state.landed_blocks.insert_block(position.row, position.column, block);
+            statistics.update(block);
+            let old_block = context.next_block.borrow().block;
+            next_block.update();
+            let new_block = GooglyBlock::new(old_block, GooglyBlockRotation::R0);
+            playing_field_state.update_new_block(new_block);
+            timers.collision_timer.reset();
+        }
+    }
 
     fn exit(&mut self) {
 
@@ -2201,12 +2235,47 @@ impl GameState {
             GameState::Falling(ref mut s) => s.handle_input(input, elapsed_milliseconds),
         }
     }
+
+    fn update(&mut self, elapsed_milliseconds: Duration) {
+        match *self {
+            GameState::Falling(ref mut s) => s.update(elapsed_milliseconds),
+        }
+    }
+}
+
+struct NextBlockCell {
+    block: GooglyBlockPiece,
+}
+
+impl NextBlockCell {
+    fn new(block: GooglyBlockPiece) -> NextBlockCell {
+        NextBlockCell {
+            block: block,
+        }
+    }
+
+    fn update(&mut self) {
+        let mut rng = rng::thread_rng();
+        let random = rng.gen_range::<u32, u32, u32>(0, 7);
+        self.block = match random {
+            0 => GooglyBlockPiece::T,
+            1 => GooglyBlockPiece::J,
+            2 => GooglyBlockPiece::Z,
+            3 => GooglyBlockPiece::O,
+            4 => GooglyBlockPiece::S,
+            5 => GooglyBlockPiece::L,
+            6 => GooglyBlockPiece::I,
+            _ => GooglyBlockPiece::T,
+        };
+    }
 }
 
 struct GameContext {
     gl: Rc<RefCell<glh::GLState>>,
     timers: Rc<RefCell<PlayingFieldTimers>>,
     playing_field_state: Rc<RefCell<PlayingFieldState>>,
+    next_block: Rc<RefCell<NextBlockCell>>,
+    statistics: Rc<RefCell<Statistics>>,
 }
 
 struct Game {
@@ -2220,8 +2289,6 @@ struct Game {
     level: usize,
     lines: usize,
     tetrises: usize,
-    statistics: Statistics,
-    next_piece: GooglyBlockPiece,
 }
 
 impl Game {
@@ -2283,8 +2350,8 @@ impl Game {
         self.ui.update_lines(self.lines);
         self.ui.update_level(self.level);
         self.ui.update_tetrises(self.tetrises);
-        self.ui.update_statistics(&self.statistics);
-        self.ui.update_next_piece(self.next_piece);
+        self.ui.update_statistics(&self.context.borrow().statistics.borrow());
+        self.ui.update_next_piece(self.context.borrow().next_block.borrow().block);
         self.ui.update_panel();
     }
 
@@ -2311,7 +2378,7 @@ impl Game {
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, self.ui.next_piece_panel.buffer.tex);
-            gl::BindVertexArray(self.ui.next_piece_panel.buffer.handle(self.next_piece).vao);
+            gl::BindVertexArray(self.ui.next_piece_panel.buffer.handle(self.context.borrow().next_block.borrow().block).vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 3 * 8);
         }
     }
@@ -2364,18 +2431,7 @@ impl Game {
     }
 
     fn update_next_piece(&mut self) {
-        let mut rng = rng::thread_rng();
-        let random = rng.gen_range::<u32, u32, u32>(0, 7);
-        self.next_piece = match random {
-            0 => GooglyBlockPiece::T,
-            1 => GooglyBlockPiece::J,
-            2 => GooglyBlockPiece::Z,
-            3 => GooglyBlockPiece::O,
-            4 => GooglyBlockPiece::S,
-            5 => GooglyBlockPiece::L,
-            6 => GooglyBlockPiece::I,
-            _ => GooglyBlockPiece::T,
-        };
+        self.context.borrow_mut().next_block.borrow_mut().update();
     }
 
     fn render_playing_field(&mut self) {
@@ -2547,11 +2603,15 @@ fn init_game() -> Game {
         down_hold_interval: Interval::Milliseconds(50),
         rotate_interval: Interval::Milliseconds(100),
     };
+    let next_block_cell = Rc::new(RefCell::new(NextBlockCell::new(next_piece)));
     let timers = Rc::new(RefCell::new(PlayingFieldTimers::new(timer_spec)));
+    let statistics = Rc::new(RefCell::new(Statistics::new()));
     let context = Rc::new(RefCell::new(GameContext {
         gl: gl_context,
         timers: timers,
         playing_field_state: playing_field_state,
+        statistics: statistics,
+        next_block: next_block_cell,
     }));
     let state = GameState::Falling(FallingState::new(context.clone()));
 
@@ -2566,8 +2626,6 @@ fn init_game() -> Game {
         level: 0,
         lines: 0,
         tetrises: 0,
-        statistics: Statistics::new(),
-        next_piece: next_piece,
     }
 }
 
@@ -2629,6 +2687,8 @@ fn main() {
             }
             _ => {}
         }
+
+        game.state.update(elapsed_milliseconds);
         /*
         let context = game.context.borrow();
         let mut timers = context.timers.borrow_mut();
