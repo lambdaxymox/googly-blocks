@@ -2203,10 +2203,9 @@ impl FallingState {
         }
 
         if timers.collision_timer.event_triggered() {
-            let block = playing_field_state.current_block;
-            let position = playing_field_state.current_position;
-            playing_field_state.landed_blocks.insert_block(position.row, position.column, block);
-            statistics.update(block);
+            let current_block = playing_field_state.current_block;
+            playing_field_state.update_landed();
+            statistics.update(current_block);
             let old_block = next_block.block;
             next_block.update();
             let new_block = GooglyBlock::new(old_block, GooglyBlockRotation::R0);

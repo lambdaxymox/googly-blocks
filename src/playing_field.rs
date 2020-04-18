@@ -480,6 +480,10 @@ impl LandedBlocksGrid {
             columns: self.columns(),
         }
     }
+
+    fn full_row(&mut self, row: usize) -> bool {
+        false
+    }
 }
 
 impl fmt::Display for LandedBlocksGrid {
@@ -581,6 +585,7 @@ pub struct PlayingFieldState {
     pub current_position: BlockPosition,
     pub landed_blocks: LandedBlocksGrid,
     starting_position: BlockPosition,
+    full_rows: [bool; 20],
 }
 
 impl PlayingFieldState {
@@ -590,6 +595,13 @@ impl PlayingFieldState {
             current_position: starting_position,
             landed_blocks: LandedBlocksGrid::new(),
             starting_position: starting_position,
+            full_rows: [false; 20],
+        }
+    }
+
+    fn update_full_rows(&mut self) {
+        for row in 0..self.full_rows.len() {
+            self.full_rows[row] = self.landed_blocks.full_row(row);
         }
     }
     
@@ -665,6 +677,12 @@ impl PlayingFieldState {
         }
     }
     
+    pub fn update_landed(&mut self) {
+        let block = self.current_block;
+        let position = self.current_position;
+        self.landed_blocks.insert_block(position.row, position.column, block);
+    }
+
     pub fn update_new_block(&mut self, block: GooglyBlock) {
         self.current_block = block;
         self.current_position = self.starting_position;
