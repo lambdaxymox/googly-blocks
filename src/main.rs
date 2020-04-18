@@ -2206,10 +2206,10 @@ impl FallingState {
             let current_block = playing_field_state.current_block;
             playing_field_state.update_landed();
             statistics.update(current_block);
-            let old_block = next_block.block;
+            let old_next_block = next_block.block;
             next_block.update();
-            let new_block = GooglyBlock::new(old_block, GooglyBlockRotation::R0);
-            playing_field_state.update_new_block(new_block);
+            let new_next_block = GooglyBlock::new(old_next_block, GooglyBlockRotation::R0);
+            playing_field_state.update_new_block(new_next_block);
             timers.collision_timer.reset();
         }
 
