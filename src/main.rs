@@ -2078,28 +2078,106 @@ struct Input {
     action: InputAction,
 }
 
+impl Input {
+    #[inline]
+    fn new(kind: InputKind, action: InputAction) -> Input {
+        Input {
+            kind: kind,
+            action: action,
+        }
+    }
+}
+
 struct FallingState {
-    
+    context: Rc<RefCell<GameContext>>,
 }
 
 impl FallingState {
+    fn new(context: Rc<RefCell<GameContext>>) -> FallingState {
+        FallingState {
+            context: context,
+        }
+    }
+
     fn enter(&self) {
 
     }
 
-    fn handle_input(&mut self, input: Input) {
+    fn handle_input(&mut self, input: Input, elapsed_milliseconds: Duration) {
+        let context = self.context.borrow_mut();
+        let mut timers = context.timers.borrow_mut();
+        let mut playing_field_state = context.playing_field_state.borrow_mut();
         match input.kind {
             InputKind::Left => {
-
+                match input.action {
+                    InputAction::Press | InputAction::Repeat => {
+                        timers.left_hold_timer.update(elapsed_milliseconds);
+                        if timers.left_hold_timer.event_triggered() {
+                            let collides_with_floor = playing_field_state.collides_with_floor_below();
+                            let collides_with_element = playing_field_state.collides_with_element_below();
+                            let collides_with_left_element = playing_field_state.collides_with_element_to_the_left();
+                            let collides_with_left_wall = playing_field_state.collides_with_left_wall();
+                            if !collides_with_left_element || !collides_with_left_wall {
+                                if collides_with_floor || collides_with_element {
+                                    timers.fall_timer.reset();
+                                }
+                                playing_field_state.update_block_position(GooglyBlockMove::Left);
+                            }
+                            timers.left_hold_timer.reset();
+                        }
+                    }
+                    _ => {}
+                }
             }
             InputKind::Right => {
-
+                match input.action {
+                    InputAction::Press | InputAction::Repeat => {
+                        timers.right_hold_timer.update(elapsed_milliseconds);
+                        if timers.right_hold_timer.event_triggered() {
+                            let collides_with_floor = playing_field_state.collides_with_floor_below();
+                            let collides_with_element = playing_field_state.collides_with_element_below();
+                            let collides_with_right_element = playing_field_state.collides_with_element_to_the_right();
+                            let collides_with_right_wall = playing_field_state.collides_with_right_wall();
+                            if !collides_with_right_element || !collides_with_right_wall {
+                                if collides_with_floor || collides_with_element {
+                                    timers.fall_timer.reset();
+                                }
+                                playing_field_state.update_block_position(GooglyBlockMove::Right);
+                            }
+                            timers.right_hold_timer.reset();
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            InputKind::Down => {
+                match input.action {
+                    InputAction::Press | InputAction::Repeat => {
+                        timers.down_hold_timer.update(elapsed_milliseconds);
+                        if timers.down_hold_timer.event_triggered() {
+                            let collides_with_floor = playing_field_state.collides_with_floor_below();
+                            let collides_with_element = playing_field_state.collides_with_element_below();
+                            if collides_with_floor || collides_with_element {
+                                timers.fall_timer.reset();
+                            }
+                            playing_field_state.update_block_position(GooglyBlockMove::Down);
+                            timers.down_hold_timer.reset();
+                        }                        
+                    }
+                    _ => {}
+                }
             }
             InputKind::Rotate => {
-
-            }
-            InputKind::Down  => {
-
+                match input.action {
+                    InputAction::Press | InputAction::Repeat => {
+                        timers.rotate_timer.update(elapsed_milliseconds);
+                        if timers.rotate_timer.event_triggered() {
+                            playing_field_state.update_block_position(GooglyBlockMove::Rotate);
+                            timers.rotate_timer.reset();
+                        }
+                    }
+                    _ => {}
+                }
             }
             _ => {}
         } 
@@ -2118,25 +2196,24 @@ enum GameState {
 }
 
 impl GameState {
-    fn handle_input(&mut self, input: Input) {
+    fn handle_input(&mut self, input: Input, elapsed_milliseconds: Duration) {
         match *self {
-            GameState::Falling(ref mut s) => s.handle_input(input),
+            GameState::Falling(ref mut s) => s.handle_input(input, elapsed_milliseconds),
         }
     }
 }
 
 struct GameContext {
     gl: Rc<RefCell<glh::GLState>>,
+    timers: Rc<RefCell<PlayingFieldTimers>>,
+    playing_field_state: Rc<RefCell<PlayingFieldState>>,
 }
 
 struct Game {
-    //gl: Rc<RefCell<glh::GLState>>,
     context: Rc<RefCell<GameContext>>,
     state: GameState,
     atlas: Rc<BitmapFontAtlas>,
-    playing_field_state: PlayingFieldState,
     playing_field: PlayingField,
-    timers: PlayingFieldTimers,
     ui: UI,
     background: BackgroundPanel,
     score: usize,
@@ -2275,12 +2352,14 @@ impl Game {
     }
 
     fn update_timers_playing_field(&mut self, elapsed: Duration) {
-        self.timers.update(elapsed);
+        self.context.borrow_mut().timers.borrow_mut().update(elapsed);
     }
 
     fn update_playing_field(&mut self) {
         update_uniforms_playing_field(self);
-        self.playing_field.write(&self.playing_field_state).unwrap();
+        let context = self.context.borrow();
+        let playing_field_state = context.playing_field_state.borrow();
+        self.playing_field.write(&playing_field_state).unwrap();
         self.playing_field.send_to_gpu().unwrap();
     }
 
@@ -2458,7 +2537,7 @@ fn init_game() -> Game {
     };
     let starting_block = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
     let starting_position = BlockPosition::new(0, 4);
-    let playing_field_state = PlayingFieldState::new(starting_block, starting_position);
+    let playing_field_state = Rc::new(RefCell::new(PlayingFieldState::new(starting_block, starting_position)));
     let playing_field = PlayingField::new(gl_context.clone(), playing_field_handle);
     let timer_spec = PlayingFieldTimerSpec {
         fall_interval: Interval::Milliseconds(500),
@@ -2468,20 +2547,19 @@ fn init_game() -> Game {
         down_hold_interval: Interval::Milliseconds(50),
         rotate_interval: Interval::Milliseconds(100),
     };
-    let timers = PlayingFieldTimers::new(timer_spec);
-    let state = GameState::Falling(FallingState {});
-
+    let timers = Rc::new(RefCell::new(PlayingFieldTimers::new(timer_spec)));
     let context = Rc::new(RefCell::new(GameContext {
         gl: gl_context,
+        timers: timers,
+        playing_field_state: playing_field_state,
     }));
+    let state = GameState::Falling(FallingState::new(context.clone()));
 
     Game {
         context: context,
         state: state,
         atlas: atlas,
-        playing_field_state: playing_field_state,
         playing_field: playing_field,
-        timers: timers,
         ui: ui,
         background: background,
         score: 0,
@@ -2508,7 +2586,10 @@ fn main() {
             _ => {}
         }
         match game.get_key(Key::Left) {
-            Action::Press | Action::Repeat => {   
+            Action::Press => {
+                let input = Input::new(InputKind::Left, InputAction::Repeat);
+                game.state.handle_input(input, elapsed_milliseconds);
+                /*
                 game.timers.left_hold_timer.update(elapsed_milliseconds);
                 if game.timers.left_hold_timer.event_triggered() {
                     let collides_with_floor = game.playing_field_state.collides_with_floor_below();
@@ -2523,11 +2604,19 @@ fn main() {
                     }
                     game.timers.left_hold_timer.reset();
                 }
+                */
+            }
+            Action::Repeat => {
+                let input = Input::new(InputKind::Left, InputAction::Repeat);
+                game.state.handle_input(input, elapsed_milliseconds);
             }
             _ => {}
         }
         match game.get_key(Key::Right) {
-            Action::Press | Action::Repeat => {
+            Action::Press => {
+                let input = Input::new(InputKind::Right, InputAction::Repeat);
+                game.state.handle_input(input, elapsed_milliseconds);
+                /*
                 game.timers.right_hold_timer.update(elapsed_milliseconds);
                 if game.timers.right_hold_timer.event_triggered() {
                     let collides_with_floor = game.playing_field_state.collides_with_floor_below();
@@ -2542,10 +2631,20 @@ fn main() {
                     }
                     game.timers.right_hold_timer.reset();
                 }
+                */
+            }
+            Action::Repeat => {
+                let input = Input::new(InputKind::Right, InputAction::Repeat);
+                game.state.handle_input(input, elapsed_milliseconds);
             }
             _ => {}
         }
         match game.get_key(Key::Down) {
+            Action::Press => {
+                let input = Input::new(InputKind::Down, InputAction::Press);
+                game.state.handle_input(input, elapsed_milliseconds);
+            }
+            /*
             Action::Press | Action::Repeat => {
                 game.timers.down_hold_timer.update(elapsed_milliseconds);
                 if game.timers.down_hold_timer.event_triggered() {
@@ -2558,9 +2657,23 @@ fn main() {
                     game.timers.down_hold_timer.reset();
                 }
             }
+            */
+            Action::Repeat => {
+                let input = Input::new(InputKind::Down, InputAction::Repeat);
+                game.state.handle_input(input, elapsed_milliseconds);
+            }
             _ => {}
         }
         match game.get_key(Key::R) {
+            Action::Press => {
+                let input = Input::new(InputKind::Rotate, InputAction::Press);
+                game.state.handle_input(input, elapsed_milliseconds);
+            }
+            Action::Repeat => {
+                let input = Input::new(InputKind::Rotate, InputAction::Repeat);
+                game.state.handle_input(input, elapsed_milliseconds);
+            }
+            /*
             Action::Press | Action::Repeat => {
                 game.timers.rotate_timer.update(elapsed_milliseconds);
                 if game.timers.rotate_timer.event_triggered() {
@@ -2568,37 +2681,42 @@ fn main() {
                     game.timers.rotate_timer.reset();
                 }
             }
+            */
             _ => {}
         }
+        /*
+        let context = game.context.borrow();
+        let mut timers = context.timers.borrow_mut();
+        let mut playing_field_state = context.playing_field_state.borrow_mut();
 
-        let collides_with_floor = game.playing_field_state.collides_with_floor_below();
-        let collides_with_element = game.playing_field_state.collides_with_element_below();
+        let collides_with_floor = playing_field_state.collides_with_floor_below();
+        let collides_with_element = playing_field_state.collides_with_element_below();
 
-        game.timers.fall_timer.update(elapsed_milliseconds);
+        timers.fall_timer.update(elapsed_milliseconds);
         // Update the game world.
         if collides_with_floor || collides_with_element {
-            game.timers.collision_timer.update(elapsed_milliseconds);
+            timers.collision_timer.update(elapsed_milliseconds);
         } else {
-            game.timers.collision_timer.reset();
+            timers.collision_timer.reset();
         }
 
-        if game.timers.fall_timer.event_triggered() {
-            game.playing_field_state.update_block_position(GooglyBlockMove::Fall);
-            game.timers.fall_timer.reset();
+        if timers.fall_timer.event_triggered() {
+            playing_field_state.update_block_position(GooglyBlockMove::Fall);
+            timers.fall_timer.reset();
         }
 
-        if game.timers.collision_timer.event_triggered() {
-            let block = game.playing_field_state.current_block;
-            let position = game.playing_field_state.current_position;
-            game.playing_field_state.landed_blocks.insert_block(position.row, position.column, block);
+        if timers.collision_timer.event_triggered() {
+            let block = playing_field_state.current_block;
+            let position = playing_field_state.current_position;
+            playing_field_state.landed_blocks.insert_block(position.row, position.column, block);
             game.statistics.update(block);
             let next_piece = game.next_piece;
             game.update_next_piece();
             let next_block = GooglyBlock::new(next_piece, GooglyBlockRotation::R0);
-            game.playing_field_state.update_new_block(next_block);
-            game.timers.collision_timer.reset();
+            playing_field_state.update_new_block(next_block);
+            timers.collision_timer.reset();
         }
-
+        */
         game.update_fps_counter();
         game.update_framebuffer_size();
 
