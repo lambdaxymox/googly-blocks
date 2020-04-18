@@ -2298,7 +2298,6 @@ struct GameContext {
 struct Game {
     context: Rc<RefCell<GameContext>>,
     state: GameState,
-    atlas: Rc<BitmapFontAtlas>,
     playing_field: PlayingField,
     ui: UI,
     background: BackgroundPanel,
@@ -2635,7 +2634,6 @@ fn init_game() -> Game {
     Game {
         context: context,
         state: state,
-        atlas: atlas,
         playing_field: playing_field,
         ui: ui,
         background: background,
