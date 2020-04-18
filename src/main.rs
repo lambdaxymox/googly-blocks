@@ -2589,22 +2589,6 @@ fn main() {
             Action::Press => {
                 let input = Input::new(InputKind::Left, InputAction::Repeat);
                 game.state.handle_input(input, elapsed_milliseconds);
-                /*
-                game.timers.left_hold_timer.update(elapsed_milliseconds);
-                if game.timers.left_hold_timer.event_triggered() {
-                    let collides_with_floor = game.playing_field_state.collides_with_floor_below();
-                    let collides_with_element = game.playing_field_state.collides_with_element_below();
-                    let collides_with_left_element = game.playing_field_state.collides_with_element_to_the_left();
-                    let collides_with_left_wall = game.playing_field_state.collides_with_left_wall();
-                    if !collides_with_left_element || !collides_with_left_wall {
-                        if collides_with_floor || collides_with_element {
-                            game.timers.fall_timer.reset();
-                        }
-                        game.playing_field_state.update_block_position(GooglyBlockMove::Left);
-                    }
-                    game.timers.left_hold_timer.reset();
-                }
-                */
             }
             Action::Repeat => {
                 let input = Input::new(InputKind::Left, InputAction::Repeat);
@@ -2616,22 +2600,6 @@ fn main() {
             Action::Press => {
                 let input = Input::new(InputKind::Right, InputAction::Repeat);
                 game.state.handle_input(input, elapsed_milliseconds);
-                /*
-                game.timers.right_hold_timer.update(elapsed_milliseconds);
-                if game.timers.right_hold_timer.event_triggered() {
-                    let collides_with_floor = game.playing_field_state.collides_with_floor_below();
-                    let collides_with_element = game.playing_field_state.collides_with_element_below();
-                    let collides_with_right_element = game.playing_field_state.collides_with_element_to_the_right();
-                    let collides_with_right_wall = game.playing_field_state.collides_with_right_wall();
-                    if !collides_with_right_element || !collides_with_right_wall {
-                        if collides_with_floor || collides_with_element {
-                            game.timers.fall_timer.reset();
-                        }
-                        game.playing_field_state.update_block_position(GooglyBlockMove::Right);
-                    }
-                    game.timers.right_hold_timer.reset();
-                }
-                */
             }
             Action::Repeat => {
                 let input = Input::new(InputKind::Right, InputAction::Repeat);
@@ -2644,20 +2612,6 @@ fn main() {
                 let input = Input::new(InputKind::Down, InputAction::Press);
                 game.state.handle_input(input, elapsed_milliseconds);
             }
-            /*
-            Action::Press | Action::Repeat => {
-                game.timers.down_hold_timer.update(elapsed_milliseconds);
-                if game.timers.down_hold_timer.event_triggered() {
-                    let collides_with_floor = game.playing_field_state.collides_with_floor_below();
-                    let collides_with_element = game.playing_field_state.collides_with_element_below();
-                    if collides_with_floor || collides_with_element {
-                        game.timers.fall_timer.reset();
-                    }
-                    game.playing_field_state.update_block_position(GooglyBlockMove::Down);
-                    game.timers.down_hold_timer.reset();
-                }
-            }
-            */
             Action::Repeat => {
                 let input = Input::new(InputKind::Down, InputAction::Repeat);
                 game.state.handle_input(input, elapsed_milliseconds);
@@ -2673,15 +2627,6 @@ fn main() {
                 let input = Input::new(InputKind::Rotate, InputAction::Repeat);
                 game.state.handle_input(input, elapsed_milliseconds);
             }
-            /*
-            Action::Press | Action::Repeat => {
-                game.timers.rotate_timer.update(elapsed_milliseconds);
-                if game.timers.rotate_timer.event_triggered() {
-                    game.playing_field_state.update_block_position(GooglyBlockMove::Rotate);
-                    game.timers.rotate_timer.reset();
-                }
-            }
-            */
             _ => {}
         }
         /*
