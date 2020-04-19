@@ -1251,16 +1251,14 @@ impl TextureQuad {
 
 struct PlayingField {
     tex_coords: [[TextureQuad; 10]; 20],
-    gl_state: Rc<RefCell<glh::GLState>>,
     handle: PlayingFieldHandle,
 }
 
 impl PlayingField {
-    fn new(gl_state: Rc<RefCell<glh::GLState>>, handle: PlayingFieldHandle) -> PlayingField {
+    fn new(handle: PlayingFieldHandle) -> PlayingField {
         let quad = TextureQuad::new([0_f32, 0_f32], [0_f32, 0_f32], [0_f32, 0_f32], [0_f32, 0_f32]);
         PlayingField {
             tex_coords: [[quad; 10]; 20],
-            gl_state: gl_state,
             handle: handle,
         }
     }
@@ -2652,7 +2650,7 @@ fn init_game() -> Game {
     let starting_block = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
     let starting_position = BlockPosition::new(0, 4);
     let playing_field_state = Rc::new(RefCell::new(PlayingFieldState::new(starting_block, starting_position)));
-    let playing_field = PlayingField::new(gl_context.clone(), playing_field_handle);
+    let playing_field = PlayingField::new(playing_field_handle);
     let timer_spec = PlayingFieldTimerSpec {
         fall_interval: Interval::Milliseconds(500),
         collision_interval: Interval::Milliseconds(500),
