@@ -428,6 +428,14 @@ impl LandedBlocksGridRow {
         }
     }
 
+    fn clear(&mut self) {
+        for i in 0..self.len() {
+            self.inner[i] = GooglyBlockElement::EmptySpace;
+        }
+
+        self.occupied = 0;
+    }
+
     #[inline]
     fn len(&self) -> usize { 10 }
 
@@ -786,7 +794,14 @@ impl PlayingFieldState {
     }
 
     pub fn collapse_empty_rows(&mut self) {
-
+        for row in 0..self.landed_blocks.rows() {
+            if self.landed_blocks.landed[row].is_empty() {
+                for above_row in 0..row {
+                    self.landed_blocks.landed[row] = self.landed_blocks.landed[row - above_row - 1];
+                    self.landed_blocks.landed[row - above_row - 1].clear();
+                }
+            }
+        }
     }
     
     pub fn update_landed(&mut self) {
