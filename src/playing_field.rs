@@ -565,22 +565,6 @@ impl LandedBlocksGrid {
         self.landed[0].len()
     }
 
-    fn has_full_row(&self, row: usize) -> bool {
-        if row < self.rows() {
-            self.landed[row].is_full()
-        } else {
-            false
-        }
-    }
-
-    fn has_empty_row(&self, row: usize) -> bool {
-        if row < self.rows() {
-            self.landed[row].is_empty()
-        } else {
-            false
-        }
-    }
-
     fn iter(&self) -> LandedBlocksIterator {
         LandedBlocksIterator {
             row: 0,
