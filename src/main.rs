@@ -2253,7 +2253,7 @@ impl ClearingState {
         timers.clearing_timer.update(elapsed_milliseconds);
         if timers.clearing_timer.event_triggered() {
             timers.clearing_timer.reset();
-            let center_left = (4 - self.columns_cleared / 2 + 1) as isize;
+            let center_left = (4 - self.columns_cleared / 2) as isize;
             let center_right = (5 + self.columns_cleared / 2) as isize;
             for row in full_rows.iter() {
                 if *row >= 0 {
@@ -2267,7 +2267,7 @@ impl ClearingState {
             playing_field_state.collapse_empty_rows();
             *full_rows = [-1; 20];
             self.columns_cleared = 0;
-            
+
             return GameState::Falling(FallingState::new(self.context.clone()));
         }
 
@@ -2660,7 +2660,7 @@ fn init_game() -> Game {
         right_hold_interval: Interval::Milliseconds(70),
         down_hold_interval: Interval::Milliseconds(50),
         rotate_interval: Interval::Milliseconds(100),
-        clearing_interval: Interval::Milliseconds(300),
+        clearing_interval: Interval::Milliseconds(100),
     };
     let next_block_cell = Rc::new(RefCell::new(NextBlockCell::new(next_piece)));
     let timers = Rc::new(RefCell::new(PlayingFieldTimers::new(timer_spec)));
