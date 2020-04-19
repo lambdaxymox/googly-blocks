@@ -1977,6 +1977,7 @@ struct PlayingFieldTimerSpec {
     right_hold_interval: Interval,
     down_hold_interval: Interval,
     rotate_interval: Interval,
+    clearing_interval: Interval,
 }
 
 struct PlayingFieldTimers {
@@ -1986,6 +1987,7 @@ struct PlayingFieldTimers {
     right_hold_timer: Timer,
     down_hold_timer: Timer,
     rotate_timer: Timer,
+    clearing_timer: Timer,
 }
 
 impl PlayingFieldTimers {
@@ -1997,6 +1999,7 @@ impl PlayingFieldTimers {
             right_hold_timer: Timer::new(spec.right_hold_interval),
             down_hold_timer: Timer::new(spec.down_hold_interval),
             rotate_timer: Timer::new(spec.rotate_interval),
+            clearing_timer: Timer::new(spec.clearing_interval),
         }
     }
 
@@ -2236,11 +2239,14 @@ impl ClearingState {
     }
 
     fn handle_input(&mut self, input: Input, elapsed_milliseconds: Duration) {
-        println!("WE ARE IN THE CLEARNING STATE HANDLING INPUT!");
+        
     }
 
     fn update(&mut self, elapsed_milliseconds: Duration) -> GameState {
-        println!("WE ARE IN THE CLEARING STATE UPDATING THE WORLD!");
+        let context = self.context.borrow();
+        let mut timers = context.timers.borrow_mut();
+        let mut playing_field_state = context.playing_field_state.borrow_mut();
+        let mut full_rows = context.full_rows.borrow_mut();
         GameState::Clearing(self.clone())
     }
 }
@@ -2300,7 +2306,7 @@ struct GameContext {
     playing_field_state: Rc<RefCell<PlayingFieldState>>,
     next_block: Rc<RefCell<NextBlockCell>>,
     statistics: Rc<RefCell<Statistics>>,
-    full_rows: Rc<RefCell<[usize; 20]>>,
+    full_rows: Rc<RefCell<[isize; 20]>>,
 }
 
 struct Game {
@@ -2630,11 +2636,12 @@ fn init_game() -> Game {
         right_hold_interval: Interval::Milliseconds(70),
         down_hold_interval: Interval::Milliseconds(50),
         rotate_interval: Interval::Milliseconds(100),
+        clearing_interval: Interval::Milliseconds(300),
     };
     let next_block_cell = Rc::new(RefCell::new(NextBlockCell::new(next_piece)));
     let timers = Rc::new(RefCell::new(PlayingFieldTimers::new(timer_spec)));
     let statistics = Rc::new(RefCell::new(Statistics::new()));
-    let full_rows = Rc::new(RefCell::new([0; 20]));
+    let full_rows = Rc::new(RefCell::new([-1; 20]));
     let context = Rc::new(RefCell::new(GameContext {
         gl: gl_context,
         timers: timers,

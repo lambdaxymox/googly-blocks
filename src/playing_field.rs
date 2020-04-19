@@ -701,11 +701,11 @@ impl PlayingFieldState {
         }
     }
 
-    pub fn get_full_rows(&self, out: &mut [usize]) -> usize {
+    pub fn get_full_rows(&self, out: &mut [isize]) -> usize {
         let mut full_row_count = 0;
         for (i, row_i) in self.landed_blocks.row_iter() {
             if row_i.is_full() {
-                out[full_row_count] = i;
+                out[full_row_count] = i as isize;
                 full_row_count += 1;
             }
         }
