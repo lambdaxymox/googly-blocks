@@ -4,3 +4,4 @@
 * Implement flashing background for a tetris.
 * Implement a start screen.
 * Implement a game over screen.
+* Implement a pause screen.
