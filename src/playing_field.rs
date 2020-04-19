@@ -489,6 +489,26 @@ impl Iterator for LandedBlocksIterator {
     }
 }
 
+struct LandedBlocksRowIterator<'a> {
+    row: usize,
+    landed_blocks: &'a LandedBlocksGrid,
+}
+
+impl<'a> Iterator for LandedBlocksRowIterator<'a> {
+    type Item = (usize, &'a LandedBlocksGridRow);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.row < self.landed_blocks.rows() {
+            let item = (self.row, &self.landed_blocks.landed[self.row]);
+            self.row += 1;
+
+            Some(item)
+        } else {
+            None
+        }
+    }
+}
+
 impl LandedBlocksGrid {
     pub fn new() -> Self {
         LandedBlocksGrid {
@@ -559,6 +579,13 @@ impl LandedBlocksGrid {
             column: 0,
             rows: self.rows(),
             columns: self.columns(),
+        }
+    }
+
+    fn row_iter(&self) -> LandedBlocksRowIterator {
+        LandedBlocksRowIterator {
+            landed_blocks: self,
+            row: 0,
         }
     }
 }
@@ -662,7 +689,6 @@ pub struct PlayingFieldState {
     pub current_position: BlockPosition,
     pub landed_blocks: LandedBlocksGrid,
     starting_position: BlockPosition,
-    full_rows: [bool; 20],
 }
 
 impl PlayingFieldState {
@@ -672,24 +698,19 @@ impl PlayingFieldState {
             current_position: starting_position,
             landed_blocks: LandedBlocksGrid::new(),
             starting_position: starting_position,
-            full_rows: [false; 20],
         }
     }
 
-    fn update_full_rows(&mut self) {
-        for row in 0..self.full_rows.len() {
-            self.full_rows[row] = self.landed_blocks.has_full_row(row);
-        }
-    }
-
-    pub fn has_full_rows(&self) -> bool {
-        for row in 0..self.full_rows.len() {
-            if self.full_rows[row] == true {
-                return true;
+    pub fn get_full_rows(&self, out: &mut [usize]) -> usize {
+        let mut full_row_count = 0;
+        for (i, row_i) in self.landed_blocks.row_iter() {
+            if row_i.is_full() {
+                out[full_row_count] = i;
+                full_row_count += 1;
             }
         }
 
-        false
+        full_row_count
     }
     
     pub fn update_block_position(&mut self, block_move: GooglyBlockMove) {
@@ -763,12 +784,15 @@ impl PlayingFieldState {
             }
         }
     }
+
+    pub fn collapse_empty_rows(&mut self) {
+
+    }
     
     pub fn update_landed(&mut self) {
         let block = self.current_block;
         let position = self.current_position;
         self.landed_blocks.insert_block(position.row, position.column, block);
-        self.update_full_rows();
     }
 
     pub fn update_new_block(&mut self, block: GooglyBlock) {

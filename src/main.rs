@@ -2088,6 +2088,7 @@ impl Input {
     }
 }
 
+#[derive(Clone)]
 struct FallingState {
     context: Rc<RefCell<GameContext>>,
 }
@@ -2179,12 +2180,13 @@ impl FallingState {
         } 
     }
 
-    fn update(&mut self, elapsed_milliseconds: Duration) {
+    fn update(&mut self, elapsed_milliseconds: Duration) -> GameState {
         let context = self.context.borrow();
         let mut timers = context.timers.borrow_mut();
         let mut playing_field_state = context.playing_field_state.borrow_mut();
         let mut statistics = context.statistics.borrow_mut();
         let mut next_block = context.next_block.borrow_mut();
+        let mut full_rows = context.full_rows.borrow_mut();
 
         let collides_with_floor = playing_field_state.collides_with_floor_below();
         let collides_with_element = playing_field_state.collides_with_element_below();
@@ -2213,12 +2215,15 @@ impl FallingState {
             timers.collision_timer.reset();
         }
 
-        if playing_field_state.has_full_rows() {
-            println!("GOT A FULL ROW!");
+        if playing_field_state.get_full_rows(&mut *full_rows) > 0 {
+            return GameState::Clearing(ClearingState::new(self.context.clone()));
+        } else {
+            return GameState::Falling(self.clone());
         }
     }
 }
 
+#[derive(Clone)]
 struct ClearingState {
     context: Rc<RefCell<GameContext>>,
 }
@@ -2231,11 +2236,12 @@ impl ClearingState {
     }
 
     fn handle_input(&mut self, input: Input, elapsed_milliseconds: Duration) {
-
+        println!("WE ARE IN THE CLEARNING STATE HANDLING INPUT!");
     }
 
-    fn update(&mut self, elapsed_milliseconds: Duration) {
-
+    fn update(&mut self, elapsed_milliseconds: Duration) -> GameState {
+        println!("WE ARE IN THE CLEARING STATE UPDATING THE WORLD!");
+        GameState::Clearing(self.clone())
     }
 }
 
@@ -2253,7 +2259,7 @@ impl GameState {
         }
     }
 
-    fn update(&mut self, elapsed_milliseconds: Duration) {
+    fn update(&mut self, elapsed_milliseconds: Duration) -> GameState {
         match *self {
             GameState::Falling(ref mut s) => s.update(elapsed_milliseconds),
             GameState::Clearing(ref mut s) => s.update(elapsed_milliseconds),
@@ -2294,6 +2300,7 @@ struct GameContext {
     playing_field_state: Rc<RefCell<PlayingFieldState>>,
     next_block: Rc<RefCell<NextBlockCell>>,
     statistics: Rc<RefCell<Statistics>>,
+    full_rows: Rc<RefCell<[usize; 20]>>,
 }
 
 struct Game {
@@ -2449,6 +2456,10 @@ impl Game {
 
     fn update_next_piece(&mut self) {
         self.context.borrow_mut().next_block.borrow_mut().update();
+    }
+
+    fn update_state(&mut self, elapsed_milliseconds: Duration) {
+        self.state = self.state.update(elapsed_milliseconds);
     }
 
     fn render_playing_field(&mut self) {
@@ -2623,12 +2634,14 @@ fn init_game() -> Game {
     let next_block_cell = Rc::new(RefCell::new(NextBlockCell::new(next_piece)));
     let timers = Rc::new(RefCell::new(PlayingFieldTimers::new(timer_spec)));
     let statistics = Rc::new(RefCell::new(Statistics::new()));
+    let full_rows = Rc::new(RefCell::new([0; 20]));
     let context = Rc::new(RefCell::new(GameContext {
         gl: gl_context,
         timers: timers,
         playing_field_state: playing_field_state,
         statistics: statistics,
         next_block: next_block_cell,
+        full_rows: full_rows,
     }));
     let state = GameState::Falling(FallingState::new(context.clone()));
 
@@ -2704,7 +2717,7 @@ fn main() {
             _ => {}
         }
 
-        game.state.update(elapsed_milliseconds);
+        game.update_state(elapsed_milliseconds);
         game.update_fps_counter();
         game.update_framebuffer_size();
 
