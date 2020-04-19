@@ -2228,12 +2228,14 @@ impl FallingState {
 
 #[derive(Clone)]
 struct ClearingState {
+    columns_cleared: usize,
     context: Rc<RefCell<GameContext>>,
 }
 
 impl ClearingState {
     fn new(context: Rc<RefCell<GameContext>>) -> ClearingState {
         ClearingState {
+            columns_cleared: 0,
             context: context,
         }
     }
@@ -2247,6 +2249,28 @@ impl ClearingState {
         let mut timers = context.timers.borrow_mut();
         let mut playing_field_state = context.playing_field_state.borrow_mut();
         let mut full_rows = context.full_rows.borrow_mut();
+        
+        timers.clearing_timer.update(elapsed_milliseconds);
+        if timers.clearing_timer.event_triggered() {
+            timers.clearing_timer.reset();
+            let center_left = (4 - self.columns_cleared / 2 + 1) as isize;
+            let center_right = (5 + self.columns_cleared / 2) as isize;
+            for row in full_rows.iter() {
+                if *row >= 0 {
+                    playing_field_state.landed_blocks.insert(*row, center_left, GooglyBlockElement::EmptySpace);
+                    playing_field_state.landed_blocks.insert(*row, center_right, GooglyBlockElement::EmptySpace);
+                }
+            }
+            self.columns_cleared += 2;
+        }
+        if self.columns_cleared >= 10 {
+            playing_field_state.collapse_empty_rows();
+            *full_rows = [-1; 20];
+            self.columns_cleared = 0;
+            
+            return GameState::Falling(FallingState::new(self.context.clone()));
+        }
+
         GameState::Clearing(self.clone())
     }
 }
