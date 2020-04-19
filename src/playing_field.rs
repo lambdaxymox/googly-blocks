@@ -797,9 +797,9 @@ impl PlayingFieldState {
         for row in 0..self.landed_blocks.rows() {
             if self.landed_blocks.landed[row].is_empty() {
                 for above_row in 0..row {
-                    self.landed_blocks.landed[row] = self.landed_blocks.landed[row - above_row - 1];
-                    self.landed_blocks.landed[row - above_row - 1].clear();
+                    self.landed_blocks.landed[row - above_row] = self.landed_blocks.landed[row - above_row - 1];
                 }
+                self.landed_blocks.landed[0].clear();
             }
         }
     }
