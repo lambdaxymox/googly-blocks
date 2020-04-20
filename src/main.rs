@@ -2065,14 +2065,30 @@ impl ScoreBoard {
     fn new() -> ScoreBoard {
         ScoreBoard {
             score: 0,
-            level: 1,
+            level: 0,
             lines: 0,
             tetrises: 0,
         }
     }
 
-    fn update(&mut self, lines: usize) {
-
+    fn update(&mut self, new_lines_cleared: usize) {
+        self.lines += new_lines_cleared;
+        self.level = 0;
+        match new_lines_cleared {
+            0 => {}
+            1 => {
+                self.score += 40;
+            }
+            2 => {
+                self.score += 100;
+            }
+            3 => {
+                self.score += 300;
+            }
+            _ => {
+                self.score += 1200;
+            }
+        }
     }
 }
 
