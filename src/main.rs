@@ -49,7 +49,7 @@ use teximage2d::TexImage2D;
 use playing_field::{
     BlockPosition, GooglyBlock, PlayingFieldState,
     GooglyBlockPiece, GooglyBlockRotation, GooglyBlockElement, GooglyBlockMove,
-    LandedBlocksQuery
+    LandedBlocksQuery, PlayingFieldStateSpec,
 };
 use rand::prelude as rng;
 use rand::distributions::{Distribution, Uniform};
@@ -60,6 +60,8 @@ use std::ptr;
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::time::Duration;
+use std::collections::hash_map::HashMap;
+
 
 // OpenGL extension constants.
 const GL_TEXTURE_MAX_ANISOTROPY_EXT: u32 = 0x84FE;
@@ -2674,8 +2676,21 @@ fn init_game() -> Game {
         load_playing_field(&mut *context, playing_field_spec, playing_field_uniforms)
     };
     let starting_block = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
-    let starting_position = BlockPosition::new(-3, 4);
-    let playing_field_state = Rc::new(RefCell::new(PlayingFieldState::new(starting_block, starting_position)));
+    
+    let mut starting_positions = HashMap::new();
+    starting_positions.insert(GooglyBlockPiece::T ,BlockPosition::new(-3, 4));
+    starting_positions.insert(GooglyBlockPiece::J ,BlockPosition::new(-3, 4)); 
+    starting_positions.insert(GooglyBlockPiece::Z ,BlockPosition::new(-3, 4));
+    starting_positions.insert(GooglyBlockPiece::O ,BlockPosition::new(-3, 4)); 
+    starting_positions.insert(GooglyBlockPiece::S ,BlockPosition::new(-3, 4)); 
+    starting_positions.insert(GooglyBlockPiece::L ,BlockPosition::new(-3, 4));
+    starting_positions.insert(GooglyBlockPiece::I ,BlockPosition::new(-3, 3));
+
+    let playing_field_state_spec = PlayingFieldStateSpec {
+        starting_block: starting_block,
+        starting_positions: starting_positions,
+    };
+    let playing_field_state = Rc::new(RefCell::new(PlayingFieldState::new(playing_field_state_spec)));
     let playing_field = PlayingField::new(playing_field_handle);
     let timer_spec = PlayingFieldTimerSpec {
         fall_interval: Interval::Milliseconds(500),

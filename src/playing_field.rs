@@ -18,6 +18,7 @@
 use std::fmt;
 use std::iter::Iterator;
 use std::ops;
+use std::collections::hash_map::HashMap;
 
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
@@ -680,20 +681,25 @@ pub enum GooglyBlockMove {
     Rotate,
 }
 
+pub struct PlayingFieldStateSpec {
+    pub starting_block: GooglyBlock,
+    pub starting_positions: HashMap<GooglyBlockPiece, BlockPosition>,
+}
+
 pub struct PlayingFieldState {
     pub current_block: GooglyBlock,
     pub current_position: BlockPosition,
     pub landed_blocks: LandedBlocksGrid,
-    starting_position: BlockPosition,
+    starting_positions: HashMap<GooglyBlockPiece, BlockPosition>,
 }
 
 impl PlayingFieldState {
-    pub fn new(starting_block: GooglyBlock, starting_position: BlockPosition) -> PlayingFieldState {
+    pub fn new(spec: PlayingFieldStateSpec) -> PlayingFieldState {
         PlayingFieldState {
-            current_block: starting_block,
-            current_position: starting_position,
+            current_block: spec.starting_block,
+            current_position: spec.starting_positions[&spec.starting_block.piece],
             landed_blocks: LandedBlocksGrid::new(),
-            starting_position: starting_position,
+            starting_positions: spec.starting_positions,
         }
     }
 
@@ -800,7 +806,7 @@ impl PlayingFieldState {
 
     pub fn update_new_block(&mut self, block: GooglyBlock) {
         self.current_block = block;
-        self.current_position = self.starting_position;
+        self.current_position = self.starting_positions[&block.piece];
     }
 
     pub fn collides_with_element_below(&self) -> bool {
