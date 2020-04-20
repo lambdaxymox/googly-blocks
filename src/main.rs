@@ -52,7 +52,6 @@ use playing_field::{
     LandedBlocksQuery
 };
 use rand::prelude as rng;
-use rand::Rng;
 use rand::distributions::{Distribution, Uniform};
 
 use std::io;
