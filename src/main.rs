@@ -2054,6 +2054,28 @@ impl Statistics {
     }
 }
 
+struct ScoreBoard {
+    score: usize,
+    level: usize,
+    lines: usize,
+    tetrises: usize,
+}
+
+impl ScoreBoard {
+    fn new() -> ScoreBoard {
+        ScoreBoard {
+            score: 0,
+            level: 1,
+            lines: 0,
+            tetrises: 0,
+        }
+    }
+
+    fn update(lines: usize) {
+
+    }
+}
+
 struct ViewportDimensions {
     width: i32,
     height: i32,
@@ -2267,6 +2289,7 @@ impl ClearingState {
         }
         if self.columns_cleared >= 10 {
             playing_field_state.collapse_empty_rows();
+            // Insert scoring code here.
             *full_rows = [-1; 20];
             self.columns_cleared = 0;
 
@@ -2371,6 +2394,7 @@ struct GameContext {
     playing_field_state: Rc<RefCell<PlayingFieldState>>,
     next_block: Rc<RefCell<NextBlockCell>>,
     statistics: Rc<RefCell<Statistics>>,
+    score_board: Rc<RefCell<ScoreBoard>>,
     full_rows: Rc<RefCell<[isize; 20]>>,
 }
 
@@ -2380,10 +2404,6 @@ struct Game {
     playing_field: PlayingField,
     ui: UI,
     background: BackgroundPanel,
-    score: usize,
-    level: usize,
-    lines: usize,
-    tetrises: usize,
 }
 
 impl Game {
@@ -2441,10 +2461,12 @@ impl Game {
     fn update_ui(&mut self) {
         update_ui_panel_uniforms(self);
         update_uniforms_next_piece_panel(self);
-        self.ui.update_score(self.score);
-        self.ui.update_lines(self.lines);
-        self.ui.update_level(self.level);
-        self.ui.update_tetrises(self.tetrises);
+        let context = self.context.borrow();
+        let score_board = context.score_board.borrow();
+        self.ui.update_score(score_board.score);
+        self.ui.update_lines(score_board.lines);
+        self.ui.update_level(score_board.level);
+        self.ui.update_tetrises(score_board.tetrises);
         self.ui.update_statistics(&self.context.borrow().statistics.borrow());
         self.ui.update_next_piece(self.context.borrow().next_block.borrow().block);
         self.ui.update_panel();
@@ -2720,12 +2742,14 @@ fn init_game() -> Game {
     let next_block_cell_ref = Rc::new(RefCell::new(next_block_cell));
     let timers = Rc::new(RefCell::new(PlayingFieldTimers::new(timer_spec)));
     let statistics = Rc::new(RefCell::new(Statistics::new()));
+    let score_board = Rc::new(RefCell::new(ScoreBoard::new()));
     let full_rows = Rc::new(RefCell::new([-1; 20]));
     let context = Rc::new(RefCell::new(GameContext {
         gl: gl_context,
         timers: timers,
         playing_field_state: playing_field_state,
         statistics: statistics,
+        score_board: score_board,
         next_block: next_block_cell_ref,
         full_rows: full_rows,
     }));
@@ -2737,10 +2761,6 @@ fn init_game() -> Game {
         playing_field: playing_field,
         ui: ui,
         background: background,
-        score: 0,
-        level: 0,
-        lines: 0,
-        tetrises: 0,
     }
 }
 
