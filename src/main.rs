@@ -2297,13 +2297,45 @@ impl GameState {
     }
 }
 
+struct NextBlockGen {
+    rng: rng::ThreadRng,
+    table: [GooglyBlockPiece; 7],
+}
+
+impl NextBlockGen {
+    fn new() -> NextBlockGen {
+        NextBlockGen {
+            rng: rng::thread_rng(),
+            table: [
+                GooglyBlockPiece::T,
+                GooglyBlockPiece::J,
+                GooglyBlockPiece::Z,
+                GooglyBlockPiece::O,
+                GooglyBlockPiece::S,
+                GooglyBlockPiece::L,
+                GooglyBlockPiece::I,
+            ]
+        }
+    }
+
+    fn next(&mut self) -> GooglyBlockPiece {
+        let random = self.rng.gen_range::<u32, u32, u32>(0, 7);
+        self.table[random as usize]
+    }
+}
+
 struct NextBlockCell {
+    gen: NextBlockGen,
     block: GooglyBlockPiece,
 }
 
 impl NextBlockCell {
-    fn new(block: GooglyBlockPiece) -> NextBlockCell {
+    fn new() -> NextBlockCell {
+        let mut gen = NextBlockGen::new();
+        let block = gen.next();
+        
         NextBlockCell {
+            gen: gen,
             block: block,
         }
     }
@@ -2625,7 +2657,8 @@ fn init_game() -> Game {
     };
     let text_panel = load_text_panel(gl_context.clone(), &text_panel_spec, text_panel_uniforms);
     
-    let next_piece = GooglyBlockPiece::T;
+    let next_block_cell = NextBlockCell::new();
+    let next_piece = next_block_cell.block;
     let next_piece_panel_spec = NextPiecePanelSpec {
         piece: next_piece,
     };
@@ -2662,7 +2695,7 @@ fn init_game() -> Game {
         rotate_interval: Interval::Milliseconds(100),
         clearing_interval: Interval::Milliseconds(100),
     };
-    let next_block_cell = Rc::new(RefCell::new(NextBlockCell::new(next_piece)));
+    let next_block_cell_ref = Rc::new(RefCell::new(next_block_cell));
     let timers = Rc::new(RefCell::new(PlayingFieldTimers::new(timer_spec)));
     let statistics = Rc::new(RefCell::new(Statistics::new()));
     let full_rows = Rc::new(RefCell::new([-1; 20]));
@@ -2671,7 +2704,7 @@ fn init_game() -> Game {
         timers: timers,
         playing_field_state: playing_field_state,
         statistics: statistics,
-        next_block: next_block_cell,
+        next_block: next_block_cell_ref,
         full_rows: full_rows,
     }));
     let state = GameState::Falling(FallingState::new(context.clone()));
