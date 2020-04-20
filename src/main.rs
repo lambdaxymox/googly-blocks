@@ -1386,7 +1386,9 @@ impl PlayingField {
         for (shape_row, shape_column) in shape.iter() {
             let row = top_left_row + shape_row as isize;
             let column = top_left_column + shape_column as isize;
-            self.tex_coords[row as usize][column as usize] = quad;
+            if row >= 0 && column >= 0 {
+                self.tex_coords[row as usize][column as usize] = quad;
+            }
         }
 
         let bytes_written = mem::size_of::<TextureQuad>() * rows * columns;
@@ -2648,7 +2650,7 @@ fn init_game() -> Game {
         load_playing_field(&mut *context, playing_field_spec, playing_field_uniforms)
     };
     let starting_block = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
-    let starting_position = BlockPosition::new(0, 4);
+    let starting_position = BlockPosition::new(-3, 4);
     let playing_field_state = Rc::new(RefCell::new(PlayingFieldState::new(starting_block, starting_position)));
     let playing_field = PlayingField::new(playing_field_handle);
     let timer_spec = PlayingFieldTimerSpec {
