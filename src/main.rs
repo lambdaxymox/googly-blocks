@@ -2059,6 +2059,7 @@ struct ScoreBoard {
     level: usize,
     lines: usize,
     tetrises: usize,
+    lines_before_next_level: usize,
 }
 
 impl ScoreBoard {
@@ -2068,12 +2069,19 @@ impl ScoreBoard {
             level: 0,
             lines: 0,
             tetrises: 0,
+            lines_before_next_level: 20,
         }
     }
 
     fn update(&mut self, new_lines_cleared: usize) {
         self.lines += new_lines_cleared;
-        self.level = 0;
+        if new_lines_cleared > self.lines_before_next_level {
+            self.level += 1;
+            self.lines_before_next_level = 20;
+        } else {
+            self.lines_before_next_level -= new_lines_cleared;
+        }
+
         match new_lines_cleared {
             0 => {}
             1 => {
@@ -2087,6 +2095,7 @@ impl ScoreBoard {
             }
             _ => {
                 self.score += 1200;
+                self.tetrises += 1;
             }
         }
     }
