@@ -2071,8 +2071,29 @@ impl ScoreBoard {
         }
     }
 
-    fn update(lines: usize) {
+    fn update(&mut self, lines: usize) {
 
+    }
+}
+
+struct FullRows {
+    rows: [isize; 20],
+    count: usize,
+}
+
+impl FullRows {
+    fn new() -> FullRows {
+        FullRows {
+            rows: [-1; 20],
+            count: 0,
+        }
+    }
+
+    fn clear(&mut self) {
+        for i in 0..self.rows.len() {
+            self.rows[i] = -1;
+        }
+        self.count = 0;
     }
 }
 
@@ -2242,7 +2263,9 @@ impl FallingState {
             timers.collision_timer.reset();
         }
 
-        if playing_field_state.get_full_rows(&mut *full_rows) > 0 {
+        let full_row_count = playing_field_state.get_full_rows(&mut full_rows.rows);
+        full_rows.count = full_row_count;
+        if full_row_count > 0 {
             return GameState::Clearing(ClearingState::new(self.context.clone()));
         } else {
             return GameState::Falling(self.clone());
@@ -2273,13 +2296,14 @@ impl ClearingState {
         let mut timers = context.timers.borrow_mut();
         let mut playing_field_state = context.playing_field_state.borrow_mut();
         let mut full_rows = context.full_rows.borrow_mut();
+        let mut score_board = context.score_board.borrow_mut();
         
         timers.clearing_timer.update(elapsed_milliseconds);
         if timers.clearing_timer.event_triggered() {
             timers.clearing_timer.reset();
             let center_left = (4 - self.columns_cleared / 2) as isize;
             let center_right = (5 + self.columns_cleared / 2) as isize;
-            for row in full_rows.iter() {
+            for row in full_rows.rows.iter() {
                 if *row >= 0 {
                     playing_field_state.landed_blocks.clear(*row, center_left);
                     playing_field_state.landed_blocks.clear(*row, center_right);
@@ -2289,8 +2313,8 @@ impl ClearingState {
         }
         if self.columns_cleared >= 10 {
             playing_field_state.collapse_empty_rows();
-            // Insert scoring code here.
-            *full_rows = [-1; 20];
+            score_board.update(full_rows.count);
+            full_rows.clear();
             self.columns_cleared = 0;
 
             return GameState::Falling(FallingState::new(self.context.clone()));
@@ -2395,7 +2419,7 @@ struct GameContext {
     next_block: Rc<RefCell<NextBlockCell>>,
     statistics: Rc<RefCell<Statistics>>,
     score_board: Rc<RefCell<ScoreBoard>>,
-    full_rows: Rc<RefCell<[isize; 20]>>,
+    full_rows: Rc<RefCell<FullRows>>,
 }
 
 struct Game {
@@ -2743,7 +2767,7 @@ fn init_game() -> Game {
     let timers = Rc::new(RefCell::new(PlayingFieldTimers::new(timer_spec)));
     let statistics = Rc::new(RefCell::new(Statistics::new()));
     let score_board = Rc::new(RefCell::new(ScoreBoard::new()));
-    let full_rows = Rc::new(RefCell::new([-1; 20]));
+    let full_rows = Rc::new(RefCell::new(FullRows::new()));
     let context = Rc::new(RefCell::new(GameContext {
         gl: gl_context,
         timers: timers,
