@@ -2257,8 +2257,8 @@ impl ClearingState {
             let center_right = (5 + self.columns_cleared / 2) as isize;
             for row in full_rows.iter() {
                 if *row >= 0 {
-                    playing_field_state.landed_blocks.insert(*row, center_left, GooglyBlockElement::EmptySpace);
-                    playing_field_state.landed_blocks.insert(*row, center_right, GooglyBlockElement::EmptySpace);
+                    playing_field_state.landed_blocks.clear(*row, center_left);
+                    playing_field_state.landed_blocks.clear(*row, center_right);
                 }
             }
             self.columns_cleared += 2;

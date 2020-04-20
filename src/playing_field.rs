@@ -550,6 +550,10 @@ impl LandedBlocksGrid {
         }
     }
 
+    pub fn clear(&mut self, row: isize, column: isize) {
+        self.insert(row, column, GooglyBlockElement::EmptySpace);
+    }
+
     pub fn insert_block(&mut self, tl_row: isize, tl_column: isize, block: GooglyBlock) {
         let shape = block.shape();
         for (row, column) in shape.iter().map(|(r, c)| (r as isize, c as isize)) {
