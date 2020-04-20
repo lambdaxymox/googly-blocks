@@ -2302,29 +2302,45 @@ impl GameState {
 struct NextBlockGen {
     rng: rng::ThreadRng,
     between: Uniform<u32>,
+    last_block: GooglyBlockPiece,
     table: [GooglyBlockPiece; 7],
 }
 
 impl NextBlockGen {
     fn new() -> NextBlockGen {
+        let table = [
+            GooglyBlockPiece::T,
+            GooglyBlockPiece::J,
+            GooglyBlockPiece::Z,
+            GooglyBlockPiece::O,
+            GooglyBlockPiece::S,
+            GooglyBlockPiece::L,
+            GooglyBlockPiece::I,
+        ];
+        let mut rng = rng::thread_rng();
+        let between = Uniform::new_inclusive(0, 6);
+        let random = between.sample(&mut rng) as usize;
+        let last_block = table[random];
+
         NextBlockGen {
-            rng: rng::thread_rng(),
-            between: Uniform::new_inclusive(0, 6),
-            table: [
-                GooglyBlockPiece::T,
-                GooglyBlockPiece::J,
-                GooglyBlockPiece::Z,
-                GooglyBlockPiece::O,
-                GooglyBlockPiece::S,
-                GooglyBlockPiece::L,
-                GooglyBlockPiece::I,
-            ]
+            rng: rng,
+            between: between,
+            last_block: last_block,
+            table: table,
         }
     }
 
     fn next(&mut self) -> GooglyBlockPiece {
-        let random = self.between.sample(&mut self.rng) as usize;
-        self.table[random]
+        let mut block = self.table[self.between.sample(&mut self.rng) as usize];
+        let mut gas = 0;
+        while (gas < 8) && (block == self.last_block) {
+            let random = self.between.sample(&mut self.rng) as usize;
+            block = self.table[random];
+            gas += 1;
+        }
+        self.last_block = block;
+        
+        block
     }
 }
 
