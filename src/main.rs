@@ -53,6 +53,7 @@ use playing_field::{
 };
 use rand::prelude as rng;
 use rand::Rng;
+use rand::distributions::{Distribution, Uniform};
 
 use std::io;
 use std::mem;
@@ -2299,6 +2300,7 @@ impl GameState {
 
 struct NextBlockGen {
     rng: rng::ThreadRng,
+    between: Uniform<u32>,
     table: [GooglyBlockPiece; 7],
 }
 
@@ -2306,6 +2308,7 @@ impl NextBlockGen {
     fn new() -> NextBlockGen {
         NextBlockGen {
             rng: rng::thread_rng(),
+            between: Uniform::new_inclusive(0, 6),
             table: [
                 GooglyBlockPiece::T,
                 GooglyBlockPiece::J,
@@ -2319,8 +2322,8 @@ impl NextBlockGen {
     }
 
     fn next(&mut self) -> GooglyBlockPiece {
-        let random = self.rng.gen_range::<u32, u32, u32>(0, 7);
-        self.table[random as usize]
+        let random = self.between.sample(&mut self.rng) as usize;
+        self.table[random]
     }
 }
 
@@ -2341,18 +2344,7 @@ impl NextBlockCell {
     }
 
     fn update(&mut self) {
-        let mut rng = rng::thread_rng();
-        let random = rng.gen_range::<u32, u32, u32>(0, 7);
-        self.block = match random {
-            0 => GooglyBlockPiece::T,
-            1 => GooglyBlockPiece::J,
-            2 => GooglyBlockPiece::Z,
-            3 => GooglyBlockPiece::O,
-            4 => GooglyBlockPiece::S,
-            5 => GooglyBlockPiece::L,
-            6 => GooglyBlockPiece::I,
-            _ => GooglyBlockPiece::T,
-        };
+        self.block = self.gen.next();
     }
 }
 
