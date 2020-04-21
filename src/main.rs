@@ -2916,19 +2916,21 @@ fn init_game() -> Game {
     let renderer_state = RendererState::Falling(RendererFallingState {});
     let renderer_state_machine = RendererStateMachine::new(renderer_context, renderer_state); 
 
-    Game {
+    let mut game = Game {
         context: context,
         state: state,
         renderer_state_machine: renderer_state_machine,
         playing_field: playing_field,
         ui: ui,
         background: background,
-    }
+    };
+    game.init_gpu();
+
+    game
 }
 
 fn main() {
     let mut game = init_game();
-    game.init_gpu();
     while !game.window_should_close() {
         let elapsed_milliseconds = game.update_timers();
 
@@ -2993,10 +2995,10 @@ fn main() {
         game.clear_depth_buffer();
         game.update_viewport();
         game.update_background();
-        game.update_ui();
-        game.update_playing_field();
         game.render_background();
+        game.update_ui();
         game.render_ui();
+        game.update_playing_field();
         game.render_playing_field();
 
         // Send the results to the output.
