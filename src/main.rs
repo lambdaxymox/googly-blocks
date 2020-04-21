@@ -2711,7 +2711,6 @@ fn init_game() -> Game {
         load_playing_field(&mut *context, playing_field_spec, playing_field_uniforms)
     };
     let starting_block = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
-    
     let starting_positions: HashMap<GooglyBlockPiece, BlockPosition> = [
         (GooglyBlockPiece::T, BlockPosition::new(-3, 4)),
         (GooglyBlockPiece::J, BlockPosition::new(-3, 4)), 
