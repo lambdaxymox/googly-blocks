@@ -2177,7 +2177,6 @@ impl GameFallingState {
     }
 
     fn handle_input(&mut self, context: &mut GameContext, input: Input, elapsed_milliseconds: Duration) {
-        //let context = self.context.borrow_mut();
         let mut timers = context.timers.borrow_mut();
         let mut playing_field_state = context.playing_field_state.borrow_mut();
         match input.kind {
@@ -2257,7 +2256,6 @@ impl GameFallingState {
     }
 
     fn update(&mut self, context: &mut GameContext, elapsed_milliseconds: Duration) -> GameState {
-        //let context = self.context.borrow();
         let mut timers = context.timers.borrow_mut();
         let mut playing_field_state = context.playing_field_state.borrow_mut();
         let mut statistics = context.statistics.borrow_mut();
@@ -2268,7 +2266,6 @@ impl GameFallingState {
         let collides_with_element = playing_field_state.collides_with_element_below();
 
         timers.fall_timer.update(elapsed_milliseconds);
-        // Update the game world.
         if collides_with_floor || collides_with_element {
             timers.collision_timer.update(elapsed_milliseconds);
         } else {
@@ -2322,7 +2319,6 @@ impl GameClearingState {
     }
 
     fn update(&mut self, context: &mut GameContext, elapsed_milliseconds: Duration) -> GameState {
-        //let context = self.context.borrow();
         let mut timers = context.timers.borrow_mut();
         let mut playing_field_state = context.playing_field_state.borrow_mut();
         let mut full_rows = context.full_rows.borrow_mut();
@@ -3036,7 +3032,7 @@ fn init_game() -> Game {
         collision_interval: Interval::Milliseconds(500),
         left_hold_interval: Interval::Milliseconds(70),
         right_hold_interval: Interval::Milliseconds(70),
-        down_hold_interval: Interval::Milliseconds(50),
+        down_hold_interval: Interval::Milliseconds(35),
         rotate_interval: Interval::Milliseconds(100),
         clearing_interval: Interval::Milliseconds(100),
     };
