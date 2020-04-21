@@ -343,8 +343,8 @@ fn create_geometry_ui_panel() -> ObjMesh {
         [1.0, 1.0], [-1.0,  1.0], [-1.0, -1.0]
     ];
     let tex_coords: Vec<[GLfloat; 2]> = vec![
-        [1.0, 1.0], [0.0, 0.0], [1.0, 0.0],
-        [1.0, 1.0], [0.0, 1.0], [0.0, 0.0],
+        [1314_f32 / 2048_f32, 1032_f32 / 2048_f32], [0_f32 / 2048_f32,    0_f32 / 2048_f32], [1314_f32 / 2048_f32, 0_f32 / 2048_f32],
+        [1314_f32 / 2048_f32, 1032_f32 / 2048_f32], [0_f32 / 2048_f32, 1032_f32 / 2048_f32], [0_f32    / 2048_f32, 0_f32 / 2048_f32],
     ];
 
     ObjMesh::new(points, tex_coords)
@@ -426,7 +426,8 @@ fn send_to_gpu_geometry_ui_panel(handle: UIPanelHandle, mesh: &ObjMesh) {
 }
 
 fn create_textures_ui_panel() -> TexImage2D {
-    let asset: &'static [u8; 31235] = include_asset!("ui_panel.png");
+    //let asset: &'static [u8; 31235] = include_asset!("ui_panel.png");
+    let asset: &'static [u8; 59580] = include_asset!("ui_panel_atlas.png");
     teximage2d::load_from_memory(asset).unwrap().image
 }
 
