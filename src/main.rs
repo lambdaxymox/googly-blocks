@@ -1174,38 +1174,38 @@ fn create_textures_playing_field() -> GooglyBlockElementTextureAtlas {
     let asset: &'static [u8; 1448] = include_asset!("blocks.png");
     let tex_image = teximage2d::load_from_memory(asset).unwrap().image;
     let tex_coords = [
-    (GooglyBlockElement::EmptySpace, TextureQuad::new(
-        [1_f32 / 3_f32, 3_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
-        [2_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 3_f32 / 3_f32]
-    )),
-    (GooglyBlockElement::T, TextureQuad::new(
-        [0_f32 / 3_f32, 3_f32 / 3_f32], [0_f32 / 3_f32, 2_f32 / 3_f32],
-        [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32],
-    )),
-    (GooglyBlockElement::J, TextureQuad::new(
-        [0_f32 / 3_f32, 2_f32 / 3_f32], [0_f32 / 3_f32, 1_f32 / 3_f32],
-        [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
-    )),
-    (GooglyBlockElement::Z, TextureQuad::new(
-        [2_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
-        [3_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32],
-    )),
-    (GooglyBlockElement::O, TextureQuad::new(
-        [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 0_f32 / 3_f32],
-        [3_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32],
-    )),
-    (GooglyBlockElement::S, TextureQuad::new(
-        [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 0_f32 / 3_f32],
-        [2_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
-    )),
-    (GooglyBlockElement::L, TextureQuad::new(
-        [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
-        [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
-    )),
-    (GooglyBlockElement::I, TextureQuad::new(
-        [0_f32 / 3_f32, 0_f32 / 3_f32], [0_f32 / 3_f32, 0_f32 / 3_f32],
-        [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
-    ))
+        (GooglyBlockElement::EmptySpace, TextureQuad::new(
+            [1_f32 / 3_f32, 3_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
+            [2_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 3_f32 / 3_f32]
+        )),
+        (GooglyBlockElement::T, TextureQuad::new(
+            [0_f32 / 3_f32, 3_f32 / 3_f32], [0_f32 / 3_f32, 2_f32 / 3_f32],
+            [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32],
+        )),
+        (GooglyBlockElement::J, TextureQuad::new(
+            [0_f32 / 3_f32, 2_f32 / 3_f32], [0_f32 / 3_f32, 1_f32 / 3_f32],
+            [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
+        )),
+        (GooglyBlockElement::Z, TextureQuad::new(
+            [2_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
+            [3_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32],
+        )),
+        (GooglyBlockElement::O, TextureQuad::new(
+            [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 0_f32 / 3_f32],
+            [3_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32],
+        )),
+        (GooglyBlockElement::S, TextureQuad::new(
+            [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 0_f32 / 3_f32],
+            [2_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
+        )),
+        (GooglyBlockElement::L, TextureQuad::new(
+            [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
+            [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
+        )),
+        (GooglyBlockElement::I, TextureQuad::new(
+            [0_f32 / 3_f32, 0_f32 / 3_f32], [0_f32 / 3_f32, 0_f32 / 3_f32],
+            [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
+        ))
     ].iter().map(|elem| *elem).collect();
 
     GooglyBlockElementTextureAtlas::new(tex_image, tex_coords)
