@@ -2787,13 +2787,6 @@ struct Game {
 }
 
 impl Game {
-    /*
-    #[inline]
-    fn get_framebuffer_size(&self) -> (i32, i32) {
-        self.context.borrow().gl.borrow_mut().window.get_framebuffer_size()
-    }
-    */
-
     #[inline]
     fn window_should_close(&self) -> bool {
         self.context.borrow().gl.borrow_mut().window.should_close()
@@ -2824,65 +2817,7 @@ impl Game {
     fn swap_buffers(&mut self) {
         self.context.borrow_mut().gl.borrow_mut().window.swap_buffers();
     }
-    /*
-    #[inline]
-    fn update_background(&mut self) {
-        update_uniforms_background_panel(self);
-    }
-    
 
-    fn render_background(&mut self) {
-        unsafe {
-            gl::UseProgram(self.background.buffer.sp);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, self.background.buffer.tex);
-            gl::BindVertexArray(self.background.buffer.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6);
-        }
-    }
-
-    fn update_ui(&mut self) {
-        update_ui_panel_uniforms(self);
-        update_uniforms_next_piece_panel(self);
-        let context = self.context.borrow();
-        let score_board = context.score_board.borrow();
-        self.ui.update_score(score_board.score);
-        self.ui.update_lines(score_board.lines);
-        self.ui.update_level(score_board.level);
-        self.ui.update_tetrises(score_board.tetrises);
-        self.ui.update_statistics(&self.context.borrow().statistics.borrow());
-        self.ui.update_next_piece(self.context.borrow().next_block.borrow().block);
-        self.ui.update_panel();
-    }
-
-    fn render_ui(&mut self) {
-        unsafe {
-            // Render the game board. We turn off depth testing to do so since this is
-            // a 2D scene using 3D abstractions. Otherwise Z-Buffering would prevent us
-            // from rendering the game board.
-            gl::UseProgram(self.ui.ui_panel.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, self.ui.ui_panel.tex);
-            gl::BindVertexArray(self.ui.ui_panel.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6);
-
-            gl::UseProgram(self.ui.text_panel.buffer.buffer.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, self.ui.text_panel.buffer.buffer.tex);
-            gl::BindVertexArray(self.ui.text_panel.buffer.buffer.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 47 * 6);
-
-            gl::UseProgram(self.ui.next_piece_panel.buffer.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, self.ui.next_piece_panel.buffer.tex);
-            gl::BindVertexArray(self.ui.next_piece_panel.buffer.handle(self.context.borrow().next_block.borrow().block).vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 3 * 8);
-        }
-    }
-    */
     #[inline]
     fn poll_events(&mut self) {
         self.context.borrow_mut().gl.borrow_mut().glfw.poll_events();
@@ -2917,35 +2852,13 @@ impl Game {
             );
         }
     }
-    /*    
-    fn update_playing_field(&mut self) {
-        update_uniforms_playing_field(self);
-        let context = self.context.borrow();
-        let playing_field_state = context.playing_field_state.borrow();
-        self.playing_field.write(&playing_field_state).unwrap();
-        self.playing_field.send_to_gpu().unwrap();
-    }
-    */
+
     fn update_state(&mut self, elapsed_milliseconds: Duration) {
         let state = self.state.update(elapsed_milliseconds);
         self.renderer_state_machine.update(state.clone());
         self.state = state;
     }
-    /*
-    fn render_playing_field(&mut self) {
-        unsafe {
-            gl::UseProgram(self.playing_field.handle.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::Enable(gl::BLEND);
-            gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, self.playing_field.handle.tex);
-            gl::BindVertexArray(self.playing_field.handle.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 2 * 6 * 20 * 10);
-            gl::Disable(gl::BLEND);
-        }
-    }
-    */
+
     #[inline]
     fn clear_depth_buffer(&mut self) {
         unsafe {
