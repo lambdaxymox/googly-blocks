@@ -570,6 +570,18 @@ impl LandedBlocksGrid {
     }
 
     #[inline]
+    pub fn has_empty_row(&self, row: isize) -> bool {
+        if row >= 0 { 
+            let row_query = row as usize;
+            if row_query < self.rows() {
+                return self.landed[row_query].is_empty();
+            }
+        }
+
+        false
+    }
+
+    #[inline]
     pub fn rows(&self) -> usize { 20 }
 
     #[inline]
@@ -720,6 +732,10 @@ impl PlayingFieldState {
         }
 
         full_row_count
+    }
+
+    pub fn has_empty_row(&self, row: isize) -> bool {
+        self.landed_blocks.has_empty_row(row)
     }
     
     pub fn update_block_position(&mut self, block_move: GooglyBlockMove) {

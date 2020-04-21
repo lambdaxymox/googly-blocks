@@ -2287,6 +2287,10 @@ impl FallingState {
         if timers.collision_timer.event_triggered() {
             let current_block = playing_field_state.current_block;
             playing_field_state.update_landed();
+            if playing_field_state.has_empty_row(0) {
+                return GameState::GameOver(GameOverState::new(self.context.clone()));
+            }
+            
             statistics.update(current_block);
             let old_next_block = next_block.block;
             next_block.update();
@@ -2356,10 +2360,37 @@ impl ClearingState {
     }
 }
 
+#[derive(Clone)]
+struct GameOverState {
+    context: Rc<RefCell<GameContext>>,
+}
+
+impl GameOverState {
+    fn new(context: Rc<RefCell<GameContext>>) -> GameOverState {
+        GameOverState {
+            context: context,
+        }
+    }
+
+    fn handle_input(&mut self, input: Input, elapsed_milliseconds: Duration) {
+        match input.kind {
+            _ => {
+                println!("GAME OVER! Press any key to see this message again.");
+            }
+        }
+    }
+
+    fn update(&mut self, elapsed_milliseconds: Duration) -> GameState {
+        println!("GAME OVER! This is a dead state!");
+        GameState::GameOver(self.clone())
+    }
+}
+
 
 enum GameState {
     Falling(FallingState),
     Clearing(ClearingState),
+    GameOver(GameOverState),
 }
 
 impl GameState {
@@ -2367,6 +2398,7 @@ impl GameState {
         match *self {
             GameState::Falling(ref mut s) => s.handle_input(input, elapsed_milliseconds),
             GameState::Clearing(ref mut s) => s.handle_input(input, elapsed_milliseconds),
+            GameState::GameOver(ref mut s) => s.handle_input(input, elapsed_milliseconds),
         }
     }
 
@@ -2374,6 +2406,7 @@ impl GameState {
         match *self {
             GameState::Falling(ref mut s) => s.update(elapsed_milliseconds),
             GameState::Clearing(ref mut s) => s.update(elapsed_milliseconds),
+            GameState::GameOver(ref mut s) => s.update(elapsed_milliseconds),
         }
     }
 }
