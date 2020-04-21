@@ -49,7 +49,7 @@ use teximage2d::TexImage2D;
 use playing_field::{
     BlockPosition, GooglyBlock, PlayingFieldState,
     GooglyBlockPiece, GooglyBlockRotation, GooglyBlockElement, GooglyBlockMove,
-    LandedBlocksQuery, PlayingFieldStateSpec,
+    PlayingFieldStateSpec,
 };
 use rand::prelude as rng;
 use rand::distributions::{Distribution, Uniform};
@@ -2168,20 +2168,16 @@ impl Input {
     }
 }
 
-#[derive(Clone)]
-struct FallingState {
-    context: Rc<RefCell<GameContext>>,
-}
+#[derive(Copy, Clone)]
+struct GameFallingState {}
 
-impl FallingState {
-    fn new(context: Rc<RefCell<GameContext>>) -> FallingState {
-        FallingState {
-            context: context,
-        }
+impl GameFallingState {
+    fn new() -> GameFallingState {
+        GameFallingState {}
     }
 
-    fn handle_input(&mut self, input: Input, elapsed_milliseconds: Duration) {
-        let context = self.context.borrow_mut();
+    fn handle_input(&mut self, context: &mut GameContext, input: Input, elapsed_milliseconds: Duration) {
+        //let context = self.context.borrow_mut();
         let mut timers = context.timers.borrow_mut();
         let mut playing_field_state = context.playing_field_state.borrow_mut();
         match input.kind {
@@ -2260,8 +2256,8 @@ impl FallingState {
         } 
     }
 
-    fn update(&mut self, elapsed_milliseconds: Duration) -> GameState {
-        let context = self.context.borrow();
+    fn update(&mut self, context: &mut GameContext, elapsed_milliseconds: Duration) -> GameState {
+        //let context = self.context.borrow();
         let mut timers = context.timers.borrow_mut();
         let mut playing_field_state = context.playing_field_state.borrow_mut();
         let mut statistics = context.statistics.borrow_mut();
@@ -2288,7 +2284,7 @@ impl FallingState {
             let current_block = playing_field_state.current_block;
             playing_field_state.update_landed();
             if !playing_field_state.has_empty_row(0) {
-                return GameState::GameOver(GameOverState::new(self.context.clone()));
+                return GameState::GameOver(GameGameOverState::new());
             }
             
             statistics.update(current_block);
@@ -2302,33 +2298,31 @@ impl FallingState {
         let full_row_count = playing_field_state.get_full_rows(&mut full_rows.rows);
         full_rows.count = full_row_count;
         if full_row_count > 0 {
-            return GameState::Clearing(ClearingState::new(self.context.clone()));
+            return GameState::Clearing(GameClearingState::new());
         } else {
-            return GameState::Falling(self.clone());
+            return GameState::Falling(GameFallingState::new());
         }
     }
 }
 
-#[derive(Clone)]
-struct ClearingState {
+#[derive(Copy, Clone)]
+struct GameClearingState {
     columns_cleared: usize,
-    context: Rc<RefCell<GameContext>>,
 }
 
-impl ClearingState {
-    fn new(context: Rc<RefCell<GameContext>>) -> ClearingState {
-        ClearingState {
+impl GameClearingState {
+    fn new() -> GameClearingState {
+        GameClearingState {
             columns_cleared: 0,
-            context: context,
         }
     }
 
-    fn handle_input(&mut self, input: Input, elapsed_milliseconds: Duration) {
+    fn handle_input(&mut self, context: &mut GameContext, input: Input, elapsed_milliseconds: Duration) {
         
     }
 
-    fn update(&mut self, elapsed_milliseconds: Duration) -> GameState {
-        let context = self.context.borrow();
+    fn update(&mut self, context: &mut GameContext, elapsed_milliseconds: Duration) -> GameState {
+        //let context = self.context.borrow();
         let mut timers = context.timers.borrow_mut();
         let mut playing_field_state = context.playing_field_state.borrow_mut();
         let mut full_rows = context.full_rows.borrow_mut();
@@ -2353,26 +2347,22 @@ impl ClearingState {
             full_rows.clear();
             self.columns_cleared = 0;
 
-            return GameState::Falling(FallingState::new(self.context.clone()));
+            return GameState::Falling(GameFallingState::new());
         }
 
         GameState::Clearing(self.clone())
     }
 }
 
-#[derive(Clone)]
-struct GameOverState {
-    context: Rc<RefCell<GameContext>>,
-}
+#[derive(Copy, Clone)]
+struct GameGameOverState {}
 
-impl GameOverState {
-    fn new(context: Rc<RefCell<GameContext>>) -> GameOverState {
-        GameOverState {
-            context: context,
-        }
+impl GameGameOverState {
+    fn new() -> GameGameOverState {
+        GameGameOverState {}
     }
 
-    fn handle_input(&mut self, input: Input, elapsed_milliseconds: Duration) {
+    fn handle_input(&mut self, context: &mut GameContext, input: Input, elapsed_milliseconds: Duration) {
         match input.kind {
             _ => {
                 println!("GAME OVER! Press any key to see this message again.");
@@ -2380,34 +2370,50 @@ impl GameOverState {
         }
     }
 
-    fn update(&mut self, elapsed_milliseconds: Duration) -> GameState {
+    fn update(&mut self, context: &mut GameContext, elapsed_milliseconds: Duration) -> GameState {
         println!("GAME OVER! This is a dead state!");
-        GameState::GameOver(self.clone())
+        GameState::GameOver(*self)
     }
 }
 
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 enum GameState {
-    Falling(FallingState),
-    Clearing(ClearingState),
-    GameOver(GameOverState),
+    Falling(GameFallingState),
+    Clearing(GameClearingState),
+    GameOver(GameGameOverState),
 }
 
-impl GameState {
+struct GameStateMachine {
+    context: Rc<RefCell<GameContext>>,
+    state: GameState,
+}
+
+impl GameStateMachine {
+    fn new(context: Rc<RefCell<GameContext>>, initial_state: GameState) -> GameStateMachine {
+        GameStateMachine {
+            context: context,
+            state: initial_state,
+        }
+    }
+
     fn handle_input(&mut self, input: Input, elapsed_milliseconds: Duration) {
-        match *self {
-            GameState::Falling(ref mut s) => s.handle_input(input, elapsed_milliseconds),
-            GameState::Clearing(ref mut s) => s.handle_input(input, elapsed_milliseconds),
-            GameState::GameOver(ref mut s) => s.handle_input(input, elapsed_milliseconds),
+        let mut context = self.context.borrow_mut();
+        match self.state {
+            GameState::Falling(mut s) => s.handle_input(&mut context, input, elapsed_milliseconds),
+            GameState::Clearing(mut s) => s.handle_input(&mut context, input, elapsed_milliseconds),
+            GameState::GameOver(mut s) => s.handle_input(&mut context, input, elapsed_milliseconds),
         }
     }
 
     fn update(&mut self, elapsed_milliseconds: Duration) -> GameState {
-        match *self {
-            GameState::Falling(ref mut s) => s.update(elapsed_milliseconds),
-            GameState::Clearing(ref mut s) => s.update(elapsed_milliseconds),
-            GameState::GameOver(ref mut s) => s.update(elapsed_milliseconds),
-        }
+        let mut context = self.context.borrow_mut();
+        self.state = match self.state {
+            GameState::Falling(mut s) => s.update(&mut context, elapsed_milliseconds),
+            GameState::Clearing(mut s) => s.update(&mut context, elapsed_milliseconds),
+            GameState::GameOver(mut s) => s.update(&mut context, elapsed_milliseconds),
+        };
+
+        self.state
     }
 }
 
@@ -2782,7 +2788,7 @@ impl RendererStateMachine {
 
 struct Game {
     context: Rc<RefCell<GameContext>>,
-    state: GameState,
+    state_machine: GameStateMachine,
     renderer_state_machine: RendererStateMachine,
 }
 
@@ -2854,9 +2860,8 @@ impl Game {
     }
 
     fn update_state(&mut self, elapsed_milliseconds: Duration) {
-        let state = self.state.update(elapsed_milliseconds);
-        self.renderer_state_machine.update(state.clone());
-        self.state = state;
+        let state = self.state_machine.update(elapsed_milliseconds);
+        self.renderer_state_machine.update(state);
     }
 
     #[inline]
@@ -3049,19 +3054,20 @@ fn init_game() -> Game {
         next_block: next_block_cell_ref,
         full_rows: full_rows,
     }));
-    let state = GameState::Falling(FallingState::new(context.clone()));
+    let initial_game_state = GameState::Falling(GameFallingState::new());
+    let state_machine = GameStateMachine::new(context.clone(), initial_game_state);
     let renderer_context = RendererContext {
         game_context: context.clone(),
         playing_field: playing_field,
         ui: ui,
         background: background,
     };
-    let renderer_state = RendererState::Falling(RendererFallingState {});
-    let renderer_state_machine = RendererStateMachine::new(renderer_context, renderer_state); 
+    let initial_renderer_state = RendererState::Falling(RendererFallingState {});
+    let renderer_state_machine = RendererStateMachine::new(renderer_context, initial_renderer_state); 
 
     let mut game = Game {
         context: context,
-        state: state,
+        state_machine: state_machine,
         renderer_state_machine: renderer_state_machine,
     };
     game.init_gpu();
@@ -3084,44 +3090,44 @@ fn main() {
         match game.get_key(Key::Left) {
             Action::Press => {
                 let input = Input::new(InputKind::Left, InputAction::Repeat);
-                game.state.handle_input(input, elapsed_milliseconds);
+                game.state_machine.handle_input(input, elapsed_milliseconds);
             }
             Action::Repeat => {
                 let input = Input::new(InputKind::Left, InputAction::Repeat);
-                game.state.handle_input(input, elapsed_milliseconds);
+                game.state_machine.handle_input(input, elapsed_milliseconds);
             }
             _ => {}
         }
         match game.get_key(Key::Right) {
             Action::Press => {
                 let input = Input::new(InputKind::Right, InputAction::Repeat);
-                game.state.handle_input(input, elapsed_milliseconds);
+                game.state_machine.handle_input(input, elapsed_milliseconds);
             }
             Action::Repeat => {
                 let input = Input::new(InputKind::Right, InputAction::Repeat);
-                game.state.handle_input(input, elapsed_milliseconds);
+                game.state_machine.handle_input(input, elapsed_milliseconds);
             }
             _ => {}
         }
         match game.get_key(Key::Down) {
             Action::Press => {
                 let input = Input::new(InputKind::Down, InputAction::Press);
-                game.state.handle_input(input, elapsed_milliseconds);
+                game.state_machine.handle_input(input, elapsed_milliseconds);
             }
             Action::Repeat => {
                 let input = Input::new(InputKind::Down, InputAction::Repeat);
-                game.state.handle_input(input, elapsed_milliseconds);
+                game.state_machine.handle_input(input, elapsed_milliseconds);
             }
             _ => {}
         }
         match game.get_key(Key::R) {
             Action::Press => {
                 let input = Input::new(InputKind::Rotate, InputAction::Press);
-                game.state.handle_input(input, elapsed_milliseconds);
+                game.state_machine.handle_input(input, elapsed_milliseconds);
             }
             Action::Repeat => {
                 let input = Input::new(InputKind::Rotate, InputAction::Repeat);
-                game.state.handle_input(input, elapsed_milliseconds);
+                game.state_machine.handle_input(input, elapsed_milliseconds);
             }
             _ => {}
         }
