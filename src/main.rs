@@ -1332,56 +1332,7 @@ impl PlayingField {
         let shape = playing_field.current_block.shape();
         let top_left_row = playing_field.current_position.row;
         let top_left_column = playing_field.current_position.column;
-        let quad = match shape.element {
-            GooglyBlockElement::EmptySpace => {
-                TextureQuad::new(
-                    [1_f32 / 3_f32, 3_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
-                    [2_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 3_f32 / 3_f32],               
-                )
-            }
-            GooglyBlockElement::T => {
-                TextureQuad::new(
-                    [0_f32 / 3_f32, 3_f32 / 3_f32], [0_f32 / 3_f32, 2_f32 / 3_f32],
-                    [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32],
-                )
-            }
-            GooglyBlockElement::J => {
-                TextureQuad::new(
-                    [0_f32 / 3_f32, 2_f32 / 3_f32], [0_f32 / 3_f32, 1_f32 / 3_f32],
-                    [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],                    
-                )
-            }
-            GooglyBlockElement::Z => {
-                TextureQuad::new(
-                    [2_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
-                    [3_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32],                    
-                )
-            }
-            GooglyBlockElement::O => {
-                TextureQuad::new(
-                    [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 0_f32 / 3_f32],
-                    [3_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32],                    
-                )
-            }
-            GooglyBlockElement::S => {
-                TextureQuad::new(
-                    [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 0_f32 / 3_f32],
-                    [2_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],                    
-                )
-            }
-            GooglyBlockElement::L => {
-                TextureQuad::new(
-                    [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
-                    [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],                    
-                )
-            }
-            GooglyBlockElement::I => {
-                TextureQuad::new(
-                    [0_f32 / 3_f32, 0_f32 / 3_f32], [0_f32 / 3_f32, 0_f32 / 3_f32],
-                    [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],                    
-                )
-            }
-        };
+        let quad = self.atlas[&shape.element];
         for (shape_row, shape_column) in shape.iter() {
             let row = top_left_row + shape_row as isize;
             let column = top_left_column + shape_column as isize;
