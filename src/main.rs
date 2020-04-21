@@ -493,9 +493,10 @@ fn send_to_gpu_textures_ui_panel(tex_image: &TexImage2D) -> GLuint {
 }
 
 #[derive(Copy, Clone)]
-struct UIPanelSpec {
+struct UIPanelSpec<'a> {
     height: usize,
     width: usize,
+    atlas: &'a UIPanelTextureAtlas,
 }
 
 struct UIPanel {
@@ -583,8 +584,7 @@ fn load_ui_panel(game: &mut glh::GLState, spec: UIPanelSpec, uniforms: UIPanelUn
     let mesh = create_geometry_ui_panel();
     let handle = create_buffers_geometry_ui_panel();
     send_to_gpu_geometry_ui_panel(handle, &mesh);
-    let tex_image = create_textures_ui_panel();
-    let tex = send_to_gpu_textures_ui_panel(&tex_image);
+    let tex = send_to_gpu_textures_ui_panel(&spec.atlas.image);
     send_to_gpu_uniforms_ui_panel(sp, uniforms);
 
     UIPanel {
@@ -2716,8 +2716,14 @@ fn init_game() -> Game {
     let panel_height = 504;
     let gui_scale_x = (panel_width as f32) / viewport_width;
     let gui_scale_y = (panel_height as f32) / viewport_height;
-
-    let ui_panel_spec = UIPanelSpec { height: panel_height, width: panel_width };
+    
+    let ui_panel_tex_image = create_textures_ui_panel();
+    let ui_panel_atlas = create_atlas_ui_panel(ui_panel_tex_image);
+    let ui_panel_spec = UIPanelSpec { 
+        height: panel_height, 
+        width: panel_width,
+        atlas: &ui_panel_atlas,
+    };
     let ui_panel_uniforms = UIPanelUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
     let ui_panel = {
         let mut context = gl_context.borrow_mut();
