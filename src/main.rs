@@ -426,7 +426,6 @@ fn send_to_gpu_geometry_ui_panel(handle: UIPanelHandle, mesh: &ObjMesh) {
 }
 
 fn create_textures_ui_panel() -> TexImage2D {
-    //let asset: &'static [u8; 31235] = include_asset!("ui_panel.png");
     let asset: &'static [u8; 59580] = include_asset!("ui_panel_atlas.png");
     teximage2d::load_from_memory(asset).unwrap().image
 }
