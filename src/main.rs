@@ -2993,10 +2993,10 @@ fn main() {
         game.clear_depth_buffer();
         game.update_viewport();
         game.update_background();
-        game.render_background();
         game.update_ui();
-        game.render_ui();
         game.update_playing_field();
+        game.render_background();
+        game.render_ui();
         game.render_playing_field();
 
         // Send the results to the output.
