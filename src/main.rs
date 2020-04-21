@@ -1326,67 +1326,6 @@ impl PlayingField {
                 let element = playing_field.landed_blocks.get(row as isize, column as isize).unwrap();
                 let quad = self.atlas[&element];
                 self.tex_coords[row][column] = quad;
-                /*
-                match playing_field.landed_blocks.get(row as isize, column as isize) {
-                    LandedBlocksQuery::InOfBounds(GooglyBlockElement::EmptySpace) => {
-                        let quad = TextureQuad::new(
-                            [1_f32 / 3_f32, 3_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
-                            [2_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 3_f32 / 3_f32]
-                        );
-                        self.tex_coords[row][column] = quad;
-                    }
-                    LandedBlocksQuery::InOfBounds(GooglyBlockElement::T) => {
-                        let quad = TextureQuad::new(
-                            [0_f32 / 3_f32, 3_f32 / 3_f32], [0_f32 / 3_f32, 2_f32 / 3_f32],
-                            [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32],
-                        );
-                        self.tex_coords[row][column] = quad;
-                    }
-                    LandedBlocksQuery::InOfBounds(GooglyBlockElement::J) => {
-                        let quad = TextureQuad::new(
-                            [0_f32 / 3_f32, 2_f32 / 3_f32], [0_f32 / 3_f32, 1_f32 / 3_f32],
-                            [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
-                        );
-                        self.tex_coords[row][column] = quad;
-                    }
-                    LandedBlocksQuery::InOfBounds(GooglyBlockElement::Z) => {
-                        let quad = TextureQuad::new(
-                            [2_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
-                            [3_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32],
-                        );
-                        self.tex_coords[row][column] = quad;
-                    }
-                    LandedBlocksQuery::InOfBounds(GooglyBlockElement::O) => {
-                        let quad = TextureQuad::new(
-                            [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 0_f32 / 3_f32],
-                            [3_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32],
-                        );
-                        self.tex_coords[row][column] = quad;
-                    }
-                    LandedBlocksQuery::InOfBounds(GooglyBlockElement::S) => {
-                        let quad = TextureQuad::new(
-                            [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 0_f32 / 3_f32],
-                            [2_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
-                        );
-                        self.tex_coords[row][column] = quad;
-                    }
-                    LandedBlocksQuery::InOfBounds(GooglyBlockElement::L) => {
-                        let quad = TextureQuad::new(
-                            [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
-                            [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
-                        );
-                        self.tex_coords[row][column] = quad;
-                    }
-                    LandedBlocksQuery::InOfBounds(GooglyBlockElement::I) => {
-                        let quad = TextureQuad::new(
-                            [0_f32 / 3_f32, 0_f32 / 3_f32], [0_f32 / 3_f32, 0_f32 / 3_f32],
-                            [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
-                        );
-                        self.tex_coords[row][column] = quad;
-                    }
-                    _ => {}
-                }
-                */
             } 
         }
 
