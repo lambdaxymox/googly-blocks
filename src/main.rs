@@ -458,6 +458,8 @@ impl UIPanelTextureAtlas {
 }
 
 fn create_atlas_ui_panel(image: TexImage2D) -> UIPanelTextureAtlas {
+    use UIPanelAtlasElement::*;
+
     let tex_coords_panel: Vec<[GLfloat; 2]> = vec![
         [1314_f32 / 2048_f32, 1032_f32 / 2048_f32], [0_f32 / 2048_f32,    0_f32 / 2048_f32], [1314_f32 / 2048_f32, 0_f32 / 2048_f32],
         [1314_f32 / 2048_f32, 1032_f32 / 2048_f32], [0_f32 / 2048_f32, 1032_f32 / 2048_f32], [0_f32    / 2048_f32, 0_f32 / 2048_f32],
@@ -475,13 +477,13 @@ fn create_atlas_ui_panel(image: TexImage2D) -> UIPanelTextureAtlas {
         [1780_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32,  768_f32 / 2048_f32], [1780_f32 / 2048_f32, 768_f32 / 2048_f32],
         [1780_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32, 768_f32 / 2048_f32],
     ];
-    
+
     let mut coords = HashMap::new();
-    coords.insert(UIPanelAtlasElement::Panel, tex_coords_panel);
-    coords.insert(UIPanelAtlasElement::PlayingFieldDefaultBackground, tex_coords_playing_field_default_background);
-    coords.insert(UIPanelAtlasElement::PlayingFieldFlashingBackgroundDark, tex_coords_playing_field_flashing_background_dark);
-    coords.insert(UIPanelAtlasElement::PlayingFieldFlashingBackgroundLight, tex_coords_playing_field_flashing_background_light);
-    coords.insert(UIPanelAtlasElement::GameOver, tex_coords_game_over);
+    coords.insert(Panel, tex_coords_panel);
+    coords.insert(PlayingFieldDefaultBackground, tex_coords_playing_field_default_background);
+    coords.insert(PlayingFieldFlashingBackgroundDark, tex_coords_playing_field_flashing_background_dark);
+    coords.insert(PlayingFieldFlashingBackgroundLight, tex_coords_playing_field_flashing_background_light);
+    coords.insert(GameOver, tex_coords_game_over);
     
     UIPanelTextureAtlas::new(image, coords)
 }
