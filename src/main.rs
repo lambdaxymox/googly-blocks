@@ -310,6 +310,7 @@ fn load_background_panel(game: &mut glh::GLState, spec: BackgroundPanelSpec) -> 
     }
 }
 
+/*
 fn update_uniforms_background_panel(game: &mut RendererContext) {
     let panel_width = game.background.width as f32;
     let panel_height = game.background.height as f32;
@@ -319,6 +320,7 @@ fn update_uniforms_background_panel(game: &mut RendererContext) {
     let uniforms = BackgroundPanelUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
     send_to_gpu_uniforms_background_panel(game.background.buffer.sp, uniforms);
 }
+*/
 
 
 fn create_shaders_ui_panel() -> ShaderSource {
@@ -2515,6 +2517,16 @@ impl RendererContext {
             height: height,
         }
     }
+
+    fn update_uniforms_background_panel(&mut self) {
+        let panel_width = self.background.width as f32;
+        let panel_height = self.background.height as f32;
+        let (viewport_width, viewport_height) = self.get_framebuffer_size();
+        let gui_scale_x = panel_width / (viewport_width as f32);
+        let gui_scale_y = panel_height / (viewport_height as f32);
+        let uniforms = BackgroundPanelUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
+        send_to_gpu_uniforms_background_panel(self.background.buffer.sp, uniforms);
+    }
 }
 
 #[derive(Copy, Clone)]
@@ -2550,7 +2562,7 @@ impl RendererFallingState {
         }
 
         // game.update_background();
-        update_uniforms_background_panel(context);
+        context.update_uniforms_background_panel();
 
         // game.render_background();
         unsafe {
@@ -2660,7 +2672,7 @@ impl RendererClearingState {
         }
 
         // game.update_background();
-        update_uniforms_background_panel(context);
+        context.update_uniforms_background_panel();
 
         // game.render_background();
         unsafe {
