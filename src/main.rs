@@ -2930,7 +2930,6 @@ fn main() {
     let mut game = init_game();
     game.init_gpu();
     while !game.window_should_close() {
-        // Check input.
         let elapsed_milliseconds = game.update_timers();
 
         game.poll_events();
