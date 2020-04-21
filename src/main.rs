@@ -1203,7 +1203,7 @@ fn create_textures_playing_field() -> GooglyBlockElementTextureAtlas {
             [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
         )),
         (GooglyBlockElement::I, TextureQuad::new(
-            [0_f32 / 3_f32, 0_f32 / 3_f32], [0_f32 / 3_f32, 0_f32 / 3_f32],
+            [0_f32 / 3_f32, 1_f32 / 3_f32], [0_f32 / 3_f32, 0_f32 / 3_f32],
             [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
         ))
     ].iter().map(|elem| *elem).collect();
