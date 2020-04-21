@@ -2692,11 +2692,11 @@ impl Game {
             );
         }
     }
-
+    /*
     fn update_timers_playing_field(&mut self, elapsed: Duration) {
         self.context.borrow_mut().timers.borrow_mut().update(elapsed);
     }
-
+    */
     fn update_playing_field(&mut self) {
         update_uniforms_playing_field(self);
         let context = self.context.borrow();
@@ -2704,11 +2704,11 @@ impl Game {
         self.playing_field.write(&playing_field_state).unwrap();
         self.playing_field.send_to_gpu().unwrap();
     }
-
+    /*
     fn update_next_piece(&mut self) {
         self.context.borrow_mut().next_block.borrow_mut().update();
     }
-
+    */
     fn update_state(&mut self, elapsed_milliseconds: Duration) {
         self.state = self.state.update(elapsed_milliseconds);
     }
