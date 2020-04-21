@@ -2287,7 +2287,7 @@ impl FallingState {
         if timers.collision_timer.event_triggered() {
             let current_block = playing_field_state.current_block;
             playing_field_state.update_landed();
-            if playing_field_state.has_empty_row(0) {
+            if !playing_field_state.has_empty_row(0) {
                 return GameState::GameOver(GameOverState::new(self.context.clone()));
             }
             
