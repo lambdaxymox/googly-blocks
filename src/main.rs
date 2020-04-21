@@ -431,6 +431,61 @@ fn create_textures_ui_panel() -> TexImage2D {
     teximage2d::load_from_memory(asset).unwrap().image
 }
 
+
+#[derive(Copy, Clone, Eq, PartialEq, Hash)]
+enum UIPanelAtlasElement {
+    Panel,
+    PlayingFieldDefaultBackground,
+    PlayingFieldFlashingBackgroundDark,
+    PlayingFieldFlashingBackgroundLight,
+    GameOver,
+}
+
+struct UIPanelTextureAtlas {
+    image: TexImage2D,
+    coords: HashMap<UIPanelAtlasElement, Vec<[GLfloat; 2]>>,
+}
+
+impl UIPanelTextureAtlas {
+    fn new(image: TexImage2D, 
+           coords: HashMap<UIPanelAtlasElement, Vec<[GLfloat; 2]>>) -> UIPanelTextureAtlas {
+        UIPanelTextureAtlas {
+            image: image,
+            coords: coords,
+        }
+
+    }
+}
+
+fn create_atlas_ui_panel(image: TexImage2D) -> UIPanelTextureAtlas {
+    let tex_coords_panel: Vec<[GLfloat; 2]> = vec![
+        [1314_f32 / 2048_f32, 1032_f32 / 2048_f32], [0_f32 / 2048_f32,    0_f32 / 2048_f32], [1314_f32 / 2048_f32, 0_f32 / 2048_f32],
+        [1314_f32 / 2048_f32, 1032_f32 / 2048_f32], [0_f32 / 2048_f32, 1032_f32 / 2048_f32], [0_f32    / 2048_f32, 0_f32 / 2048_f32],
+    ];
+    let tex_coords_playing_field_default_background: Vec<[GLfloat; 2]> = vec![
+
+    ];
+    let tex_coords_playing_field_flashing_background_dark: Vec<[GLfloat; 2]> = vec![
+
+    ];
+    let tex_coords_playing_field_flashing_background_light: Vec<[GLfloat; 2]> = vec![
+
+    ];
+    let tex_coords_game_over: Vec<[GLfloat; 2]> = vec![
+        [1780_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32,  768_f32 / 2048_f32], [1780_f32 / 2048_f32, 768_f32 / 2048_f32],
+        [1780_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32, 768_f32 / 2048_f32],
+    ];
+    
+    let mut coords = HashMap::new();
+    coords.insert(UIPanelAtlasElement::Panel, tex_coords_panel);
+    coords.insert(UIPanelAtlasElement::PlayingFieldDefaultBackground, tex_coords_playing_field_default_background);
+    coords.insert(UIPanelAtlasElement::PlayingFieldFlashingBackgroundDark, tex_coords_playing_field_flashing_background_dark);
+    coords.insert(UIPanelAtlasElement::PlayingFieldFlashingBackgroundLight, tex_coords_playing_field_flashing_background_light);
+    coords.insert(UIPanelAtlasElement::GameOver, tex_coords_game_over);
+    
+    UIPanelTextureAtlas::new(image, coords)
+}
+
 fn send_to_gpu_textures_ui_panel(tex_image: &TexImage2D) -> GLuint {
     send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()
 }
