@@ -408,9 +408,16 @@ impl LandedBlocksQuery {
     }
 
     fn is_empty_space(&self) -> bool {
-        match * self {
+        match *self {
             LandedBlocksQuery::InOfBounds(GooglyBlockElement::EmptySpace) => true,
             _ => false,
+        }
+    }
+
+    pub fn unwrap(&self) -> GooglyBlockElement {
+        match *self {
+            LandedBlocksQuery::InOfBounds(element) => element,
+            _ => panic!("Queried a playing field cell that was out of bounds."),
         }
     }
 }

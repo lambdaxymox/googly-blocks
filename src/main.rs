@@ -1156,9 +1156,59 @@ fn send_to_gpu_geometry_playing_field(handle: PlayingFieldBuffers, mesh: &ObjMes
     }
 }
 
-fn create_textures_playing_field() -> TexImage2D {
+struct GooglyBlockElementTextureAtlas {
+    image: TexImage2D,
+    coords: HashMap<GooglyBlockElement, TextureQuad>,
+}
+
+impl GooglyBlockElementTextureAtlas {
+    fn new(image: TexImage2D, coords: HashMap<GooglyBlockElement, TextureQuad>) -> GooglyBlockElementTextureAtlas {
+        GooglyBlockElementTextureAtlas {
+            image: image,
+            coords: coords,
+        }
+    }
+}
+
+fn create_textures_playing_field() -> GooglyBlockElementTextureAtlas {
     let asset: &'static [u8; 1448] = include_asset!("blocks.png");
-    teximage2d::load_from_memory(asset).unwrap().image
+    let tex_image = teximage2d::load_from_memory(asset).unwrap().image;
+    let tex_coords = [
+    (GooglyBlockElement::EmptySpace, TextureQuad::new(
+        [1_f32 / 3_f32, 3_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
+        [2_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 3_f32 / 3_f32]
+    )),
+    (GooglyBlockElement::T, TextureQuad::new(
+        [0_f32 / 3_f32, 3_f32 / 3_f32], [0_f32 / 3_f32, 2_f32 / 3_f32],
+        [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32],
+    )),
+    (GooglyBlockElement::J, TextureQuad::new(
+        [0_f32 / 3_f32, 2_f32 / 3_f32], [0_f32 / 3_f32, 1_f32 / 3_f32],
+        [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
+    )),
+    (GooglyBlockElement::Z, TextureQuad::new(
+        [2_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
+        [3_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32],
+    )),
+    (GooglyBlockElement::O, TextureQuad::new(
+        [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 0_f32 / 3_f32],
+        [3_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32],
+    )),
+    (GooglyBlockElement::S, TextureQuad::new(
+        [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 0_f32 / 3_f32],
+        [2_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
+    )),
+    (GooglyBlockElement::L, TextureQuad::new(
+        [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
+        [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
+    )),
+    (GooglyBlockElement::I, TextureQuad::new(
+        [0_f32 / 3_f32, 0_f32 / 3_f32], [0_f32 / 3_f32, 0_f32 / 3_f32],
+        [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
+    ))
+    ].iter().map(|elem| *elem).collect();
+
+    GooglyBlockElementTextureAtlas::new(tex_image, tex_coords)
 }
 
 fn send_to_gpu_textures_playing_field(tex_image: &TexImage2D) -> GLuint {
@@ -1206,9 +1256,10 @@ fn send_to_gpu_uniforms_playing_field(sp: GLuint, uniforms: PlayingFieldUniforms
     }    
 }
 
-struct PlayingFieldHandleSpec {
+struct PlayingFieldHandleSpec<'a> {
     rows: usize,
     columns: usize,
+    atlas: &'a GooglyBlockElementTextureAtlas,
 }
 
 struct PlayingFieldHandle {
@@ -1254,14 +1305,16 @@ impl TextureQuad {
 struct PlayingField {
     tex_coords: [[TextureQuad; 10]; 20],
     handle: PlayingFieldHandle,
+    atlas: HashMap<GooglyBlockElement, TextureQuad>,
 }
 
 impl PlayingField {
-    fn new(handle: PlayingFieldHandle) -> PlayingField {
+    fn new(handle: PlayingFieldHandle, atlas: &GooglyBlockElementTextureAtlas) -> PlayingField {
         let quad = TextureQuad::new([0_f32, 0_f32], [0_f32, 0_f32], [0_f32, 0_f32], [0_f32, 0_f32]);
         PlayingField {
             tex_coords: [[quad; 10]; 20],
             handle: handle,
+            atlas: atlas.coords.clone(),
         }
     }
 
@@ -1270,6 +1323,10 @@ impl PlayingField {
         let columns = playing_field.landed_blocks.columns();
         for row in 0..rows {
             for column in 0..columns {
+                let element = playing_field.landed_blocks.get(row as isize, column as isize).unwrap();
+                let quad = self.atlas[&element];
+                self.tex_coords[row][column] = quad;
+                /*
                 match playing_field.landed_blocks.get(row as isize, column as isize) {
                     LandedBlocksQuery::InOfBounds(GooglyBlockElement::EmptySpace) => {
                         let quad = TextureQuad::new(
@@ -1329,6 +1386,7 @@ impl PlayingField {
                     }
                     _ => {}
                 }
+                */
             } 
         }
 
@@ -1409,11 +1467,10 @@ impl PlayingField {
 fn load_playing_field(game: &mut glh::GLState, spec: PlayingFieldHandleSpec, uniforms: PlayingFieldUniforms) -> PlayingFieldHandle {
     let shader_source = create_shaders_playing_field();
     let mesh = create_geometry_playing_field(spec.rows, spec.columns);
-    let teximage = create_textures_playing_field();
     let sp = send_to_gpu_shaders_playing_field(game, shader_source);
     let handle = create_buffers_geometry_playing_field();
     send_to_gpu_geometry_playing_field(handle, &mesh);
-    let tex = send_to_gpu_textures_playing_field(&teximage);
+    let tex = send_to_gpu_textures_playing_field(&spec.atlas.image);
     send_to_gpu_uniforms_playing_field(sp, uniforms);
 
     PlayingFieldHandle {
@@ -2692,7 +2749,7 @@ fn init_game() -> Game {
     let width = 896;
     let height = 504;
     let gl_context = Rc::new(RefCell::new(init_gl(width, height)));
-    let atlas = Rc::new(load_font_atlas());
+    let font_atlas = Rc::new(load_font_atlas());
 
     let background_panel_height = height as usize;
     let background_panel_width = width as usize;
@@ -2721,7 +2778,7 @@ fn init_game() -> Game {
     
     let text_panel_uniforms = TextPanelUniforms { text_color: TEXT_COLOR };
     let text_panel_spec = TextPanelSpec {
-        atlas: atlas.clone(),
+        atlas: font_atlas.clone(),
         score_placement: AbsolutePlacement { x: 0.46, y: 0.11 },
         level_placement: AbsolutePlacement { x: 0.50, y: -0.21 },
         lines_placement: AbsolutePlacement { x: 0.50, y: -0.54 },
@@ -2752,11 +2809,12 @@ fn init_game() -> Game {
         text_panel: text_panel,
         next_piece_panel: next_piece_panel,
     };
-    
+    let block_element_atlas = create_textures_playing_field();
     let playing_field_uniforms = create_uniforms_playing_field(488, viewport_width as u32, viewport_height as u32);
     let playing_field_spec = PlayingFieldHandleSpec {
         rows: 20,
         columns: 10,
+        atlas: &block_element_atlas,
     };
     let playing_field_handle = {
         let mut context = gl_context.borrow_mut();    
@@ -2778,7 +2836,7 @@ fn init_game() -> Game {
         starting_positions: starting_positions,
     };
     let playing_field_state = Rc::new(RefCell::new(PlayingFieldState::new(playing_field_state_spec)));
-    let playing_field = PlayingField::new(playing_field_handle);
+    let playing_field = PlayingField::new(playing_field_handle, &block_element_atlas);
     let timer_spec = PlayingFieldTimerSpec {
         fall_interval: Interval::Milliseconds(500),
         collision_interval: Interval::Milliseconds(500),
