@@ -2712,15 +2712,15 @@ fn init_game() -> Game {
     };
     let starting_block = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
     
-    let mut starting_positions = HashMap::new();
-    starting_positions.insert(GooglyBlockPiece::T ,BlockPosition::new(-3, 4));
-    starting_positions.insert(GooglyBlockPiece::J ,BlockPosition::new(-3, 4)); 
-    starting_positions.insert(GooglyBlockPiece::Z ,BlockPosition::new(-3, 4));
-    starting_positions.insert(GooglyBlockPiece::O ,BlockPosition::new(-3, 4)); 
-    starting_positions.insert(GooglyBlockPiece::S ,BlockPosition::new(-3, 4)); 
-    starting_positions.insert(GooglyBlockPiece::L ,BlockPosition::new(-3, 4));
-    starting_positions.insert(GooglyBlockPiece::I ,BlockPosition::new(-3, 3));
-
+    let starting_positions: HashMap<GooglyBlockPiece, BlockPosition> = [
+        (GooglyBlockPiece::T, BlockPosition::new(-3, 4)),
+        (GooglyBlockPiece::J, BlockPosition::new(-3, 4)), 
+        (GooglyBlockPiece::Z, BlockPosition::new(-3, 4)),
+        (GooglyBlockPiece::O, BlockPosition::new(-3, 4)), 
+        (GooglyBlockPiece::S, BlockPosition::new(-3, 4)), 
+        (GooglyBlockPiece::L, BlockPosition::new(-3, 4)),
+        (GooglyBlockPiece::I, BlockPosition::new(-3, 3)),
+    ].iter().map(|elem| *elem).collect();
     let playing_field_state_spec = PlayingFieldStateSpec {
         starting_block: starting_block,
         starting_positions: starting_positions,
