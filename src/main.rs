@@ -2487,9 +2487,78 @@ struct GameContext {
     full_rows: Rc<RefCell<FullRows>>,
 }
 
+#[derive(Clone)]
+struct RendererContext {
+    game_context: Rc<RefCell<GameContext>>,
+}
+
+#[derive(Copy, Clone)]
+struct RendererFallingState {}
+
+impl RendererFallingState {
+    fn render(&self, context: &mut RendererContext) {
+
+    }
+}
+
+#[derive(Copy, Clone)]
+struct RendererClearingState {}
+
+impl RendererClearingState {
+    fn render(&self, context: &mut RendererContext) {
+
+    }
+}
+
+#[derive(Copy, Clone)]
+struct RendererGameOverState {}
+
+impl RendererGameOverState {
+    fn render(&self, context: &mut RendererContext) {
+
+    }
+}
+
+enum RendererState {
+    Falling(RendererFallingState),
+    Clearing(RendererClearingState),
+    GameOver(RendererGameOverState),
+}
+
+struct RendererStateMachine {
+    context: RendererContext,
+    state: RendererState,
+}
+
+impl RendererStateMachine {
+    fn new(context: RendererContext, initial_state: RendererState) -> RendererStateMachine {
+        RendererStateMachine {
+            context: context,
+            state: initial_state,
+        }
+    }
+
+    fn update(&mut self, game_state: GameState) {
+        self.state = match game_state {
+            GameState::Falling(_) => RendererState::Falling(RendererFallingState {}),
+            GameState::Clearing(_) => RendererState::Clearing(RendererClearingState {}),
+            GameState::GameOver(_) => RendererState::GameOver(RendererGameOverState {}),
+        }
+    }
+
+    fn render(&mut self) {
+        match self.state {
+            RendererState::Falling(s) => s.render(&mut self.context),
+            RendererState::Clearing(s) => s.render(&mut self.context),
+            RendererState::GameOver(s) => s.render(&mut self.context),
+        }
+    }
+}
+
 struct Game {
     context: Rc<RefCell<GameContext>>,
     state: GameState,
+    renderer_state_machine: RendererStateMachine,
     playing_field: PlayingField,
     ui: UI,
     background: BackgroundPanel,
@@ -2849,10 +2918,16 @@ fn init_game() -> Game {
         full_rows: full_rows,
     }));
     let state = GameState::Falling(FallingState::new(context.clone()));
+    let renderer_context = RendererContext {
+        game_context: context.clone(),
+    };
+    let renderer_state = RendererState::Falling(RendererFallingState {});
+    let renderer_state_machine = RendererStateMachine::new(renderer_context, renderer_state); 
 
     Game {
         context: context,
         state: state,
+        renderer_state_machine: renderer_state_machine,
         playing_field: playing_field,
         ui: ui,
         background: background,
