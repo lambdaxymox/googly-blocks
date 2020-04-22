@@ -2523,65 +2523,62 @@ impl RendererContext {
 struct RendererFallingState {}
 
 impl RendererFallingState {
-    fn render(&self, context: &mut RendererContext) {
-        // game.clear_frame_buffer();
+    #[inline]
+    fn clear_framebuffer(&self, context: &mut RendererContext) {
         unsafe {
             gl::ClearBufferfv(gl::COLOR, 0, &CLEAR_COLOR[0] as *const GLfloat);
         }
+    }
 
-        // game.clear_depth_buffer();
+    #[inline]
+    fn clear_depth_buffer(&self, context: &mut RendererContext) {
         unsafe {
             gl::ClearBufferfv(gl::DEPTH, 0, &CLEAR_DEPTH[0] as *const GLfloat);
         }
+    }
 
-        // game.update_viewport();
-        //let dims = self.viewport_dimensions();
-        let (width, height) = {
-            let game_context = context.game_context.borrow();
-            let gl_context = game_context.gl.borrow();
-            (gl_context.width as i32, gl_context.height as i32)
-        };
-        
-        let dims = ViewportDimensions { 
-            width: width, 
-            height: height,
-        };
-
+    #[inline]
+    fn update_viewport(&self, context: &mut RendererContext) {
+        let dims = context.viewport_dimensions();
         unsafe {
             gl::Viewport(0, 0, dims.width, dims.height);
         }
+    }
 
-        // game.update_background();
+    #[inline]
+    fn update_background(&self, context: &mut RendererContext) {
         context.update_uniforms_background_panel();
+    }
 
-        // game.render_background();
+    fn render_background(&self, context: &mut RendererContext) {
         unsafe {
             gl::UseProgram(context.background.buffer.sp);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, context.background.buffer.tex);
             gl::BindVertexArray(context.background.buffer.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
-        }
+        }        
+    }
 
-        // game.update_ui();
+    fn update_ui(&self, context: &mut RendererContext) {
         context.update_uniforms_ui_panel();
         context.update_uniforms_next_piece_panel();
-        {
-            let game_context = context.game_context.borrow();
-            let score_board = game_context.score_board.borrow();
-            context.ui.update_score(score_board.score);
-            context.ui.update_lines(score_board.lines);
-            context.ui.update_level(score_board.level);
-            context.ui.update_tetrises(score_board.tetrises);
-            context.ui.update_statistics(&game_context.statistics.borrow());
-            context.ui.update_next_piece(game_context.next_block.borrow().block);
-            context.ui.update_panel();
-        }
-        // game.render_ui();
+        let game_context = context.game_context.borrow();
+        let score_board = game_context.score_board.borrow();
+        context.ui.update_score(score_board.score);
+        context.ui.update_lines(score_board.lines);
+        context.ui.update_level(score_board.level);
+        context.ui.update_tetrises(score_board.tetrises);
+        context.ui.update_statistics(&game_context.statistics.borrow());
+        context.ui.update_next_piece(game_context.next_block.borrow().block);
+        context.ui.update_panel();   
+    }
+
+    fn render_ui(&self, context: &mut RendererContext) {
+        // Render the game board. We turn off depth testing to do so since this is
+        // a 2D scene using 3D abstractions. Otherwise Z-Buffering would prevent us
+        // from rendering the game board.
         unsafe {
-            // Render the game board. We turn off depth testing to do so since this is
-            // a 2D scene using 3D abstractions. Otherwise Z-Buffering would prevent us
-            // from rendering the game board.
             gl::UseProgram(context.ui.ui_panel.sp);
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
@@ -2603,18 +2600,17 @@ impl RendererFallingState {
             gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().block).vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 3 * 8);
         }
-        
-        // game.update_playing_field();
-        context.update_uniforms_playing_field();
+    }
 
-        //let context = self.context.borrow();
-        {
-            let game_context = context.game_context.borrow();
-            let playing_field_state = game_context.playing_field_state.borrow();
-            context.playing_field.write(&playing_field_state).unwrap();
-            context.playing_field.send_to_gpu().unwrap();
-        }
-        // game.render_playing_field();
+    fn update_playing_field(&self, context: &mut RendererContext) {
+        context.update_uniforms_playing_field();
+        let game_context = context.game_context.borrow();
+        let playing_field_state = game_context.playing_field_state.borrow();
+        context.playing_field.write(&playing_field_state).unwrap();
+        context.playing_field.send_to_gpu().unwrap();
+    }
+
+    fn render_playing_field(&self, context: &mut RendererContext) {
         unsafe {
             gl::UseProgram(context.playing_field.handle.sp);
             gl::Disable(gl::DEPTH_TEST);
@@ -2625,7 +2621,19 @@ impl RendererFallingState {
             gl::BindVertexArray(context.playing_field.handle.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 2 * 6 * 20 * 10);
             gl::Disable(gl::BLEND);
-        }
+        }        
+    }
+
+    fn render(&self, context: &mut RendererContext) {
+        self.clear_framebuffer(context);
+        self.clear_depth_buffer(context);
+        self.update_viewport(context);
+        self.update_background(context);
+        self.render_background(context);
+        self.update_ui(context);
+        self.render_ui(context);
+        self.update_playing_field(context);
+        self.render_playing_field(context);
     }
 }
 
