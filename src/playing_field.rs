@@ -1158,8 +1158,9 @@ mod playing_field_tests {
     use super::{
         GooglyBlock, GooglyBlockPiece, GooglyBlockElement, 
         GooglyBlockRotation, LandedBlocksGrid,
-        BlockPosition, PlayingFieldState, GooglyBlockMove,
+        BlockPosition, PlayingFieldState, PlayingFieldStateSpec, GooglyBlockMove,
     };
+    use std::collections::hash_map::HashMap;
 
     struct PlayingFieldTestCase {
         playing_field: PlayingFieldState,
@@ -1205,8 +1206,20 @@ mod playing_field_tests {
         landed_blocks.insert(19, 2, GooglyBlockElement::T);
 
         let starting_block = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
-        let starting_position = BlockPosition::new(0, 6);
-        let mut playing_field = PlayingFieldState::new(starting_block, starting_position);
+        let starting_positions: HashMap<GooglyBlockPiece, BlockPosition> = [
+            (GooglyBlockPiece::T, BlockPosition::new(-3, 4)),
+            (GooglyBlockPiece::J, BlockPosition::new(-3, 4)), 
+            (GooglyBlockPiece::Z, BlockPosition::new(-3, 4)),
+            (GooglyBlockPiece::O, BlockPosition::new(-3, 4)), 
+            (GooglyBlockPiece::S, BlockPosition::new(-3, 4)), 
+            (GooglyBlockPiece::L, BlockPosition::new(-3, 4)),
+            (GooglyBlockPiece::I, BlockPosition::new(-3, 3)),
+        ].iter().map(|elem| *elem).collect();
+        let spec = PlayingFieldStateSpec {
+            starting_block: starting_block,
+            starting_positions: starting_positions,
+        };
+        let mut playing_field = PlayingFieldState::new(spec);
         playing_field.landed_blocks = landed_blocks;
 
 
@@ -1217,8 +1230,20 @@ mod playing_field_tests {
 
     fn empty_playing_field_test_case() -> PlayingFieldTestCase {
         let starting_block = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
-        let starting_position = BlockPosition::new(0, 6);
-        let playing_field = PlayingFieldState::new(starting_block, starting_position);
+        let starting_positions: HashMap<GooglyBlockPiece, BlockPosition> = [
+            (GooglyBlockPiece::T, BlockPosition::new(-3, 4)),
+            (GooglyBlockPiece::J, BlockPosition::new(-3, 4)), 
+            (GooglyBlockPiece::Z, BlockPosition::new(-3, 4)),
+            (GooglyBlockPiece::O, BlockPosition::new(-3, 4)), 
+            (GooglyBlockPiece::S, BlockPosition::new(-3, 4)), 
+            (GooglyBlockPiece::L, BlockPosition::new(-3, 4)),
+            (GooglyBlockPiece::I, BlockPosition::new(-3, 3)),
+        ].iter().map(|elem| *elem).collect();
+        let spec = PlayingFieldStateSpec {
+            starting_block: starting_block,
+            starting_positions: starting_positions,
+        };
+        let playing_field = PlayingFieldState::new(spec);
 
         PlayingFieldTestCase {
             playing_field: playing_field,
@@ -1295,7 +1320,7 @@ mod playing_field_tests {
     #[test]
     fn falling_in_an_empty_playing_field_should_stop_on_floor() {
         let mut test = empty_playing_field_test_case();
-        let moves = vec![GooglyBlockMove::Fall; 20];
+        let moves = vec![GooglyBlockMove::Fall; 30];
         assert!(moves_collide_with_floor(&mut test.playing_field, &moves));
     }
 

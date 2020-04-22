@@ -601,7 +601,7 @@ fn load_ui_panel(game: &mut glh::GLState, spec: UIPanelSpec, uniforms: UIPanelUn
         width: spec.width,
     }
 }
-
+/*
 fn update_ui_panel_uniforms(game: &mut RendererContext) {
     let panel_width = game.ui.ui_panel.width as f32;
     let panel_height = game.ui.ui_panel.height as f32;
@@ -611,6 +611,7 @@ fn update_ui_panel_uniforms(game: &mut RendererContext) {
     let uniforms = UIPanelUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
     send_to_gpu_uniforms_ui_panel(game.ui.ui_panel.sp, uniforms);
 }
+*/
 
 
 /// Create the shaders for the next panel in the game's user interface.
@@ -2527,6 +2528,16 @@ impl RendererContext {
         let uniforms = BackgroundPanelUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
         send_to_gpu_uniforms_background_panel(self.background.buffer.sp, uniforms);
     }
+
+    fn update_uniforms_ui_panel(&mut self) {
+        let panel_width = self.ui.ui_panel.width as f32;
+        let panel_height = self.ui.ui_panel.height as f32;
+        let (viewport_width, viewport_height) = self.get_framebuffer_size();
+        let gui_scale_x = panel_width / (viewport_width as f32);
+        let gui_scale_y = panel_height / (viewport_height as f32);
+        let uniforms = UIPanelUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
+        send_to_gpu_uniforms_ui_panel(self.ui.ui_panel.sp, uniforms);
+    }
 }
 
 #[derive(Copy, Clone)]
@@ -2574,7 +2585,7 @@ impl RendererFallingState {
         }
 
         // game.update_ui();
-        update_ui_panel_uniforms(context);
+        context.update_uniforms_ui_panel();
         update_uniforms_next_piece_panel(context);
         {
             let game_context = context.game_context.borrow();
@@ -2684,7 +2695,7 @@ impl RendererClearingState {
         }
 
         // game.update_ui();
-        update_ui_panel_uniforms(context);
+        context.update_uniforms_ui_panel();
         update_uniforms_next_piece_panel(context);
         {
             let game_context = context.game_context.borrow();
