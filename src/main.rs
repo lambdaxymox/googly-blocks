@@ -2873,6 +2873,11 @@ impl Game {
         }
     }
 
+    #[inline]
+    fn handle_input(&mut self, input: Input, elapsed_milliseconds: Duration) {
+        self.state_machine.handle_input(input, elapsed_milliseconds);
+    }
+
     fn update_state(&mut self, elapsed_milliseconds: Duration) {
         let state = self.state_machine.update(elapsed_milliseconds);
         self.renderer_state_machine.update(state);
@@ -3086,44 +3091,44 @@ fn main() {
         match game.get_key(Key::Left) {
             Action::Press => {
                 let input = Input::new(InputKind::Left, InputAction::Repeat);
-                game.state_machine.handle_input(input, elapsed_milliseconds);
+                game.handle_input(input, elapsed_milliseconds);
             }
             Action::Repeat => {
                 let input = Input::new(InputKind::Left, InputAction::Repeat);
-                game.state_machine.handle_input(input, elapsed_milliseconds);
+                game.handle_input(input, elapsed_milliseconds);
             }
             _ => {}
         }
         match game.get_key(Key::Right) {
             Action::Press => {
                 let input = Input::new(InputKind::Right, InputAction::Repeat);
-                game.state_machine.handle_input(input, elapsed_milliseconds);
+                game.handle_input(input, elapsed_milliseconds);
             }
             Action::Repeat => {
                 let input = Input::new(InputKind::Right, InputAction::Repeat);
-                game.state_machine.handle_input(input, elapsed_milliseconds);
+                game.handle_input(input, elapsed_milliseconds);
             }
             _ => {}
         }
         match game.get_key(Key::Down) {
             Action::Press => {
                 let input = Input::new(InputKind::Down, InputAction::Press);
-                game.state_machine.handle_input(input, elapsed_milliseconds);
+                game.handle_input(input, elapsed_milliseconds);
             }
             Action::Repeat => {
                 let input = Input::new(InputKind::Down, InputAction::Repeat);
-                game.state_machine.handle_input(input, elapsed_milliseconds);
+                game.handle_input(input, elapsed_milliseconds);
             }
             _ => {}
         }
         match game.get_key(Key::R) {
             Action::Press => {
                 let input = Input::new(InputKind::Rotate, InputAction::Press);
-                game.state_machine.handle_input(input, elapsed_milliseconds);
+                game.handle_input(input, elapsed_milliseconds);
             }
             Action::Repeat => {
                 let input = Input::new(InputKind::Rotate, InputAction::Repeat);
-                game.state_machine.handle_input(input, elapsed_milliseconds);
+                game.handle_input(input, elapsed_milliseconds);
             }
             _ => {}
         }
