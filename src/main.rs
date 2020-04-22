@@ -1060,6 +1060,11 @@ fn load_next_piece_panel(
 
 
 
+
+
+
+
+
 #[derive(Copy, Clone)]
 struct GameOverPanelBuffers {
     vao: GLuint,
@@ -1224,6 +1229,24 @@ fn load_game_over_panel(game: &mut glh::GLState, spec: GameOverPanelSpec) -> Gam
         width: spec.width,
     }
 }
+
+fn send_to_gpu_uniforms_game_over_panel(sp: GLuint, uniforms: GameOverPanelUniforms) {
+    let gui_scale_mat = Matrix4::from_nonuniform_scale(
+        uniforms.gui_scale_x, uniforms.gui_scale_y, 0.0
+    );
+    let m_gui_scale_loc = unsafe {
+        gl::GetUniformLocation(sp, glh::gl_str("m_gui_scale").as_ptr())
+    };
+    debug_assert!(m_gui_scale_loc > -1);
+    unsafe {
+        gl::UseProgram(sp);
+        gl::UniformMatrix4fv(m_gui_scale_loc, 1, gl::FALSE, gui_scale_mat.as_ptr());
+    }
+}
+
+
+
+
 
 
 
@@ -2448,7 +2471,9 @@ impl GameClearingState {
     }
 
     fn handle_input(&mut self, context: &mut GameContext, input: Input, elapsed_milliseconds: Duration) {
-        
+        match input {
+            _ => {}
+        }
     }
 
     fn update(&mut self, context: &mut GameContext, elapsed_milliseconds: Duration) -> GameState {
@@ -2699,6 +2724,16 @@ impl RendererContext {
         let uniforms = PlayingFieldUniforms { gui_scale_mat: gui_scale_mat, trans_mat: trans_mat };
         send_to_gpu_uniforms_playing_field(self.ui.next_piece_panel.buffer.sp, uniforms);
     }
+
+    fn update_uniforms_game_over_panel(&mut self) {
+        let panel_width = self.game_over.width as f32;
+        let panel_height = self.game_over.height as f32;
+        let (viewport_width, viewport_height) = self.get_framebuffer_size();
+        let gui_scale_x = panel_width / (viewport_width as f32);
+        let gui_scale_y = panel_height / (viewport_height as f32);
+        let uniforms = GameOverPanelUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
+        send_to_gpu_uniforms_game_over_panel(self.game_over.buffer.sp, uniforms);
+    }
 }
 
 #[derive(Copy, Clone)]
@@ -2921,7 +2956,7 @@ impl RendererClearingState {
             gl::BindVertexArray(context.playing_field.handle.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 2 * 6 * 20 * 10);
             gl::Disable(gl::BLEND);
-        }        
+        }
     }
 
     fn render(&self, context: &mut RendererContext) {
@@ -3043,7 +3078,7 @@ impl RendererGameOverState {
     }
 
     fn update_game_over_panel(&self, context: &mut RendererContext) {
-
+        context.update_uniforms_game_over_panel();
     }
 
     fn render_game_over_panel(&self, context: &mut RendererContext) {
