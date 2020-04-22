@@ -310,18 +310,6 @@ fn load_background_panel(game: &mut glh::GLState, spec: BackgroundPanelSpec) -> 
     }
 }
 
-/*
-fn update_uniforms_background_panel(game: &mut RendererContext) {
-    let panel_width = game.background.width as f32;
-    let panel_height = game.background.height as f32;
-    let (viewport_width, viewport_height) = game.get_framebuffer_size();
-    let gui_scale_x = panel_width / (viewport_width as f32);
-    let gui_scale_y = panel_height / (viewport_height as f32);
-    let uniforms = BackgroundPanelUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
-    send_to_gpu_uniforms_background_panel(game.background.buffer.sp, uniforms);
-}
-*/
-
 
 fn create_shaders_ui_panel() -> ShaderSource {
     let vert_source = include_shader!("ui_panel.vert.glsl");
@@ -601,17 +589,6 @@ fn load_ui_panel(game: &mut glh::GLState, spec: UIPanelSpec, uniforms: UIPanelUn
         width: spec.width,
     }
 }
-/*
-fn update_ui_panel_uniforms(game: &mut RendererContext) {
-    let panel_width = game.ui.ui_panel.width as f32;
-    let panel_height = game.ui.ui_panel.height as f32;
-    let (viewport_width, viewport_height) = game.get_framebuffer_size();
-    let gui_scale_x = panel_width / (viewport_width as f32);
-    let gui_scale_y = panel_height / (viewport_height as f32);
-    let uniforms = UIPanelUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
-    send_to_gpu_uniforms_ui_panel(game.ui.ui_panel.sp, uniforms);
-}
-*/
 
 
 /// Create the shaders for the next panel in the game's user interface.
@@ -994,26 +971,7 @@ fn send_to_gpu_piece_uniforms(sp: GLuint, uniforms: &PieceUniformsData) {
 fn send_to_gpu_uniforms_next_piece_panel(sp: GLuint, uniforms: &PieceUniformsData) {
     send_to_gpu_piece_uniforms(sp, uniforms);
 }
-/*
-fn update_uniforms_next_piece_panel(game: &mut RendererContext) {
-    let (viewport_width, viewport_height) = game.get_framebuffer_size();
-    let scale = 50;
-    let gui_scale_x = 2.0 * (scale as f32) / (viewport_width as f32);
-    let gui_scale_y = 2.0 * (scale as f32) / (viewport_height as f32);
-    let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 1.0);
-    let trans_mat = match game.game_context.borrow().next_block.borrow().block {
-        GooglyBlockPiece::T => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-        GooglyBlockPiece::J => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-        GooglyBlockPiece::Z => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-        GooglyBlockPiece::O => Matrix4::from_translation(cgmath::vec3((0.50, 0.43, 0.0))),
-        GooglyBlockPiece::S => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-        GooglyBlockPiece::L => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-        GooglyBlockPiece::I => Matrix4::from_translation(cgmath::vec3((0.555, 0.48, 0.0))),
-    };
-    let uniforms = PieceUniformsData { gui_scale_mat: gui_scale_mat, trans_mat: trans_mat };
-    send_to_gpu_uniforms_next_piece_panel(game.ui.next_piece_panel.buffer.sp, &uniforms);
-}
-*/
+
 
 fn send_to_gpu_textures_next_piece_panel(tex_image: &TexImage2D) -> GLuint {
     send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()  
@@ -1292,18 +1250,7 @@ fn create_uniforms_playing_field(scale: u32, viewport_width: u32, viewport_heigh
     
     PlayingFieldUniforms { gui_scale_mat: gui_scale_mat, trans_mat: trans_mat }
 }
-/*
-fn update_uniforms_playing_field(game: &mut RendererContext) {
-    let viewport = game.viewport_dimensions();
-    let scale = 488;
-    let gui_scale_x = (scale as f32) / (viewport.width as f32);
-    let gui_scale_y = (scale as f32) / (viewport.height as f32);
-    let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 1.0);
-    let trans_mat = Matrix4::from_translation(cgmath::vec3((0.085, 0.0, 0.0)));
-    let uniforms = PlayingFieldUniforms { gui_scale_mat: gui_scale_mat, trans_mat: trans_mat };
-    send_to_gpu_uniforms_playing_field(game.ui.next_piece_panel.buffer.sp, uniforms);
-}
-*/
+
 
 fn send_to_gpu_uniforms_playing_field(sp: GLuint, uniforms: PlayingFieldUniforms) {
     let m_gui_scale_loc = unsafe {
