@@ -2445,7 +2445,7 @@ struct RendererContext {
     game_context: Rc<RefCell<GameContext>>,
     playing_field: PlayingField,
     ui: UI,
-    background: BackgroundPanel,
+    background: BackgroundPanel,    
 }
 
 impl RendererContext {
