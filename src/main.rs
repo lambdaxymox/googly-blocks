@@ -466,8 +466,8 @@ fn create_atlas_ui_panel(image: TexImage2D) -> UIPanelTextureAtlas {
         [1524_f32 / 2048_f32, 2040_f32 / 2048_f32], [1024_f32 / 2048_f32, 2040_f32 / 2048_f32], [1024_f32 / 2048_f32, 2040_f32 / 2048_f32],
     ];
     let tex_coords_game_over: Vec<[GLfloat; 2]> = vec![
-        [1780_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32,  768_f32 / 2048_f32], [1780_f32 / 2048_f32, 768_f32 / 2048_f32],
-        [1780_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32, 768_f32 / 2048_f32],
+        [1780_f32 / 2048_f32, 1025_f32 / 2048_f32], [1322_f32 / 2048_f32,  768_f32 / 2048_f32], [1780_f32 / 2048_f32, 768_f32 / 2048_f32],
+        [1780_f32 / 2048_f32, 1025_f32 / 2048_f32], [1322_f32 / 2048_f32, 1025_f32 / 2048_f32], [1322_f32 / 2048_f32, 768_f32 / 2048_f32],
     ];
 
     let mut coords = HashMap::new();
@@ -1093,8 +1093,8 @@ struct GameOverPanel {
 }
 
 struct GameOverPanelUniforms {
-    gui_scale_x: f32,
-    gui_scale_y: f32,
+    gui_scale_mat: Matrix4,
+    trans_mat: Matrix4,
 }
 
 fn create_shaders_game_over() -> ShaderSource {
@@ -1111,8 +1111,8 @@ fn create_shaders_game_over() -> ShaderSource {
 
 fn create_geometry_game_over() -> ObjMesh {
     let points: Vec<[f32; 2]> = vec![
-        [472_f32 / 472_f32, 272_f32 / 472_f32], [-472_f32 / 472_f32, -272_f32 / 472_f32], [ 472_f32 / 472_f32, -272_f32 / 472_f32],
-        [472_f32 / 472_f32, 272_f32 / 472_f32], [-472_f32 / 472_f32,  272_f32 / 472_f32], [-472_f32 / 472_f32, -272_f32 / 472_f32],
+        [1_f32, 1_f32], [-1_f32, -1_f32], [1_f32, -1_f32],
+        [1_f32, 1_f32], [-1_f32,  1_f32], [-1_f32, -1_f32],
     ];
     let tex_coords: Vec<[f32; 2]> = vec![
         [1780_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32,  768_f32 / 2048_f32], [1780_f32 / 2048_f32, 768_f32 / 2048_f32],
@@ -1202,6 +1202,7 @@ fn send_to_gpu_textures_game_over(tex_image: &TexImage2D) -> GLuint {
 struct GameOverPanelSpec<'a> { 
     height: usize, 
     width: usize,
+    placement: AbsolutePlacement,
     atlas: &'a UIPanelTextureAtlas,
 }
 
@@ -1231,16 +1232,18 @@ fn load_game_over_panel(game: &mut glh::GLState, spec: GameOverPanelSpec) -> Gam
 }
 
 fn send_to_gpu_uniforms_game_over_panel(sp: GLuint, uniforms: GameOverPanelUniforms) {
-    let gui_scale_mat = Matrix4::from_nonuniform_scale(
-        uniforms.gui_scale_x, uniforms.gui_scale_y, 0.0
-    );
     let m_gui_scale_loc = unsafe {
         gl::GetUniformLocation(sp, glh::gl_str("m_gui_scale").as_ptr())
     };
     debug_assert!(m_gui_scale_loc > -1);
+    let m_trans_loc = unsafe {
+        gl::GetUniformLocation(sp, glh::gl_str("m_trans").as_ptr())
+    };
+    debug_assert!(m_trans_loc > -1);
     unsafe {
         gl::UseProgram(sp);
-        gl::UniformMatrix4fv(m_gui_scale_loc, 1, gl::FALSE, gui_scale_mat.as_ptr());
+        gl::UniformMatrix4fv(m_gui_scale_loc, 1, gl::FALSE, uniforms.gui_scale_mat.as_ptr());
+        gl::UniformMatrix4fv(m_trans_loc, 1, gl::FALSE, uniforms.trans_mat.as_ptr());
     }
 }
 
@@ -2731,7 +2734,12 @@ impl RendererContext {
         let (viewport_width, viewport_height) = self.get_framebuffer_size();
         let gui_scale_x = panel_width / (viewport_width as f32);
         let gui_scale_y = panel_height / (viewport_height as f32);
-        let uniforms = GameOverPanelUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
+        let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0.0);
+        let trans_mat = Matrix4::from_translation(cgmath::vec3((0.08, 0.0, 0.0)));
+        let uniforms = GameOverPanelUniforms { 
+            gui_scale_mat: gui_scale_mat,
+            trans_mat: trans_mat,
+        };
         send_to_gpu_uniforms_game_over_panel(self.game_over.buffer.sp, uniforms);
     }
 }
@@ -3084,10 +3092,13 @@ impl RendererGameOverState {
     fn render_game_over_panel(&self, context: &mut RendererContext) {
         unsafe {
             gl::UseProgram(context.game_over.buffer.sp);
+            gl::Enable(gl::BLEND);
+            gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, context.game_over.buffer.tex);
             gl::BindVertexArray(context.game_over.buffer.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
+            gl::Disable(gl::BLEND);
         }  
     }
 
@@ -3389,9 +3400,11 @@ fn init_game() -> Game {
     let score_board = Rc::new(RefCell::new(ScoreBoard::new()));
     let full_rows = Rc::new(RefCell::new(FullRows::new()));
 
+    let game_over_panel_placement = AbsolutePlacement { x: 0.1, y: 0.1 };
     let game_over_panel_spec = GameOverPanelSpec {
-        width: 472,
-        height: 272,
+        width: 300,
+        height: 178,
+        placement: game_over_panel_placement,
         atlas: &ui_panel_atlas,
     };
     let game_over = {
