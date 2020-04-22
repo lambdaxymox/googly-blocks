@@ -2871,6 +2871,10 @@ impl Game {
         self.renderer_state_machine.update(state);
     }
 
+    fn render(&mut self) {
+        self.renderer_state_machine.render();
+    }
+
     #[inline]
     fn init_gpu(&mut self) {
         unsafe {
@@ -3120,20 +3124,7 @@ fn main() {
         game.update_state(elapsed_milliseconds);
         game.update_fps_counter();
         game.update_framebuffer_size();
-
-        // Render the results.
-        /*
-        game.clear_frame_buffer();
-        game.clear_depth_buffer();
-        game.update_viewport();
-        game.update_background();
-        game.render_background();
-        game.update_ui();
-        game.render_ui();
-        game.update_playing_field();
-        game.render_playing_field();
-        */
-        game.renderer_state_machine.render();
+        game.render();
 
         // Send the results to the output.
         game.swap_buffers();
