@@ -2736,134 +2736,14 @@ impl RendererClearingState {
     }
 
     fn render(&self, context: &mut RendererContext) {
-        // game.clear_frame_buffer();
-        /*
-        unsafe {
-            gl::ClearBufferfv(gl::COLOR, 0, &CLEAR_COLOR[0] as *const GLfloat);
-        }
-        */
         self.clear_framebuffer(context);
-
-        // game.clear_depth_buffer();
-        /*
-        unsafe {
-            gl::ClearBufferfv(gl::DEPTH, 0, &CLEAR_DEPTH[0] as *const GLfloat);
-        }
-        */
         self.clear_depth_buffer(context);
-
-        // game.update_viewport();
-        //let dims = self.viewport_dimensions();
-        /*
-        let (width, height) = {
-            let game_context = context.game_context.borrow();
-            let gl_context = game_context.gl.borrow();
-            (gl_context.width as i32, gl_context.height as i32)
-        };
-        
-        let dims = ViewportDimensions { 
-            width: width, 
-            height: height,
-        };
-        */
-        /*
-        let dims = context.viewport_dimensions();
-        unsafe {
-            gl::Viewport(0, 0, dims.width, dims.height);
-        }
-        */
         self.update_viewport(context);
-
-        // game.update_background();
-        //context.update_uniforms_background_panel();
         self.update_background(context);
-
-        // game.render_background();
-        /*
-        unsafe {
-            gl::UseProgram(context.background.buffer.sp);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, context.background.buffer.tex);
-            gl::BindVertexArray(context.background.buffer.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6);
-        }
-        */
         self.render_background(context);
-
-        // game.update_ui();
-        /*
-        {
-            let game_context = context.game_context.borrow();
-            let score_board = game_context.score_board.borrow();
-            context.ui.update_score(score_board.score);
-            context.ui.update_lines(score_board.lines);
-            context.ui.update_level(score_board.level);
-            context.ui.update_tetrises(score_board.tetrises);
-            context.ui.update_statistics(&game_context.statistics.borrow());
-            context.ui.update_next_piece(game_context.next_block.borrow().block);
-            context.ui.update_panel();
-        }
-        */
         self.update_ui(context);
-
-        // game.render_ui();
-        /*
-        unsafe {
-            // Render the game board. We turn off depth testing to do so since this is
-            // a 2D scene using 3D abstractions. Otherwise Z-Buffering would prevent us
-            // from rendering the game board.
-            gl::UseProgram(context.ui.ui_panel.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, context.ui.ui_panel.tex);
-            gl::BindVertexArray(context.ui.ui_panel.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6);
-
-            gl::UseProgram(context.ui.text_panel.buffer.buffer.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, context.ui.text_panel.buffer.buffer.tex);
-            gl::BindVertexArray(context.ui.text_panel.buffer.buffer.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 47 * 6);
-
-            gl::UseProgram(context.ui.next_piece_panel.buffer.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, context.ui.next_piece_panel.buffer.tex);
-            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().block).vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 3 * 8);
-        }
-        */
         self.render_ui(context);
-        
-        // game.update_playing_field();
-        /*
-        context.update_uniforms_playing_field();
-
-        //let context = self.context.borrow();
-        {
-            let game_context = context.game_context.borrow();
-            let playing_field_state = game_context.playing_field_state.borrow();
-            context.playing_field.write(&playing_field_state).unwrap();
-            context.playing_field.send_to_gpu().unwrap();
-        }
-        */
         self.update_playing_field(context);
-
-        // game.render_playing_field();
-        /*
-        unsafe {
-            gl::UseProgram(context.playing_field.handle.sp);
-            gl::Disable(gl::DEPTH_TEST);
-            gl::Enable(gl::BLEND);
-            gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, context.playing_field.handle.tex);
-            gl::BindVertexArray(context.playing_field.handle.vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 2 * 6 * 20 * 10);
-            gl::Disable(gl::BLEND);
-        }
-        */
         self.render_playing_field(context);
     }
 }
