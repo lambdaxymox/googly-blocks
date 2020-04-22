@@ -3082,7 +3082,13 @@ impl RendererGameOverState {
     }
 
     fn render_game_over_panel(&self, context: &mut RendererContext) {
-
+        unsafe {
+            gl::UseProgram(context.game_over.buffer.sp);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, context.game_over.buffer.tex);
+            gl::BindVertexArray(context.game_over.buffer.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6);
+        }  
     }
 
     fn render(&self, context: &mut RendererContext) {
