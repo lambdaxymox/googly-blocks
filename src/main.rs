@@ -1052,6 +1052,67 @@ fn load_next_piece_panel(
 }
 
 
+
+#[derive(Copy, Clone)]
+struct GameOverPanelSpec<'a> { 
+    height: usize, 
+    width: usize,
+    atlas: &'a UIPanelTextureAtlas,
+}
+
+#[derive(Copy, Clone)]
+struct GLGameOverPanel {
+    sp: GLuint,
+    v_pos_vbo: GLuint,
+    v_tex_vbo: GLuint,
+    vao: GLuint,
+    tex: GLuint,
+}
+
+#[derive(Copy, Clone)]
+struct GameOverPanel {
+    height: usize,
+    width: usize,
+    buffer: GLBackgroundPanel,
+}
+
+struct GameOverPanelUniforms {
+    gui_scale_x: f32,
+    gui_scale_y: f32,
+}
+
+fn create_shaders_game_over() -> ShaderSource {
+    let vert_source = include_shader!("game_over.vert.glsl");
+    let frag_source = include_shader!("game_over.frag.glsl");
+
+    ShaderSource { 
+        vert_name: "game_over.vert.glsl",
+        vert_source: vert_source, 
+        frag_name: "game_over.frag.glsl",
+        frag_source: frag_source 
+    }
+}
+
+fn create_geometry_game_over() -> ObjMesh {
+    let points: Vec<[f32; 2]> = vec![
+        [472_f32 / 472_f32, 272_f32 / 472_f32], [-472_f32 / 472_f32, -272_f32 / 472_f32], [ 472_f32 / 472_f32, -272_f32 / 472_f32],
+        [472_f32 / 472_f32, 272_f32 / 472_f32], [-472_f32 / 472_f32,  272_f32 / 472_f32], [-472_f32 / 472_f32, -272_f32 / 472_f32],
+    ];
+    let tex_coords: Vec<[f32; 2]> = vec![
+        [1780_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32,  768_f32 / 2048_f32], [1780_f32 / 2048_f32, 768_f32 / 2048_f32],
+        [1780_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32, 768_f32 / 2048_f32],
+    ];
+
+    ObjMesh::new(points, tex_coords)
+}
+
+fn send_to_gpu_shaders_game_over(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+    send_to_gpu_shaders(game, source)
+}
+
+
+
+
 fn create_shaders_playing_field() -> ShaderSource {
     let vert_source = include_shader!("playing_field.vert.glsl");
     let frag_source = include_shader!("playing_field.frag.glsl");
