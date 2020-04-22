@@ -1053,6 +1053,12 @@ fn load_next_piece_panel(
 
 
 
+
+
+
+
+
+
 #[derive(Copy, Clone)]
 struct GameOverPanelSpec<'a> { 
     height: usize, 
@@ -1061,11 +1067,22 @@ struct GameOverPanelSpec<'a> {
 }
 
 #[derive(Copy, Clone)]
-struct GLGameOverPanel {
-    sp: GLuint,
+struct GameOverPanelBuffers {
+    vao: GLuint,
     v_pos_vbo: GLuint,
     v_tex_vbo: GLuint,
+    v_pos_loc: GLuint,
+    v_tex_loc: GLuint,
+}
+
+#[derive(Copy, Clone)]
+struct GameOverPanelHandle {
+    sp: GLuint,
     vao: GLuint,
+    v_pos_vbo: GLuint,
+    v_tex_vbo: GLuint,
+    v_pos_loc: GLuint,
+    v_tex_loc: GLuint,
     tex: GLuint,
 }
 
@@ -1073,7 +1090,7 @@ struct GLGameOverPanel {
 struct GameOverPanel {
     height: usize,
     width: usize,
-    buffer: GLBackgroundPanel,
+    buffer: GameOverPanelHandle,
 }
 
 struct GameOverPanelUniforms {
@@ -1109,6 +1126,107 @@ fn create_geometry_game_over() -> ObjMesh {
 fn send_to_gpu_shaders_game_over(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
     send_to_gpu_shaders(game, source)
 }
+
+fn create_buffers_geometry_game_over() -> GameOverPanelBuffers {
+    let v_pos_loc = 0;
+    let v_tex_loc = 1;
+
+    let mut v_pos_vbo = 0;
+    unsafe {
+        gl::CreateBuffers(1, &mut v_pos_vbo);
+    }
+    debug_assert!(v_pos_vbo > 0);
+
+    let mut v_tex_vbo = 0;
+    unsafe {
+        gl::CreateBuffers(1, &mut v_tex_vbo);
+    }
+    debug_assert!(v_tex_vbo > 0);
+
+    let mut vao = 0;
+    unsafe {
+        gl::GenVertexArrays(1, &mut vao);
+    }
+    debug_assert!(vao > 0);
+    unsafe {
+        gl::BindVertexArray(vao);
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
+        gl::VertexAttribPointer(v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
+        gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(v_pos_loc);
+        gl::EnableVertexAttribArray(v_tex_loc);
+    }
+
+    GameOverPanelBuffers {
+        vao: vao,
+        v_pos_vbo: v_pos_vbo,
+        v_tex_vbo: v_tex_vbo,
+        v_pos_loc: v_pos_loc,
+        v_tex_loc: v_tex_loc,
+    }
+}
+
+fn send_to_gpu_geometry_game_over(handle: GameOverPanelBuffers, mesh: &ObjMesh) {
+    unsafe {
+        // Load position data.
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            mesh.points.len_bytes() as GLsizeiptr,
+            mesh.points.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+        );
+        // Load the texture coordinates.
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            mesh.tex_coords.len_bytes() as GLsizeiptr,
+            mesh.tex_coords.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+        );
+
+        // Enable the arrays for use by the shader.
+        gl::BindVertexArray(handle.vao);
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
+        gl::VertexAttribPointer(handle.v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
+        gl::VertexAttribPointer(handle.v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(handle.v_pos_loc);
+        gl::EnableVertexAttribArray(handle.v_tex_loc);
+    }
+}
+
+fn send_to_gpu_textures_game_over(tex_image: &TexImage2D) -> GLuint {
+    send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()
+}
+
+fn load_game_over_panel(game: &mut glh::GLState, spec: GameOverPanelSpec) -> GameOverPanel {
+    let shader_source = create_shaders_game_over();
+    let mesh = create_geometry_game_over();
+    let sp = send_to_gpu_shaders_game_over(game, shader_source);
+    let handle = create_buffers_geometry_game_over();
+    send_to_gpu_geometry_game_over(handle, &mesh);
+    let tex = send_to_gpu_textures_game_over(&spec.atlas.image);
+    let buffer = GameOverPanelHandle {
+        sp: sp,
+        v_pos_vbo: handle.v_pos_vbo,
+        v_tex_vbo: handle.v_tex_vbo,
+        v_pos_loc: handle.v_pos_loc,
+        v_tex_loc: handle.v_tex_loc,
+        vao: handle.vao,
+        tex: tex,
+    };
+
+    GameOverPanel {
+        buffer: buffer,
+        height: spec.height,
+        width: spec.width,
+    }
+}
+
+
+
+
+
 
 
 
