@@ -2635,7 +2635,6 @@ struct RendererClearingState {}
 impl RendererClearingState {
     #[inline]
     fn clear_framebuffer(&self, context: &mut RendererContext) {
-        // game.clear_frame_buffer();
         unsafe {
             gl::ClearBufferfv(gl::COLOR, 0, &CLEAR_COLOR[0] as *const GLfloat);
         }
@@ -2686,10 +2685,10 @@ impl RendererClearingState {
     }
 
     fn render_ui(&self, context: &mut RendererContext) {
+        // Render the game board. We turn off depth testing to do so since this is
+        // a 2D scene using 3D abstractions. Otherwise Z-Buffering would prevent us
+        // from rendering the game board.
         unsafe {
-            // Render the game board. We turn off depth testing to do so since this is
-            // a 2D scene using 3D abstractions. Otherwise Z-Buffering would prevent us
-            // from rendering the game board.
             gl::UseProgram(context.ui.ui_panel.sp);
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
