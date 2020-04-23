@@ -247,21 +247,17 @@ fn send_to_gpu_textures_background(tex_image: &TexImage2D) -> GLuint {
 
 #[derive(Copy, Clone)]
 struct BackgroundPanelUniforms { 
-    gui_scale_x: f32,
-    gui_scale_y: f32,
+    gui_scale_mat: Matrix4,
 }
 
 fn send_to_gpu_uniforms_background_panel(sp: GLuint, uniforms: BackgroundPanelUniforms) {
-    let gui_scale_mat = Matrix4::from_nonuniform_scale(
-        uniforms.gui_scale_x, uniforms.gui_scale_y, 0.0
-    );
     let m_gui_scale_loc = unsafe {
         gl::GetUniformLocation(sp, glh::gl_str("m_gui_scale").as_ptr())
     };
     debug_assert!(m_gui_scale_loc > -1);
     unsafe {
         gl::UseProgram(sp);
-        gl::UniformMatrix4fv(m_gui_scale_loc, 1, gl::FALSE, gui_scale_mat.as_ptr());
+        gl::UniformMatrix4fv(m_gui_scale_loc, 1, gl::FALSE, uniforms.gui_scale_mat.as_ptr());
     }
 }
 
@@ -2725,7 +2721,8 @@ impl RendererContext {
         let (viewport_width, viewport_height) = self.get_framebuffer_size();
         let gui_scale_x = panel_width / (viewport_width as f32);
         let gui_scale_y = panel_height / (viewport_height as f32);
-        let uniforms = BackgroundPanelUniforms { gui_scale_x: gui_scale_x, gui_scale_y: gui_scale_y };
+        let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0_f32);
+        let uniforms = BackgroundPanelUniforms { gui_scale_mat: gui_scale_mat };
         send_to_gpu_uniforms_background_panel(self.background.buffer.sp, uniforms);
     }
 
