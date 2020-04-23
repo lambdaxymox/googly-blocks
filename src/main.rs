@@ -2539,6 +2539,30 @@ impl Input {
 }
 
 #[derive(Copy, Clone)]
+enum FlashAnimationState {
+    Light,
+    Dark,
+    Disabled,
+}
+
+struct FlashAnimationStateMachine {
+    state: FlashAnimationState,
+}
+
+impl FlashAnimationStateMachine {
+    fn new() -> FlashAnimationStateMachine {
+        FlashAnimationStateMachine {
+            state: FlashAnimationState::Disabled,
+        }
+    }
+
+    #[inline]
+    fn update(&mut self, state: FlashAnimationState) {
+        self.state = state;
+    }
+}
+
+#[derive(Copy, Clone)]
 struct GameFallingState {}
 
 impl GameFallingState {
