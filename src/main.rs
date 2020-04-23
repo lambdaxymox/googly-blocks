@@ -1054,6 +1054,219 @@ fn load_next_piece_panel(
 
 
 
+#[derive(Copy, Clone)]
+struct PlayingFieldBackgroundBuffers {
+    vao: GLuint,
+    v_pos_vbo: GLuint,
+    v_tex_vbo: GLuint,
+    v_pos_loc: GLuint,
+    v_tex_loc: GLuint,
+}
+
+#[derive(Copy, Clone)]
+struct PlayingFieldBackgroundBufferHandle {
+    vao: GLuint,
+    v_pos_vbo: GLuint,
+    v_tex_vbo: GLuint,    
+}
+
+#[derive(Copy, Clone)]
+struct PlayingFieldBackgroundHandle {
+    sp: GLuint,
+    default: PlayingFieldBackgroundBufferHandle,
+    dark: PlayingFieldBackgroundBufferHandle,
+    light: PlayingFieldBackgroundBufferHandle,
+    v_pos_loc: GLuint,
+    v_tex_loc: GLuint,
+    tex: GLuint,
+}
+
+#[derive(Copy, Clone)]
+struct PlayingFieldBackgroundPanel {
+    height: usize,
+    width: usize,
+    handle: PlayingFieldBackgroundHandle,
+}
+
+struct PlayingFieldBackgroundUniforms {
+    gui_scale_mat: Matrix4,
+    trans_mat: Matrix4,
+}
+
+fn create_shaders_playing_field_background() -> ShaderSource {
+    let vert_source = include_shader!("playing_field_background.vert.glsl");
+    let frag_source = include_shader!("playing_field_background.frag.glsl");
+
+    ShaderSource { 
+        vert_name: "playing_field_background.vert.glsl",
+        vert_source: vert_source, 
+        frag_name: "playing_field_background.frag.glsl",
+        frag_source: frag_source 
+    }
+}
+
+fn create_geometry_playing_field_background() -> ObjMesh {
+    let points: Vec<[f32; 2]> = vec![
+        [1_f32, 1_f32], [-1_f32, -1_f32], [1_f32, -1_f32],
+        [1_f32, 1_f32], [-1_f32,  1_f32], [-1_f32, -1_f32],
+    ];
+    let tex_coords: Vec<[f32; 2]> = vec![
+        [1780_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32,  768_f32 / 2048_f32], [1780_f32 / 2048_f32, 768_f32 / 2048_f32],
+        [1780_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32, 768_f32 / 2048_f32],
+    ];
+
+    ObjMesh::new(points, tex_coords)
+}
+
+fn send_to_gpu_shaders_playing_field_background(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+    send_to_gpu_shaders(game, source)
+}
+
+fn create_buffers_geometry_playing_field_background() -> PlayingFieldBackgroundBuffers {
+    let v_pos_loc = 0;
+    let v_tex_loc = 1;
+
+    let mut v_pos_vbo = 0;
+    unsafe {
+        gl::CreateBuffers(1, &mut v_pos_vbo);
+    }
+    debug_assert!(v_pos_vbo > 0);
+
+    let mut v_tex_vbo = 0;
+    unsafe {
+        gl::CreateBuffers(1, &mut v_tex_vbo);
+    }
+    debug_assert!(v_tex_vbo > 0);
+
+    let mut vao = 0;
+    unsafe {
+        gl::GenVertexArrays(1, &mut vao);
+    }
+    debug_assert!(vao > 0);
+    unsafe {
+        gl::BindVertexArray(vao);
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
+        gl::VertexAttribPointer(v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
+        gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(v_pos_loc);
+        gl::EnableVertexAttribArray(v_tex_loc);
+    }
+
+    PlayingFieldBackgroundBuffers {
+        vao: vao,
+        v_pos_vbo: v_pos_vbo,
+        v_tex_vbo: v_tex_vbo,
+        v_pos_loc: v_pos_loc,
+        v_tex_loc: v_tex_loc,
+    }
+}
+
+fn send_to_gpu_geometry_playing_field_background(handle: PlayingFieldBackgroundBuffers, mesh: &ObjMesh) {
+    unsafe {
+        // Load position data.
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            mesh.points.len_bytes() as GLsizeiptr,
+            mesh.points.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+        );
+        // Load the texture coordinates.
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            mesh.tex_coords.len_bytes() as GLsizeiptr,
+            mesh.tex_coords.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+        );
+
+        // Enable the arrays for use by the shader.
+        gl::BindVertexArray(handle.vao);
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
+        gl::VertexAttribPointer(handle.v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
+        gl::VertexAttribPointer(handle.v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(handle.v_pos_loc);
+        gl::EnableVertexAttribArray(handle.v_tex_loc);
+    }
+}
+
+fn send_to_gpu_textures_playing_field_background(tex_image: &TexImage2D) -> GLuint {
+    send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()
+}
+
+#[derive(Copy, Clone)]
+struct PlayingFieldBackgroundSpec<'a> { 
+    height: usize, 
+    width: usize,
+    atlas: &'a UIPanelTextureAtlas,
+}
+
+fn load_playing_field_background(game: &mut glh::GLState, spec: PlayingFieldBackgroundSpec) -> PlayingFieldBackgroundPanel {
+    let shader_source = create_shaders_playing_field_background();
+    let mesh = create_geometry_playing_field_background();
+    let sp = send_to_gpu_shaders_playing_field_background(game, shader_source);
+    let default_buffer = create_buffers_geometry_playing_field_background();
+    let dark_buffer = create_buffers_geometry_playing_field_background();
+    let light_buffer = create_buffers_geometry_playing_field_background();
+    send_to_gpu_geometry_playing_field_background(default_buffer, &mesh);
+    send_to_gpu_geometry_playing_field_background(dark_buffer, &mesh);
+    send_to_gpu_geometry_playing_field_background(light_buffer, &mesh);
+    let tex = send_to_gpu_textures_playing_field_background(&spec.atlas.image);  
+    let v_pos_loc = default_buffer.v_pos_loc;
+    let v_tex_loc = default_buffer.v_tex_loc;
+    let default_handle = PlayingFieldBackgroundBufferHandle {
+        vao: default_buffer.vao,
+        v_pos_vbo: default_buffer.v_pos_vbo,
+        v_tex_vbo: default_buffer.v_tex_vbo,
+    };
+    let dark_handle = PlayingFieldBackgroundBufferHandle {
+        vao: dark_buffer.vao,
+        v_pos_vbo: dark_buffer.v_pos_vbo,
+        v_tex_vbo: dark_buffer.v_tex_vbo,
+    };
+    let light_handle = PlayingFieldBackgroundBufferHandle {
+        vao: light_buffer.vao,
+        v_pos_vbo: light_buffer.v_pos_vbo,
+        v_tex_vbo: light_buffer.v_tex_vbo,
+    };
+    let handle = PlayingFieldBackgroundHandle {
+        sp: sp,
+        default: default_handle,
+        dark: dark_handle,
+        light: light_handle,
+        v_pos_loc: v_pos_loc,
+        v_tex_loc: v_tex_loc,
+        tex: tex,
+    };
+
+    PlayingFieldBackgroundPanel {
+        height: spec.height,
+        width: spec.width,
+        handle: handle,
+    }
+
+}
+
+fn send_to_gpu_uniforms_playing_field_background(sp: GLuint, uniforms: PlayingFieldBackgroundUniforms) {
+    let m_gui_scale_loc = unsafe {
+        gl::GetUniformLocation(sp, glh::gl_str("m_gui_scale").as_ptr())
+    };
+    debug_assert!(m_gui_scale_loc > -1);
+    let m_trans_loc = unsafe {
+        gl::GetUniformLocation(sp, glh::gl_str("m_trans").as_ptr())
+    };
+    debug_assert!(m_trans_loc > -1);
+    unsafe {
+        gl::UseProgram(sp);
+        gl::UniformMatrix4fv(m_gui_scale_loc, 1, gl::FALSE, uniforms.gui_scale_mat.as_ptr());
+        gl::UniformMatrix4fv(m_trans_loc, 1, gl::FALSE, uniforms.trans_mat.as_ptr());
+    }
+}
+
+
+
+
+
 
 
 
@@ -1198,7 +1411,6 @@ struct GameOverPanelSpec<'a> {
     atlas: &'a UIPanelTextureAtlas,
 }
 
-
 fn load_game_over_panel(game: &mut glh::GLState, spec: GameOverPanelSpec) -> GameOverPanel {
     let shader_source = create_shaders_game_over();
     let mesh = create_geometry_game_over();
@@ -1238,6 +1450,13 @@ fn send_to_gpu_uniforms_game_over_panel(sp: GLuint, uniforms: GameOverPanelUnifo
         gl::UniformMatrix4fv(m_trans_loc, 1, gl::FALSE, uniforms.trans_mat.as_ptr());
     }
 }
+
+
+
+
+
+
+
 
 
 
