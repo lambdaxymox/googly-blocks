@@ -1195,7 +1195,6 @@ fn send_to_gpu_textures_game_over(tex_image: &TexImage2D) -> GLuint {
 struct GameOverPanelSpec<'a> { 
     height: usize, 
     width: usize,
-    placement: AbsolutePlacement,
     atlas: &'a UIPanelTextureAtlas,
 }
 
@@ -3449,11 +3448,9 @@ fn init_game() -> Game {
     let score_board = Rc::new(RefCell::new(ScoreBoard::new()));
     let full_rows = Rc::new(RefCell::new(FullRows::new()));
 
-    let game_over_panel_placement = AbsolutePlacement { x: 0.1, y: 0.1 };
     let game_over_panel_spec = GameOverPanelSpec {
         width: 300,
         height: 178,
-        placement: game_over_panel_placement,
         atlas: &ui_panel_atlas,
     };
     let game_over = {
