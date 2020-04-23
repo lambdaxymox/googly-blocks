@@ -3505,12 +3505,10 @@ fn main() {
             Action::Press => {
                 let input = Input::new(InputKind::Exit, InputAction::Press);
                 game.handle_input(input, elapsed_milliseconds);
-                //game.window_set_should_close(true);
             }
             Action::Repeat => {
                 let input = Input::new(InputKind::Exit, InputAction::Press);
                 game.handle_input(input, elapsed_milliseconds);
-                //game.window_set_should_close(true);
             }
             _ => {}
         }
