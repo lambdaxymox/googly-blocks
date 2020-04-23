@@ -3647,13 +3647,21 @@ fn init_game() -> Game {
         next_piece_panel: next_piece_panel,
     };
     let block_element_atlas = create_textures_playing_field();
+    let playing_field_background_spec = PlayingFieldBackgroundSpec {
+        width: 257,
+        height: 458,
+        atlas: &ui_panel_atlas,
+    };
+    let playing_field_background = {
+        let mut context = gl_context.borrow_mut();
+        load_playing_field_background(&mut context, playing_field_background_spec)
+    };
     let playing_field_uniforms = create_uniforms_playing_field(488, viewport_width as u32, viewport_height as u32);
     let playing_field_spec = PlayingFieldHandleSpec {
         rows: 20,
         columns: 10,
         atlas: &block_element_atlas,
     };
-    
     let playing_field_handle = {
         let mut context = gl_context.borrow_mut();
         load_playing_field(&mut *context, playing_field_spec, playing_field_uniforms)
