@@ -2534,10 +2534,27 @@ impl GameGameOverState {
 }
 
 #[derive(Copy, Clone)]
+struct GameExitingState {}
+
+impl GameExitingState {
+    fn handle_input(&mut self, context: &mut GameContext, input: Input, elapsed_milliseconds: Duration) {
+        match input {
+            _ => {}
+        }
+    }
+
+    fn update(&mut self, context: &mut GameContext, elapsed_milliseconds: Duration) -> GameState {
+        context.gl.borrow_mut().window.set_should_close(true);
+        GameState::Exiting(*self)
+    }
+}
+
+#[derive(Copy, Clone)]
 enum GameState {
     Falling(GameFallingState),
     Clearing(GameClearingState),
     GameOver(GameGameOverState),
+    Exiting(GameExitingState),
 }
 
 struct GameStateMachine {
@@ -2559,6 +2576,7 @@ impl GameStateMachine {
             GameState::Falling(mut s) => s.handle_input(&mut context, input, elapsed_milliseconds),
             GameState::Clearing(mut s) => s.handle_input(&mut context, input, elapsed_milliseconds),
             GameState::GameOver(mut s) => s.handle_input(&mut context, input, elapsed_milliseconds),
+            GameState::Exiting(mut s) => s.handle_input(&mut context, input, elapsed_milliseconds),
         }
     }
 
@@ -2568,6 +2586,7 @@ impl GameStateMachine {
             GameState::Falling(mut s) => s.update(&mut context, elapsed_milliseconds),
             GameState::Clearing(mut s) => s.update(&mut context, elapsed_milliseconds),
             GameState::GameOver(mut s) => s.update(&mut context, elapsed_milliseconds),
+            GameState::Exiting(mut s) => s.update(&mut context, elapsed_milliseconds),
         };
 
         self.state
@@ -3117,10 +3136,18 @@ impl RendererGameOverState {
     }
 }
 
+#[derive(Copy, Clone)]
+struct RendererExitingState {}
+
+impl RendererExitingState {
+    fn render(&self, context: &mut RendererContext) {}
+}
+
 enum RendererState {
     Falling(RendererFallingState),
     Clearing(RendererClearingState),
     GameOver(RendererGameOverState),
+    Exiting(RendererExitingState),
 }
 
 struct RendererStateMachine {
@@ -3141,6 +3168,7 @@ impl RendererStateMachine {
             GameState::Falling(_) => RendererState::Falling(RendererFallingState {}),
             GameState::Clearing(_) => RendererState::Clearing(RendererClearingState {}),
             GameState::GameOver(_) => RendererState::GameOver(RendererGameOverState {}),
+            GameState::Exiting(_) => RendererState::Exiting(RendererExitingState {}),
         }
     }
 
@@ -3149,6 +3177,7 @@ impl RendererStateMachine {
             RendererState::Falling(s) => s.render(&mut self.context),
             RendererState::Clearing(s) => s.render(&mut self.context),
             RendererState::GameOver(s) => s.render(&mut self.context),
+            RendererState::Exiting(s) => s.render(&mut self.context),
         }
     }
 }
@@ -3450,8 +3479,15 @@ fn main() {
 
         game.poll_events();
         match game.get_key(Key::Escape) {
-            Action::Press | Action::Repeat => {
-                game.window_set_should_close(true);
+            Action::Press => {
+                let input = Input::new(InputKind::Exit, InputAction::Press);
+                game.handle_input(input, elapsed_milliseconds);
+                //game.window_set_should_close(true);
+            }
+            Action::Repeat => {
+                let input = Input::new(InputKind::Exit, InputAction::Press);
+                game.handle_input(input, elapsed_milliseconds);
+                //game.window_set_should_close(true);
             }
             _ => {}
         }
