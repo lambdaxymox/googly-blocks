@@ -2410,11 +2410,18 @@ impl GameFallingState {
                     _ => {}
                 }
             }
+            InputKind::Exit => {
+                context.exiting = true;
+            }
             _ => {}
         } 
     }
 
     fn update(&mut self, context: &mut GameContext, elapsed_milliseconds: Duration) -> GameState {
+        if context.exiting {
+            return GameState::Exiting(GameExitingState::new());
+        }
+        
         let mut timers = context.timers.borrow_mut();
         let mut playing_field_state = context.playing_field_state.borrow_mut();
         let mut statistics = context.statistics.borrow_mut();
@@ -2474,7 +2481,10 @@ impl GameClearingState {
     }
 
     fn handle_input(&mut self, context: &mut GameContext, input: Input, elapsed_milliseconds: Duration) {
-        match input {
+        match input.kind {
+            InputKind::Exit => {
+                context.exiting = true;
+            }
             _ => {}
         }
     }
@@ -2521,6 +2531,9 @@ impl GameGameOverState {
 
     fn handle_input(&mut self, context: &mut GameContext, input: Input, elapsed_milliseconds: Duration) {
         match input.kind {
+            InputKind::Exit => {
+                context.exiting = true;
+            }
             _ => {
                 println!("GAME OVER! Press any key to see this message again.");
             }
@@ -2528,8 +2541,12 @@ impl GameGameOverState {
     }
 
     fn update(&mut self, context: &mut GameContext, elapsed_milliseconds: Duration) -> GameState {
-        println!("GAME OVER! This is a dead state!");
-        GameState::GameOver(*self)
+        if context.exiting {
+            GameState::Exiting(GameExitingState::new())
+        } else {
+            println!("GAME OVER! This is a dead state!");
+            GameState::GameOver(*self)
+        }
     }
 }
 
@@ -2537,8 +2554,12 @@ impl GameGameOverState {
 struct GameExitingState {}
 
 impl GameExitingState {
+    fn new() -> GameExitingState { 
+        GameExitingState {} 
+    }
+
     fn handle_input(&mut self, context: &mut GameContext, input: Input, elapsed_milliseconds: Duration) {
-        match input {
+        match input.kind {
             _ => {}
         }
     }
@@ -2667,6 +2688,7 @@ struct GameContext {
     statistics: Rc<RefCell<Statistics>>,
     score_board: Rc<RefCell<ScoreBoard>>,
     full_rows: Rc<RefCell<FullRows>>,
+    exiting: bool,
 }
 
 struct RendererContext {
@@ -3449,6 +3471,7 @@ fn init_game() -> Game {
         score_board: score_board,
         next_block: next_block_cell_ref,
         full_rows: full_rows,
+        exiting: false,
     }));
     let initial_game_state = GameState::Falling(GameFallingState::new());
     let state_machine = GameStateMachine::new(context.clone(), initial_game_state);
