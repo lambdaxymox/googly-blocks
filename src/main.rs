@@ -2745,9 +2745,7 @@ impl GameGameOverState {
             InputKind::Exit => {
                 context.exiting = true;
             }
-            _ => {
-                println!("GAME OVER! Press any key to see this message again.");
-            }
+            _ => {}
         }
     }
 
@@ -2755,7 +2753,6 @@ impl GameGameOverState {
         if context.exiting {
             GameState::Exiting(GameExitingState::new())
         } else {
-            println!("GAME OVER! This is a dead state!");
             GameState::GameOver(*self)
         }
     }
@@ -3632,6 +3629,7 @@ fn init_game() -> Game {
         columns: 10,
         atlas: &block_element_atlas,
     };
+    
     let playing_field_handle = {
         let mut context = gl_context.borrow_mut();
         load_playing_field(&mut *context, playing_field_spec, playing_field_uniforms)
