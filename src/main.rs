@@ -412,8 +412,7 @@ fn send_to_gpu_geometry_ui_panel(handle: UIPanelHandle, mesh: &ObjMesh) {
 }
 
 fn create_textures_ui_panel() -> TexImage2D {
-    //let asset: &'static [u8; 59580] = include_asset!("ui_panel_atlas.png");
-    let asset: &'static [u8; 58637] = include_asset!("ui_panel_atlas.png");
+    let asset: &'static [u8; 58421] = include_asset!("ui_panel_atlas.png");
     teximage2d::load_from_memory(asset).unwrap().image
 }
 
@@ -460,7 +459,7 @@ fn create_atlas_ui_panel(image: TexImage2D) -> UIPanelTextureAtlas {
     ];
     let tex_coords_playing_field_flashing_background_light: Vec<[GLfloat; 2]> = vec![
         [1524_f32 / 2048_f32, 2040_f32 / 2048_f32], [1024_f32 / 2048_f32, 1040_f32 / 2048_f32], [1524_f32 / 2048_f32, 1040_f32 / 2048_f32],
-        [1524_f32 / 2048_f32, 2040_f32 / 2048_f32], [1024_f32 / 2048_f32, 2040_f32 / 2048_f32], [1024_f32 / 2048_f32, 2040_f32 / 2048_f32],
+        [1524_f32 / 2048_f32, 2040_f32 / 2048_f32], [1024_f32 / 2048_f32, 2040_f32 / 2048_f32], [1024_f32 / 2048_f32, 1040_f32 / 2048_f32],
     ];
     let tex_coords_game_over: Vec<[GLfloat; 2]> = vec![
         [1780_f32 / 2048_f32, 1025_f32 / 2048_f32], [1322_f32 / 2048_f32,  768_f32 / 2048_f32], [1780_f32 / 2048_f32, 768_f32 / 2048_f32],
@@ -1112,12 +1111,6 @@ fn create_geometry_playing_field_background(elem: UIPanelAtlasElement, atlas: &U
         [1_f32, 1_f32], [-1_f32,  1_f32], [-1_f32, -1_f32],
     ];
     let tex_coords: Vec<[f32; 2]> = atlas.coords[&elem].clone();
-    /*
-    vec![
-        [508_f32 / 2048_f32, 2040_f32 / 2048_f32], [8_f32 / 2048_f32, 1040_f32 / 2048_f32], [508_f32 / 2048_f32, 1040_f32 / 2048_f32],
-        [508_f32 / 2048_f32, 2040_f32 / 2048_f32], [8_f32 / 2048_f32, 2040_f32 / 2048_f32], [8_f32   / 2048_f32, 1040_f32 / 2048_f32],
-    ];
-    */
 
     ObjMesh::new(points, tex_coords)
 }
@@ -2748,6 +2741,9 @@ impl GameFallingState {
         let full_row_count = playing_field_state.get_full_rows(&mut full_rows.rows);
         full_rows.count = full_row_count;
         if full_row_count > 0 {
+            if full_row_count >= 4 {
+                flashing_state_machine.enable();
+            }
             return GameState::Clearing(GameClearingState::new());
         } else {
             return GameState::Falling(GameFallingState::new());
