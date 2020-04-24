@@ -3018,6 +3018,10 @@ impl RendererContext {
         };
         send_to_gpu_uniforms_game_over_panel(self.game_over.buffer.sp, uniforms);
     }
+
+    fn update_uniforms_playing_field_background(&mut self) {
+
+    }
 }
 
 #[derive(Copy, Clone)]
@@ -3125,12 +3129,22 @@ impl RendererFallingState {
         }        
     }
 
+    fn update_playing_field_background(&self, context: &mut RendererContext) {
+
+    }
+
+    fn render_playing_field_background(&self, context: &mut RendererContext) {
+        
+    }
+
     fn render(&self, context: &mut RendererContext) {
         self.clear_framebuffer(context);
         self.clear_depth_buffer(context);
         self.update_viewport(context);
         self.update_background(context);
         self.render_background(context);
+        self.update_playing_field_background(context);
+        self.render_playing_field_background(context);
         self.update_ui(context);
         self.render_ui(context);
         self.update_playing_field(context);
@@ -3243,12 +3257,22 @@ impl RendererClearingState {
         }
     }
 
+    fn update_playing_field_background(&self, context: &mut RendererContext) {
+
+    }
+
+    fn render_playing_field_background(&self, context: &mut RendererContext) {
+        
+    }
+
     fn render(&self, context: &mut RendererContext) {
         self.clear_framebuffer(context);
         self.clear_depth_buffer(context);
         self.update_viewport(context);
         self.update_background(context);
         self.render_background(context);
+        self.update_playing_field_background(context);
+        self.render_playing_field_background(context);
         self.update_ui(context);
         self.render_ui(context);
         self.update_playing_field(context);
