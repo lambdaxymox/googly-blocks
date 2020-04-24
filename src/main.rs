@@ -2928,6 +2928,7 @@ struct RendererContext {
     playing_field: PlayingField,
     ui: UI,
     background: BackgroundPanel,
+    playing_field_background: PlayingFieldBackgroundPanel,
     game_over: GameOverPanel,
 }
 
@@ -3020,7 +3021,18 @@ impl RendererContext {
     }
 
     fn update_uniforms_playing_field_background(&mut self) {
-
+        let panel_width = self.game_over.width as f32;
+        let panel_height = self.game_over.height as f32;
+        let (viewport_width, viewport_height) = self.get_framebuffer_size();
+        let gui_scale_x = panel_width / (viewport_width as f32);
+        let gui_scale_y = panel_height / (viewport_height as f32);
+        let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0.0);
+        let trans_mat = Matrix4::from_translation(cgmath::vec3((0.08, 0.0, 0.0)));
+        let uniforms = PlayingFieldBackgroundUniforms { 
+            gui_scale_mat: gui_scale_mat,
+            trans_mat: trans_mat,
+        };
+        send_to_gpu_uniforms_playing_field_background(self.playing_field_background.handle.sp, uniforms);
     }
 }
 
@@ -3130,11 +3142,12 @@ impl RendererFallingState {
     }
 
     fn update_playing_field_background(&self, context: &mut RendererContext) {
-
+        context.update_uniforms_playing_field_background();
     }
 
     fn render_playing_field_background(&self, context: &mut RendererContext) {
-        
+        // Check which background image to use by introspecting the game context for the state of the 
+        //flashing state machine.        
     }
 
     fn render(&self, context: &mut RendererContext) {
@@ -3258,11 +3271,12 @@ impl RendererClearingState {
     }
 
     fn update_playing_field_background(&self, context: &mut RendererContext) {
-
+        context.update_uniforms_playing_field_background();
     }
 
     fn render_playing_field_background(&self, context: &mut RendererContext) {
-        
+        // Check which background image to use by introspecting the game context for the state of the 
+        //flashing state machine.
     }
 
     fn render(&self, context: &mut RendererContext) {
@@ -3747,6 +3761,7 @@ fn init_game() -> Game {
         ui: ui,
         background: background,
         game_over: game_over,
+        playing_field_background: playing_field_background,
     };
     let initial_renderer_state = RendererState::Falling(RendererFallingState {});
     let renderer_state_machine = RendererStateMachine::new(renderer_context, initial_renderer_state); 
