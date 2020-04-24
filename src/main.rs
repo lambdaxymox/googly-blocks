@@ -3526,12 +3526,40 @@ impl RendererGameOverState {
         }  
     }
 
+    fn update_playing_field_background(&self, context: &mut RendererContext) {
+        context.update_uniforms_playing_field_background();
+    }
+
+    fn render_playing_field_background(&self, context: &mut RendererContext) {
+        // Check which background image to use by introspecting the game context for the state of the 
+        //flashing state machine.
+        let game_context = context.game_context.borrow();
+        let flashing_state_machine = game_context.flashing_state_machine.borrow();
+        let flashing_state_handle = context.playing_field_background.handle;
+        let handle = match flashing_state_machine.state {
+            FlashAnimationState::Light => flashing_state_handle.light,
+            FlashAnimationState::Dark => flashing_state_handle.dark,
+            FlashAnimationState::Disabled => flashing_state_handle.default,
+        };
+
+        unsafe {
+            gl::UseProgram(handle.sp);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, handle.tex);
+            gl::BindVertexArray(handle.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6);
+        }
+    }
+
     fn render(&self, context: &mut RendererContext) {
         self.clear_framebuffer(context);
         self.clear_depth_buffer(context);
         self.update_viewport(context);
         self.update_background(context);
         self.render_background(context);
+        self.update_playing_field_background(context);
+        self.render_playing_field_background(context);
         self.update_ui(context);
         self.render_ui(context);
         self.update_playing_field(context);
@@ -3832,7 +3860,7 @@ fn init_game() -> Game {
         right_hold_interval: Interval::Milliseconds(70),
         down_hold_interval: Interval::Milliseconds(35),
         rotate_interval: Interval::Milliseconds(100),
-        clearing_interval: Interval::Milliseconds(100),
+        clearing_interval: Interval::Milliseconds(60),
         flash_switch_interval: Interval::Milliseconds(50),
         flash_stop_interval: Interval::Milliseconds(500),
     };
