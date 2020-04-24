@@ -2357,6 +2357,8 @@ struct PlayingFieldTimerSpec {
     down_hold_interval: Interval,
     rotate_interval: Interval,
     clearing_interval: Interval,
+    flash_switch_interval: Interval,
+    flash_interval: Interval,
 }
 
 struct PlayingFieldTimers {
@@ -2367,6 +2369,8 @@ struct PlayingFieldTimers {
     down_hold_timer: Timer,
     rotate_timer: Timer,
     clearing_timer: Timer,
+    flash_switch_timer: Timer,
+    flash_timer: Timer,
 }
 
 impl PlayingFieldTimers {
@@ -2379,6 +2383,8 @@ impl PlayingFieldTimers {
             down_hold_timer: Timer::new(spec.down_hold_interval),
             rotate_timer: Timer::new(spec.rotate_interval),
             clearing_timer: Timer::new(spec.clearing_interval),
+            flash_switch_timer: Timer::new(spec.flash_switch_interval),
+            flash_timer: Timer::new(spec.flash_interval),
         }
     }
 
@@ -3728,6 +3734,8 @@ fn init_game() -> Game {
         down_hold_interval: Interval::Milliseconds(35),
         rotate_interval: Interval::Milliseconds(100),
         clearing_interval: Interval::Milliseconds(100),
+        flash_switch_interval: Interval::Milliseconds(50),
+        flash_interval: Interval::Milliseconds(500),
     };
     let next_block_cell_ref = Rc::new(RefCell::new(next_block_cell));
     let timers = Rc::new(RefCell::new(PlayingFieldTimers::new(timer_spec)));
