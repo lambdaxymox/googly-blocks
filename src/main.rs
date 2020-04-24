@@ -3720,7 +3720,6 @@ fn init_game() -> Game {
     let statistics = Rc::new(RefCell::new(Statistics::new()));
     let score_board = Rc::new(RefCell::new(ScoreBoard::new()));
     let full_rows = Rc::new(RefCell::new(FullRows::new()));
-
     let game_over_panel_spec = GameOverPanelSpec {
         width: 300,
         height: 178,
@@ -3730,7 +3729,6 @@ fn init_game() -> Game {
         let mut context = gl_context.borrow_mut();
         load_game_over_panel(&mut context, game_over_panel_spec)
     };
-
     let context = Rc::new(RefCell::new(GameContext {
         gl: gl_context,
         timers: timers,
