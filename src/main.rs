@@ -412,7 +412,8 @@ fn send_to_gpu_geometry_ui_panel(handle: UIPanelHandle, mesh: &ObjMesh) {
 }
 
 fn create_textures_ui_panel() -> TexImage2D {
-    let asset: &'static [u8; 59580] = include_asset!("ui_panel_atlas.png");
+    //let asset: &'static [u8; 59580] = include_asset!("ui_panel_atlas.png");
+    let asset: &'static [u8; 58637] = include_asset!("ui_panel_atlas.png");
     teximage2d::load_from_memory(asset).unwrap().image
 }
 
@@ -1111,8 +1112,8 @@ fn create_geometry_playing_field_background() -> ObjMesh {
         [1_f32, 1_f32], [-1_f32,  1_f32], [-1_f32, -1_f32],
     ];
     let tex_coords: Vec<[f32; 2]> = vec![
-        [1780_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32,  768_f32 / 2048_f32], [1780_f32 / 2048_f32, 768_f32 / 2048_f32],
-        [1780_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32, 768_f32 / 2048_f32],
+        [508_f32 / 2048_f32, 2040_f32 / 2048_f32], [8_f32 / 2048_f32, 1040_f32 / 2048_f32], [508_f32 / 2048_f32, 1040_f32 / 2048_f32],
+        [508_f32 / 2048_f32, 2040_f32 / 2048_f32], [8_f32 / 2048_f32, 2040_f32 / 2048_f32], [8_f32   / 2048_f32, 1040_f32 / 2048_f32],
     ];
 
     ObjMesh::new(points, tex_coords)
@@ -2704,7 +2705,6 @@ impl GameFallingState {
             playing_field_state.update_new_block(new_next_block);
             timers.collision_timer.reset();
         }
-
         /*
         if {
             timers.flash_switch_timer.update(elapsed_milliseconds);
@@ -3042,8 +3042,8 @@ impl RendererContext {
     }
 
     fn update_uniforms_playing_field_background(&mut self) {
-        let panel_width = self.game_over.width as f32;
-        let panel_height = self.game_over.height as f32;
+        let panel_width = self.playing_field_background.width as f32;
+        let panel_height = self.playing_field_background.height as f32;
         let (viewport_width, viewport_height) = self.get_framebuffer_size();
         let gui_scale_x = panel_width / (viewport_width as f32);
         let gui_scale_y = panel_height / (viewport_height as f32);
@@ -3745,8 +3745,8 @@ fn init_game() -> Game {
     };
     let block_element_atlas = create_textures_playing_field();
     let playing_field_background_spec = PlayingFieldBackgroundSpec {
-        width: 257,
-        height: 458,
+        width: 250,
+        height: 500,
         atlas: &ui_panel_atlas,
     };
     let playing_field_background = {
