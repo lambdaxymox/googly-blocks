@@ -2378,7 +2378,7 @@ struct PlayingFieldTimerSpec {
     rotate_interval: Interval,
     clearing_interval: Interval,
     flash_switch_interval: Interval,
-    flash_interval: Interval,
+    flash_stop_interval: Interval,
 }
 
 struct PlayingFieldTimers {
@@ -2390,7 +2390,7 @@ struct PlayingFieldTimers {
     rotate_timer: Timer,
     clearing_timer: Timer,
     flash_switch_timer: Timer,
-    flash_timer: Timer,
+    flash_stop_timer: Timer,
 }
 
 impl PlayingFieldTimers {
@@ -2404,7 +2404,7 @@ impl PlayingFieldTimers {
             rotate_timer: Timer::new(spec.rotate_interval),
             clearing_timer: Timer::new(spec.clearing_interval),
             flash_switch_timer: Timer::new(spec.flash_switch_interval),
-            flash_timer: Timer::new(spec.flash_interval),
+            flash_stop_timer: Timer::new(spec.flash_stop_interval),
         }
     }
 }
@@ -2576,13 +2576,27 @@ impl FlashAnimationStateMachine {
     }
 
     #[inline]
+    fn enable(&mut self) {
+        self.state = FlashAnimationState::Dark;
+    }
+
+    #[inline]
+    fn disable(&mut self) {
+        self.state = FlashAnimationState::Disabled;
+    }
+
+    #[inline]
     fn is_disabled(&self) -> bool {
         self.state == FlashAnimationState::Disabled
     }
 
     #[inline]
-    fn update(&mut self, state: FlashAnimationState) {
-        self.state = state;
+    fn update(&mut self) {
+        self.state = match self.state {
+            FlashAnimationState::Disabled => FlashAnimationState::Disabled,
+            FlashAnimationState::Dark => FlashAnimationState::Light,
+            FlashAnimationState::Light => FlashAnimationState::Dark,
+        };
     }
 }
 
@@ -2686,6 +2700,7 @@ impl GameFallingState {
         let mut statistics = context.statistics.borrow_mut();
         let mut next_block = context.next_block.borrow_mut();
         let mut full_rows = context.full_rows.borrow_mut();
+        let mut flashing_state_machine = context.flashing_state_machine.borrow_mut();
 
         let collides_with_floor = playing_field_state.collides_with_floor_below();
         let collides_with_element = playing_field_state.collides_with_element_below();
@@ -2716,13 +2731,19 @@ impl GameFallingState {
             playing_field_state.update_new_block(new_next_block);
             timers.collision_timer.reset();
         }
-        /*
-        if {
+        
+        if flashing_state_machine.is_enabled() {
             timers.flash_switch_timer.update(elapsed_milliseconds);
-            timers.flash_timer.update(elapsed_milliseconds);
-
+            timers.flash_stop_timer.update(elapsed_milliseconds);
+            if timers.flash_stop_timer.event_triggered() {
+                timers.flash_switch_timer.reset();
+                timers.flash_stop_timer.reset();
+                flashing_state_machine.disable();
+            } else if timers.flash_switch_timer.event_triggered() {
+                timers.flash_switch_timer.reset();
+                flashing_state_machine.update();
+            }
         }
-        */
 
         let full_row_count = playing_field_state.get_full_rows(&mut full_rows.rows);
         full_rows.count = full_row_count;
@@ -2760,6 +2781,7 @@ impl GameClearingState {
         let mut playing_field_state = context.playing_field_state.borrow_mut();
         let mut full_rows = context.full_rows.borrow_mut();
         let mut score_board = context.score_board.borrow_mut();
+        let mut flashing_state_machine = context.flashing_state_machine.borrow_mut();
         
         timers.clearing_timer.update(elapsed_milliseconds);
         if timers.clearing_timer.event_triggered() {
@@ -2774,6 +2796,20 @@ impl GameClearingState {
             }
             self.columns_cleared += 2;
         }
+
+        if flashing_state_machine.is_enabled() {
+            timers.flash_switch_timer.update(elapsed_milliseconds);
+            timers.flash_stop_timer.update(elapsed_milliseconds);
+            if timers.flash_stop_timer.event_triggered() {
+                timers.flash_switch_timer.reset();
+                timers.flash_stop_timer.reset();
+                flashing_state_machine.disable();
+            } else if timers.flash_switch_timer.event_triggered() {
+                timers.flash_switch_timer.reset();
+                flashing_state_machine.update();
+            }
+        }
+
         if self.columns_cleared >= 10 {
             playing_field_state.collapse_empty_rows();
             score_board.update(full_rows.count);
@@ -2808,6 +2844,9 @@ impl GameGameOverState {
         if context.exiting {
             GameState::Exiting(GameExitingState::new())
         } else {
+            let mut flashing_state_machine = context.flashing_state_machine.borrow_mut();
+            flashing_state_machine.disable();
+
             GameState::GameOver(*self)
         }
     }
@@ -3799,7 +3838,7 @@ fn init_game() -> Game {
         rotate_interval: Interval::Milliseconds(100),
         clearing_interval: Interval::Milliseconds(100),
         flash_switch_interval: Interval::Milliseconds(50),
-        flash_interval: Interval::Milliseconds(500),
+        flash_stop_interval: Interval::Milliseconds(500),
     };
     let next_block_cell_ref = Rc::new(RefCell::new(next_block_cell));
     let timers = Rc::new(RefCell::new(PlayingFieldTimers::new(timer_spec)));
