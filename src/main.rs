@@ -3496,11 +3496,6 @@ impl Game {
     }
 
     #[inline]
-    fn window_set_should_close(&mut self, close: bool) {
-        self.context.borrow_mut().gl.borrow_mut().window.set_should_close(close);
-    }
-
-    #[inline]
     fn update_fps_counter(&mut self) {
         let game_context = self.context.borrow_mut();
         let mut gpu_context = game_context.gl.borrow_mut();
