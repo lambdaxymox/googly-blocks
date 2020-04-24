@@ -1065,20 +1065,20 @@ struct PlayingFieldBackgroundBuffers {
 
 #[derive(Copy, Clone)]
 struct PlayingFieldBackgroundBufferHandle {
+    sp: GLuint,
     vao: GLuint,
     v_pos_vbo: GLuint,
-    v_tex_vbo: GLuint,    
+    v_tex_vbo: GLuint,
+    v_pos_loc: GLuint,
+    v_tex_loc: GLuint,
+    tex: GLuint,  
 }
 
 #[derive(Copy, Clone)]
 struct PlayingFieldBackgroundHandle {
-    sp: GLuint,
     default: PlayingFieldBackgroundBufferHandle,
     dark: PlayingFieldBackgroundBufferHandle,
     light: PlayingFieldBackgroundBufferHandle,
-    v_pos_loc: GLuint,
-    v_tex_loc: GLuint,
-    tex: GLuint,
 }
 
 #[derive(Copy, Clone)]
@@ -1215,28 +1215,36 @@ fn load_playing_field_background(game: &mut glh::GLState, spec: PlayingFieldBack
     let v_pos_loc = default_buffer.v_pos_loc;
     let v_tex_loc = default_buffer.v_tex_loc;
     let default_handle = PlayingFieldBackgroundBufferHandle {
+        sp: sp,
         vao: default_buffer.vao,
         v_pos_vbo: default_buffer.v_pos_vbo,
         v_tex_vbo: default_buffer.v_tex_vbo,
-    };
-    let dark_handle = PlayingFieldBackgroundBufferHandle {
-        vao: dark_buffer.vao,
-        v_pos_vbo: dark_buffer.v_pos_vbo,
-        v_tex_vbo: dark_buffer.v_tex_vbo,
-    };
-    let light_handle = PlayingFieldBackgroundBufferHandle {
-        vao: light_buffer.vao,
-        v_pos_vbo: light_buffer.v_pos_vbo,
-        v_tex_vbo: light_buffer.v_tex_vbo,
-    };
-    let handle = PlayingFieldBackgroundHandle {
-        sp: sp,
-        default: default_handle,
-        dark: dark_handle,
-        light: light_handle,
         v_pos_loc: v_pos_loc,
         v_tex_loc: v_tex_loc,
         tex: tex,
+    };
+    let dark_handle = PlayingFieldBackgroundBufferHandle {
+        sp: sp,
+        vao: dark_buffer.vao,
+        v_pos_vbo: dark_buffer.v_pos_vbo,
+        v_tex_vbo: dark_buffer.v_tex_vbo,
+        v_pos_loc: v_pos_loc,
+        v_tex_loc: v_tex_loc,
+        tex: tex,
+    };
+    let light_handle = PlayingFieldBackgroundBufferHandle {
+        sp: sp,
+        vao: light_buffer.vao,
+        v_pos_vbo: light_buffer.v_pos_vbo,
+        v_tex_vbo: light_buffer.v_tex_vbo,
+        v_pos_loc: v_pos_loc,
+        v_tex_loc: v_tex_loc,
+        tex: tex,
+    };
+    let handle = PlayingFieldBackgroundHandle {
+        default: default_handle,
+        dark: dark_handle,
+        light: light_handle,
     };
 
     PlayingFieldBackgroundPanel {
@@ -2544,7 +2552,7 @@ impl Input {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 enum FlashAnimationState {
     Light,
     Dark,
@@ -2560,6 +2568,16 @@ impl FlashAnimationStateMachine {
         FlashAnimationStateMachine {
             state: FlashAnimationState::Disabled,
         }
+    }
+
+    #[inline]
+    fn is_enabled(&self) -> bool {
+        self.state != FlashAnimationState::Disabled
+    }
+
+    #[inline]
+    fn is_disabled(&self) -> bool {
+        self.state == FlashAnimationState::Disabled
     }
 
     #[inline]
@@ -2698,6 +2716,14 @@ impl GameFallingState {
             playing_field_state.update_new_block(new_next_block);
             timers.collision_timer.reset();
         }
+
+        /*
+        if {
+            timers.flash_switch_timer.update(elapsed_milliseconds);
+            timers.flash_timer.update(elapsed_milliseconds);
+
+        }
+        */
 
         let full_row_count = playing_field_state.get_full_rows(&mut full_rows.rows);
         full_rows.count = full_row_count;
@@ -2926,6 +2952,7 @@ struct GameContext {
     statistics: Rc<RefCell<Statistics>>,
     score_board: Rc<RefCell<ScoreBoard>>,
     full_rows: Rc<RefCell<FullRows>>,
+    flashing_state_machine: Rc<RefCell<FlashAnimationStateMachine>>,
     exiting: bool,
 }
 
@@ -3038,7 +3065,8 @@ impl RendererContext {
             gui_scale_mat: gui_scale_mat,
             trans_mat: trans_mat,
         };
-        send_to_gpu_uniforms_playing_field_background(self.playing_field_background.handle.sp, uniforms);
+        let sp = self.playing_field_background.handle.default.sp;
+        send_to_gpu_uniforms_playing_field_background(sp, uniforms);
     }
 }
 
@@ -3104,6 +3132,8 @@ impl RendererFallingState {
         unsafe {
             gl::UseProgram(context.ui.ui_panel.sp);
             gl::Disable(gl::DEPTH_TEST);
+            gl::Enable(gl::BLEND);
+            gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, context.ui.ui_panel.tex);
             gl::BindVertexArray(context.ui.ui_panel.vao);
@@ -3122,6 +3152,7 @@ impl RendererFallingState {
             gl::BindTexture(gl::TEXTURE_2D, context.ui.next_piece_panel.buffer.tex);
             gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().block).vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 3 * 8);
+            gl::Disable(gl::BLEND);
         }
     }
 
@@ -3153,7 +3184,23 @@ impl RendererFallingState {
 
     fn render_playing_field_background(&self, context: &mut RendererContext) {
         // Check which background image to use by introspecting the game context for the state of the 
-        //flashing state machine.        
+        //flashing state machine.
+        let game_context = context.game_context.borrow();
+        let flashing_state_machine = game_context.flashing_state_machine.borrow();
+        let flashing_state_handle = context.playing_field_background.handle;
+        let handle = match flashing_state_machine.state {
+            FlashAnimationState::Light => flashing_state_handle.light,
+            FlashAnimationState::Dark => flashing_state_handle.dark,
+            FlashAnimationState::Disabled => flashing_state_handle.default,
+        };
+
+        unsafe {
+            gl::UseProgram(handle.sp);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, handle.tex);
+            gl::BindVertexArray(handle.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6);
+        }
     }
 
     fn render(&self, context: &mut RendererContext) {
@@ -3233,6 +3280,8 @@ impl RendererClearingState {
         unsafe {
             gl::UseProgram(context.ui.ui_panel.sp);
             gl::Disable(gl::DEPTH_TEST);
+            gl::Enable(gl::BLEND);
+            gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, context.ui.ui_panel.tex);
             gl::BindVertexArray(context.ui.ui_panel.vao);
@@ -3251,6 +3300,7 @@ impl RendererClearingState {
             gl::BindTexture(gl::TEXTURE_2D, context.ui.next_piece_panel.buffer.tex);
             gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().block).vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 3 * 8);
+            gl::Disable(gl::BLEND);
         }
     }
 
@@ -3283,6 +3333,23 @@ impl RendererClearingState {
     fn render_playing_field_background(&self, context: &mut RendererContext) {
         // Check which background image to use by introspecting the game context for the state of the 
         //flashing state machine.
+        let game_context = context.game_context.borrow();
+        let flashing_state_machine = game_context.flashing_state_machine.borrow();
+        let flashing_state_handle = context.playing_field_background.handle;
+        let handle = match flashing_state_machine.state {
+            FlashAnimationState::Light => flashing_state_handle.light,
+            FlashAnimationState::Dark => flashing_state_handle.dark,
+            FlashAnimationState::Disabled => flashing_state_handle.default,
+        };
+
+        unsafe {
+            gl::UseProgram(handle.sp);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, handle.tex);
+            gl::BindVertexArray(handle.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6);
+        }
     }
 
     fn render(&self, context: &mut RendererContext) {
@@ -3362,6 +3429,8 @@ impl RendererGameOverState {
         unsafe {
             gl::UseProgram(context.ui.ui_panel.sp);
             gl::Disable(gl::DEPTH_TEST);
+            gl::Enable(gl::BLEND);
+            gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, context.ui.ui_panel.tex);
             gl::BindVertexArray(context.ui.ui_panel.vao);
@@ -3380,6 +3449,7 @@ impl RendererGameOverState {
             gl::BindTexture(gl::TEXTURE_2D, context.ui.next_piece_panel.buffer.tex);
             gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().block).vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 3 * 8);
+            gl::Disable(gl::BLEND);
         }
     }
 
@@ -3746,6 +3816,7 @@ fn init_game() -> Game {
         let mut context = gl_context.borrow_mut();
         load_game_over_panel(&mut context, game_over_panel_spec)
     };
+    let flashing_state_machine = Rc::new(RefCell::new(FlashAnimationStateMachine::new()));
     let context = Rc::new(RefCell::new(GameContext {
         gl: gl_context,
         timers: timers,
@@ -3754,6 +3825,7 @@ fn init_game() -> Game {
         score_board: score_board,
         next_block: next_block_cell_ref,
         full_rows: full_rows,
+        flashing_state_machine: flashing_state_machine,
         exiting: false,
     }));
     let initial_game_state = GameState::Falling(GameFallingState::new());
