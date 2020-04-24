@@ -2395,18 +2395,6 @@ impl PlayingFieldTimers {
             flash_timer: Timer::new(spec.flash_interval),
         }
     }
-
-    fn update(&mut self, elapsed: Duration) {
-        self.fall_timer.update(elapsed);
-        self.collision_timer.update(elapsed);
-    }
-
-    fn reset_input_timers(&mut self) {
-        self.left_hold_timer.reset();
-        self.right_hold_timer.reset();
-        self.down_hold_timer.reset();
-        self.rotate_timer.reset();
-    }
 }
 
 struct Statistics {
