@@ -1106,15 +1106,18 @@ fn create_shaders_playing_field_background() -> ShaderSource {
     }
 }
 
-fn create_geometry_playing_field_background() -> ObjMesh {
+fn create_geometry_playing_field_background(elem: UIPanelAtlasElement, atlas: &UIPanelTextureAtlas) -> ObjMesh {
     let points: Vec<[f32; 2]> = vec![
         [1_f32, 1_f32], [-1_f32, -1_f32], [1_f32, -1_f32],
         [1_f32, 1_f32], [-1_f32,  1_f32], [-1_f32, -1_f32],
     ];
-    let tex_coords: Vec<[f32; 2]> = vec![
+    let tex_coords: Vec<[f32; 2]> = atlas.coords[&elem].clone();
+    /*
+    vec![
         [508_f32 / 2048_f32, 2040_f32 / 2048_f32], [8_f32 / 2048_f32, 1040_f32 / 2048_f32], [508_f32 / 2048_f32, 1040_f32 / 2048_f32],
         [508_f32 / 2048_f32, 2040_f32 / 2048_f32], [8_f32 / 2048_f32, 2040_f32 / 2048_f32], [8_f32   / 2048_f32, 1040_f32 / 2048_f32],
     ];
+    */
 
     ObjMesh::new(points, tex_coords)
 }
@@ -1204,14 +1207,22 @@ struct PlayingFieldBackgroundSpec<'a> {
 
 fn load_playing_field_background(game: &mut glh::GLState, spec: PlayingFieldBackgroundSpec) -> PlayingFieldBackgroundPanel {
     let shader_source = create_shaders_playing_field_background();
-    let mesh = create_geometry_playing_field_background();
+    let default_mesh = create_geometry_playing_field_background(
+        UIPanelAtlasElement::PlayingFieldDefaultBackground, &spec.atlas
+    );
+    let dark_mesh = create_geometry_playing_field_background(
+        UIPanelAtlasElement::PlayingFieldFlashingBackgroundDark, &spec.atlas
+    );
+    let light_mesh = create_geometry_playing_field_background(
+        UIPanelAtlasElement::PlayingFieldFlashingBackgroundLight, &spec.atlas
+    );
     let sp = send_to_gpu_shaders_playing_field_background(game, shader_source);
     let default_buffer = create_buffers_geometry_playing_field_background();
     let dark_buffer = create_buffers_geometry_playing_field_background();
     let light_buffer = create_buffers_geometry_playing_field_background();
-    send_to_gpu_geometry_playing_field_background(default_buffer, &mesh);
-    send_to_gpu_geometry_playing_field_background(dark_buffer, &mesh);
-    send_to_gpu_geometry_playing_field_background(light_buffer, &mesh);
+    send_to_gpu_geometry_playing_field_background(default_buffer, &default_mesh);
+    send_to_gpu_geometry_playing_field_background(dark_buffer, &dark_mesh);
+    send_to_gpu_geometry_playing_field_background(light_buffer, &light_mesh);
     let tex = send_to_gpu_textures_playing_field_background(&spec.atlas.image);  
     let v_pos_loc = default_buffer.v_pos_loc;
     let v_tex_loc = default_buffer.v_tex_loc;
