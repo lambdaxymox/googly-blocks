@@ -664,18 +664,6 @@ fn create_geometry_j_piece(atlas: &TextureAtlas2D) -> ObjMesh {
     ];
     let bounding_box = atlas.get_name_uv("j_piece").unwrap();
     let tex_coords = generate_texture_coords_block(bounding_box);
-    /*
-    let tex_coords: Vec<[f32; 2]> = vec![
-        [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [0_f32 / 3_f32, 2_f32 / 3_f32],
-        [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
-        [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [0_f32 / 3_f32, 2_f32 / 3_f32],
-        [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
-        [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [0_f32 / 3_f32, 2_f32 / 3_f32],
-        [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
-        [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [0_f32 / 3_f32, 2_f32 / 3_f32],
-        [0_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
-    ];
-    */
     
     ObjMesh::new(points, tex_coords)
 }
