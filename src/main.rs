@@ -23,6 +23,7 @@ extern crate log;
 extern crate rand;
 extern crate file_logger;
 extern crate teximage2d;
+extern crate tex_atlas;
 
 
 mod gl {
@@ -46,6 +47,7 @@ use log::{info};
 use math::{Array, One, Matrix4};
 use mesh::ObjMesh;
 use teximage2d::TexImage2D;
+use tex_atlas::TextureAtlas2D;
 use playing_field::{
     BlockPosition, GooglyBlock, PlayingFieldState,
     GooglyBlockPiece, GooglyBlockRotation, GooglyBlockElement, GooglyBlockMove,
@@ -632,7 +634,7 @@ fn create_geometry_t_piece() -> ObjMesh {
     ObjMesh::new(points, tex_coords)
 }
 
-fn create_geometry_j_piece() -> ObjMesh {
+fn create_geometry_j_piece(atlas: &TextureAtlas2D) -> ObjMesh {
     let points: Vec<[f32; 2]> = vec![
         [-0.5, 0.5], [0.0, 1.0], [-0.5, 1.0],
         [-0.5, 0.5], [0.0, 0.5], [ 0.0, 1.0],
@@ -782,12 +784,19 @@ fn create_geometry_i_piece() -> ObjMesh {
     ObjMesh::new(points, tex_coords)
 }
 
+fn create_block_texture_atlas() -> TextureAtlas2D {
+    let source = include_asset!("block_textures.atlas");
+    let atlas = tex_atlas::load_from_memory(source).unwrap().atlas;
+
+    atlas
+}
+
 /// Create the model space geometry for the pieces displayed in the next panel
 /// on the game's interface.
-fn create_geometry_next_piece_panel() -> PieceMeshes {    
+fn create_geometry_next_piece_panel(atlas: &TextureAtlas2D) -> PieceMeshes {    
     PieceMeshes {
         t: create_geometry_t_piece(),
-        j: create_geometry_j_piece(),
+        j: create_geometry_j_piece(atlas),
         z: create_geometry_z_piece(),
         o: create_geometry_o_piece(),
         s: create_geometry_s_piece(),
@@ -996,12 +1005,12 @@ impl GLNextPiecePanel {
     }
 }
 
-fn create_next_piece_panel_buffer(gl_context: &mut glh::GLState, uniforms: &PieceUniformsData) -> GLNextPiecePanel {
+fn create_next_piece_panel_buffer(gl_context: &mut glh::GLState, atlas: &TextureAtlas2D, uniforms: &PieceUniformsData) -> GLNextPiecePanel {
     let shader_source = create_shaders_next_piece_panel();
     let sp = send_to_gpu_shaders_next_piece_panel(gl_context, shader_source);
     let tex_image = create_textures_next_piece_panel();
     let tex = send_to_gpu_textures_next_piece_panel(&tex_image);
-    let meshes = create_geometry_next_piece_panel();
+    let meshes = create_geometry_next_piece_panel(atlas);
     let handles = send_to_gpu_geometry_next_panel(&meshes);
     send_to_gpu_uniforms_next_piece_panel(sp, uniforms);
 
@@ -1029,15 +1038,16 @@ impl NextPiecePanel {
     }
 }
 
-struct NextPiecePanelSpec {
+struct NextPiecePanelSpec<'a> {
     piece: GooglyBlockPiece,
+    atlas: &'a TextureAtlas2D,
 }
 
 fn load_next_piece_panel(
-    game: &mut glh::GLState, 
+    game: &mut glh::GLState,
     spec: NextPiecePanelSpec, uniforms: &PieceUniformsData) -> NextPiecePanel {
     
-    let buffer = create_next_piece_panel_buffer(game, uniforms);
+    let buffer = create_next_piece_panel_buffer(game, spec.atlas, uniforms);
     NextPiecePanel {
         current_piece: spec.piece,
         buffer: buffer,
@@ -3801,11 +3811,12 @@ fn init_game() -> Game {
         scale_px: 48.0,
     };
     let text_panel = load_text_panel(gl_context.clone(), &text_panel_spec, text_panel_uniforms);
-    
+    let block_texture_atlas = create_block_texture_atlas();
     let next_block_cell = NextBlockCell::new();
     let next_piece = next_block_cell.block;
     let next_piece_panel_spec = NextPiecePanelSpec {
         piece: next_piece,
+        atlas: &block_texture_atlas,
     };
     let next_piece_panel_uniforms = create_uniforms_next_piece_panel(next_piece, 50, width, height);
     let next_piece_panel = {

@@ -13,6 +13,7 @@ bmfa = { git = "https://github.com/lambdaxymox/bmfa" }
 file_logger = { git = "https://github.com/lambdaxymox/file-logger" }
 lean_cgmath = { git = "https://github.com/lambdaxymox/lean-cgmath" }
 teximage2d = { git = "https://github.com/lambdaxymox/teximage2d" }
+tex_atlas = { git = "https://github.com/lambdaxymox/tex_atlas" }
 
 [build-dependencies]
 gl_generator = "0.14.0"
