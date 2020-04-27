@@ -609,31 +609,6 @@ struct PieceMeshes {
     i: ObjMesh,
 }
 
-fn create_geometry_t_piece() -> ObjMesh {
-    let points: Vec<[f32; 2]> = vec![
-        [-0.5, 0.5], [0.0, 1.0], [-0.5, 1.0],
-        [-0.5, 0.5], [0.0, 0.5], [ 0.0, 1.0],
-        [ 0.0, 0.5], [0.5, 1.0], [ 0.0, 1.0],
-        [ 0.0, 0.5], [0.5, 0.5], [ 0.5, 1.0],
-        [ 0.0, 0.0], [0.5, 0.5], [ 0.0, 0.5],
-        [ 0.0, 0.0], [0.5, 0.0], [ 0.5, 0.5],
-        [ 0.5, 0.5], [1.0, 1.0], [ 0.5, 1.0],
-        [ 0.5, 0.5], [1.0, 0.5], [ 1.0, 1.0],        
-    ];
-    let tex_coords: Vec<[f32; 2]> = vec![
-        [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32], [0_f32 / 3_f32, 3_f32 / 3_f32],
-        [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32],
-        [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32], [0_f32 / 3_f32, 3_f32 / 3_f32],
-        [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32],
-        [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32], [0_f32 / 3_f32, 3_f32 / 3_f32],
-        [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32],
-        [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32], [0_f32 / 3_f32, 3_f32 / 3_f32],
-        [0_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32],
-    ];
-
-    ObjMesh::new(points, tex_coords)
-}
-
 fn generate_texture_coords_block(bounding_box: tex_atlas::BoundingBoxTexCoords) -> Vec<[f32; 2]> {
     let width = bounding_box.width;
     let height = bounding_box.height;
@@ -649,6 +624,23 @@ fn generate_texture_coords_block(bounding_box: tex_atlas::BoundingBoxTexCoords) 
     ];
 
     tex_coords
+}
+
+fn create_geometry_t_piece(atlas: &TextureAtlas2D) -> ObjMesh {
+    let points: Vec<[f32; 2]> = vec![
+        [-0.5, 0.5], [0.0, 1.0], [-0.5, 1.0],
+        [-0.5, 0.5], [0.0, 0.5], [ 0.0, 1.0],
+        [ 0.0, 0.5], [0.5, 1.0], [ 0.0, 1.0],
+        [ 0.0, 0.5], [0.5, 0.5], [ 0.5, 1.0],
+        [ 0.0, 0.0], [0.5, 0.5], [ 0.0, 0.5],
+        [ 0.0, 0.0], [0.5, 0.0], [ 0.5, 0.5],
+        [ 0.5, 0.5], [1.0, 1.0], [ 0.5, 1.0],
+        [ 0.5, 0.5], [1.0, 0.5], [ 1.0, 1.0],        
+    ];
+    let bounding_box = atlas.get_name_uv("t_piece").unwrap();
+    let tex_coords = generate_texture_coords_block(bounding_box);
+    
+    ObjMesh::new(points, tex_coords)
 }
 
 fn create_geometry_j_piece(atlas: &TextureAtlas2D) -> ObjMesh {
@@ -804,7 +796,7 @@ fn create_block_texture_atlas() -> TextureAtlas2D {
 /// on the game's interface.
 fn create_geometry_next_piece_panel(atlas: &TextureAtlas2D) -> PieceMeshes {    
     PieceMeshes {
-        t: create_geometry_t_piece(),
+        t: create_geometry_t_piece(atlas),
         j: create_geometry_j_piece(atlas),
         z: create_geometry_z_piece(),
         o: create_geometry_o_piece(),
