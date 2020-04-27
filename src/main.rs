@@ -660,7 +660,7 @@ fn create_geometry_j_piece(atlas: &TextureAtlas2D) -> ObjMesh {
     ObjMesh::new(points, tex_coords)
 }
 
-fn create_geometry_z_piece() -> ObjMesh {
+fn create_geometry_z_piece(atlas: &TextureAtlas2D) -> ObjMesh {
     let points: Vec<[f32; 2]> = vec![
         [-0.5, 0.5], [0.0, 1.0], [-0.5, 1.0],
         [-0.5, 0.5], [0.0, 0.5], [ 0.0, 1.0],
@@ -671,21 +671,13 @@ fn create_geometry_z_piece() -> ObjMesh {
         [ 0.5, 0.0], [1.0, 0.5], [ 0.5, 0.5],
         [ 0.5, 0.0], [1.0, 0.0], [ 1.0, 0.5],
     ];
-    let tex_coords: Vec<[f32; 2]> = vec![
-        [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
-        [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32],
-        [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
-        [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32],
-        [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
-        [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32],
-        [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
-        [2_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32],
-    ];   
+    let bounding_box = atlas.get_name_uv("z_piece").unwrap();
+    let tex_coords = generate_texture_coords_block(bounding_box); 
 
     ObjMesh::new(points, tex_coords)
 }
 
-fn create_geometry_o_piece() -> ObjMesh {
+fn create_geometry_o_piece(atlas: &TextureAtlas2D) -> ObjMesh {
     let points: Vec<[f32; 2]> = vec![
         [0.0, 0.5], [0.5, 1.0], [0.0, 1.0],
         [0.0, 0.5], [0.5, 0.5], [0.5, 1.0],
@@ -696,21 +688,13 @@ fn create_geometry_o_piece() -> ObjMesh {
         [0.5, 0.0], [1.0, 0.5], [0.5, 0.5],
         [0.5, 0.0], [1.0, 0.0], [1.0, 0.5],        
     ];
-    let tex_coords: Vec<[f32; 2]> = vec![
-        [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
-        [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32],
-        [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
-        [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32],
-        [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
-        [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32],
-        [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
-        [2_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32],
-    ];
+    let bounding_box = atlas.get_name_uv("o_piece").unwrap();
+    let tex_coords = generate_texture_coords_block(bounding_box);
 
     ObjMesh::new(points, tex_coords)
 }
 
-fn create_geometry_s_piece() -> ObjMesh {
+fn create_geometry_s_piece(atlas: &TextureAtlas2D) -> ObjMesh {
     let points: Vec<[f32; 2]> = vec![
         [-0.5, 0.0], [0.0, 0.5], [-0.5, 0.5],
         [-0.5, 0.0], [0.0, 0.0], [ 0.0, 0.5],
@@ -721,21 +705,13 @@ fn create_geometry_s_piece() -> ObjMesh {
         [ 0.5, 0.5], [1.0, 1.0], [ 0.5, 1.0],
         [ 0.5, 0.5], [1.0, 0.5], [ 1.0, 1.0],        
     ];
-    let tex_coords: Vec<[f32; 2]> = vec![
-        [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
-        [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
-        [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
-        [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
-        [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
-        [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
-        [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
-        [1_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
-    ];
+    let bounding_box = atlas.get_name_uv("s_piece").unwrap();
+    let tex_coords = generate_texture_coords_block(bounding_box);
     
     ObjMesh::new(points, tex_coords)
 }
 
-fn create_geometry_l_piece() -> ObjMesh {
+fn create_geometry_l_piece(atlas: &TextureAtlas2D) -> ObjMesh {
     let points: Vec<[f32; 2]> = vec![
         [-0.5, 0.0], [0.0, 0.5], [-0.5, 0.5],
         [-0.5, 0.0], [0.0, 0.0], [ 0.0, 0.5],
@@ -746,21 +722,13 @@ fn create_geometry_l_piece() -> ObjMesh {
         [ 0.5, 0.0], [1.0, 0.5], [ 0.5, 0.5],
         [ 0.5, 0.0], [1.0, 0.0], [ 1.0, 0.5],        
     ];
-    let tex_coords: Vec<[f32; 2]> = vec![
-        [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
-        [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
-        [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
-        [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
-        [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
-        [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
-        [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
-        [1_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
-    ];
+    let bounding_box = atlas.get_name_uv("l_piece").unwrap();
+    let tex_coords = generate_texture_coords_block(bounding_box);
 
     ObjMesh::new(points, tex_coords)
 }
 
-fn create_geometry_i_piece() -> ObjMesh {
+fn create_geometry_i_piece(atlas: &TextureAtlas2D) -> ObjMesh {
     let points: Vec<[f32; 2]> = vec![
         [-1.0, 0.0], [-0.5, 0.5], [-1.0, 0.5],
         [-1.0, 0.0], [-0.5, 0.0], [-0.5, 0.5],
@@ -771,16 +739,8 @@ fn create_geometry_i_piece() -> ObjMesh {
         [ 0.5, 0.0], [ 1.0, 0.5], [ 0.5, 0.5],
         [ 0.5, 0.0], [ 1.0, 0.0], [ 1.0, 0.5],        
     ];
-    let tex_coords: Vec<[f32; 2]> = vec![
-        [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [0_f32 / 3_f32, 1_f32 / 3_f32],
-        [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
-        [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [0_f32 / 3_f32, 1_f32 / 3_f32],
-        [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
-        [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [0_f32 / 3_f32, 1_f32 / 3_f32],
-        [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
-        [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32], [0_f32 / 3_f32, 1_f32 / 3_f32],
-        [0_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
-    ];
+    let bounding_box = atlas.get_name_uv("i_piece").unwrap();
+    let tex_coords = generate_texture_coords_block(bounding_box);
 
     ObjMesh::new(points, tex_coords)
 }
@@ -798,11 +758,11 @@ fn create_geometry_next_piece_panel(atlas: &TextureAtlas2D) -> PieceMeshes {
     PieceMeshes {
         t: create_geometry_t_piece(atlas),
         j: create_geometry_j_piece(atlas),
-        z: create_geometry_z_piece(),
-        o: create_geometry_o_piece(),
-        s: create_geometry_s_piece(),
-        l: create_geometry_l_piece(),
-        i: create_geometry_i_piece(),
+        z: create_geometry_z_piece(atlas),
+        o: create_geometry_o_piece(atlas),
+        s: create_geometry_s_piece(atlas),
+        l: create_geometry_l_piece(atlas),
+        i: create_geometry_i_piece(atlas),
     }
 }
 
