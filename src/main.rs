@@ -536,6 +536,24 @@ fn load_ui_panel(game: &mut glh::GLState, spec: UIPanelSpec, uniforms: UIPanelUn
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /// Create the shaders for the next panel in the game's user interface.
 fn create_shaders_next_piece_panel() -> ShaderSource {
     let vert_source = include_shader!("next_piece_panel.vert.glsl");
@@ -559,8 +577,8 @@ struct PieceMeshes {
     i: ObjMesh,
 }
 
-fn generate_texture_coords_block(bounding_box: tex_atlas::BoundingBoxPixelCoords) -> Vec<[f32; 2]> {
-    let corners: tex_atlas::BoundingBoxCornersTexCoords = bounding_box.into();
+fn generate_texture_coords_block(atlas: &TextureAtlas2D, name: &str) -> Vec<[f32; 2]> {
+    let corners: tex_atlas::BoundingBoxCornersTexCoords = atlas.get_name_corners_uv(name).unwrap();
     let top_left = [corners.top_left.u, corners.top_left.v];
     let bottom_left = [corners.bottom_left.u, corners.bottom_left.v];
     let top_right = [corners.top_right.u, corners.top_right.v];
@@ -586,9 +604,8 @@ fn create_geometry_t_piece(atlas: &TextureAtlas2D) -> ObjMesh {
         [ 0.5, 0.5], [1.0, 1.0], [ 0.5, 1.0],
         [ 0.5, 0.5], [1.0, 0.5], [ 1.0, 1.0],        
     ];
-    let bounding_box = atlas.get_name("t_piece").unwrap();
-    let tex_coords = generate_texture_coords_block(bounding_box);
-    
+    let tex_coords = generate_texture_coords_block(atlas, "t_piece");
+
     ObjMesh::new(points, tex_coords)
 }
 
@@ -603,9 +620,8 @@ fn create_geometry_j_piece(atlas: &TextureAtlas2D) -> ObjMesh {
         [ 0.5, 0.0], [1.0, 0.5], [ 0.5, 0.5],
         [ 0.5, 0.0], [1.0, 0.0], [ 1.0, 0.5],       
     ];
-    let bounding_box = atlas.get_name("j_piece").unwrap();
-    let tex_coords = generate_texture_coords_block(bounding_box);
-    
+    let tex_coords = generate_texture_coords_block(atlas, "j_piece");
+
     ObjMesh::new(points, tex_coords)
 }
 
@@ -620,8 +636,7 @@ fn create_geometry_z_piece(atlas: &TextureAtlas2D) -> ObjMesh {
         [ 0.5, 0.0], [1.0, 0.5], [ 0.5, 0.5],
         [ 0.5, 0.0], [1.0, 0.0], [ 1.0, 0.5],
     ];
-    let bounding_box = atlas.get_name("z_piece").unwrap();
-    let tex_coords = generate_texture_coords_block(bounding_box); 
+    let tex_coords = generate_texture_coords_block(atlas, "z_piece"); 
 
     ObjMesh::new(points, tex_coords)
 }
@@ -637,8 +652,7 @@ fn create_geometry_o_piece(atlas: &TextureAtlas2D) -> ObjMesh {
         [0.5, 0.0], [1.0, 0.5], [0.5, 0.5],
         [0.5, 0.0], [1.0, 0.0], [1.0, 0.5],        
     ];
-    let bounding_box = atlas.get_name("o_piece").unwrap();
-    let tex_coords = generate_texture_coords_block(bounding_box);
+    let tex_coords = generate_texture_coords_block(atlas, "o_piece");
 
     ObjMesh::new(points, tex_coords)
 }
@@ -654,9 +668,8 @@ fn create_geometry_s_piece(atlas: &TextureAtlas2D) -> ObjMesh {
         [ 0.5, 0.5], [1.0, 1.0], [ 0.5, 1.0],
         [ 0.5, 0.5], [1.0, 0.5], [ 1.0, 1.0],        
     ];
-    let bounding_box = atlas.get_name("s_piece").unwrap();
-    let tex_coords = generate_texture_coords_block(bounding_box);
-    
+    let tex_coords = generate_texture_coords_block(atlas, "s_piece");
+
     ObjMesh::new(points, tex_coords)
 }
 
@@ -671,8 +684,7 @@ fn create_geometry_l_piece(atlas: &TextureAtlas2D) -> ObjMesh {
         [ 0.5, 0.0], [1.0, 0.5], [ 0.5, 0.5],
         [ 0.5, 0.0], [1.0, 0.0], [ 1.0, 0.5],        
     ];
-    let bounding_box = atlas.get_name("l_piece").unwrap();
-    let tex_coords = generate_texture_coords_block(bounding_box);
+    let tex_coords = generate_texture_coords_block(atlas, "l_piece");
 
     ObjMesh::new(points, tex_coords)
 }
@@ -688,8 +700,7 @@ fn create_geometry_i_piece(atlas: &TextureAtlas2D) -> ObjMesh {
         [ 0.5, 0.0], [ 1.0, 0.5], [ 0.5, 0.5],
         [ 0.5, 0.0], [ 1.0, 0.0], [ 1.0, 0.5],        
     ];
-    let bounding_box = atlas.get_name("i_piece").unwrap();
-    let tex_coords = generate_texture_coords_block(bounding_box);
+    let tex_coords = generate_texture_coords_block(atlas, "i_piece");
 
     ObjMesh::new(points, tex_coords)
 }
@@ -842,7 +853,6 @@ fn create_uniforms_next_piece_panel(
     let block_width = 2.0 * (scale as f32 / viewport_width as f32);
     let block_height = 2.0 * (scale as f32 / viewport_height as f32);
     let gui_scale_mat = Matrix4::from_nonuniform_scale(block_width, block_height, 1.0);
-    
     let trans_mat = match piece {
         GooglyBlockPiece::T => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
         GooglyBlockPiece::J => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
@@ -968,6 +978,21 @@ fn load_next_piece_panel(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #[derive(Copy, Clone)]
 struct PlayingFieldBackgroundBuffers {
     vao: GLuint,
@@ -1024,8 +1049,7 @@ fn create_geometry_playing_field_background(elem: &str, atlas: &TextureAtlas2D) 
         [1_f32, 1_f32], [-1_f32, -1_f32], [1_f32, -1_f32],
         [1_f32, 1_f32], [-1_f32,  1_f32], [-1_f32, -1_f32],
     ];
-    let bounding_box = atlas.get_name(elem).unwrap();
-    let corners: tex_atlas::BoundingBoxCornersTexCoords = bounding_box.into();
+    let corners = atlas.get_name_corners_uv(elem).unwrap();
     let top_left = [corners.top_left.u, corners.top_left.v];
     let bottom_left = [corners.bottom_left.u, corners.bottom_left.v];
     let top_right = [corners.top_right.u, corners.top_right.v];
@@ -1546,8 +1570,8 @@ impl GooglyBlockElementTextureAtlas {
     }
 }
 
-fn generate_quad(bounding_box: tex_atlas::BoundingBoxTexCoords) -> TextureQuad {
-    let corners: tex_atlas::BoundingBoxCornersTexCoords = bounding_box.into();
+fn generate_quad(atlas: &TextureAtlas2D, name: &str) -> TextureQuad {
+    let corners = atlas.get_name_corners_uv(name).unwrap();
     let top_left = [corners.top_left.u, corners.top_left.v];
     let bottom_left = [corners.bottom_left.u, corners.bottom_left.v];
     let bottom_right = [corners.bottom_right.u, corners.bottom_right.v];
@@ -1558,14 +1582,14 @@ fn generate_quad(bounding_box: tex_atlas::BoundingBoxTexCoords) -> TextureQuad {
 
 fn create_textures_playing_field(atlas: &TextureAtlas2D) -> GooglyBlockElementTextureAtlas {
     let tex_coords = [
-        (GooglyBlockElement::EmptySpace, generate_quad(atlas.get_name_uv("empty_space").unwrap())),
-        (GooglyBlockElement::T, generate_quad(atlas.get_name_uv("t_piece").unwrap())),
-        (GooglyBlockElement::J, generate_quad(atlas.get_name_uv("j_piece").unwrap())),
-        (GooglyBlockElement::Z, generate_quad(atlas.get_name_uv("z_piece").unwrap())),
-        (GooglyBlockElement::O, generate_quad(atlas.get_name_uv("o_piece").unwrap())),
-        (GooglyBlockElement::S, generate_quad(atlas.get_name_uv("s_piece").unwrap())),
-        (GooglyBlockElement::L, generate_quad(atlas.get_name_uv("l_piece").unwrap())),
-        (GooglyBlockElement::I, generate_quad(atlas.get_name_uv("i_piece").unwrap()))
+        (GooglyBlockElement::EmptySpace, generate_quad(atlas, "empty_space")),
+        (GooglyBlockElement::T, generate_quad(atlas, "t_piece")),
+        (GooglyBlockElement::J, generate_quad(atlas, "j_piece")),
+        (GooglyBlockElement::Z, generate_quad(atlas, "z_piece")),
+        (GooglyBlockElement::O, generate_quad(atlas, "o_piece")),
+        (GooglyBlockElement::S, generate_quad(atlas, "s_piece")),
+        (GooglyBlockElement::L, generate_quad(atlas, "l_piece")),
+        (GooglyBlockElement::I, generate_quad(atlas, "i_piece"))
     ].iter().map(|elem| *elem).collect();
     GooglyBlockElementTextureAtlas::new(atlas.clone(), tex_coords)
 }
@@ -2976,6 +3000,7 @@ impl RendererContext {
     fn update_uniforms_next_piece_panel(&mut self) {
         let (viewport_width, viewport_height) = self.get_framebuffer_size();
         let scale = 50;
+        // FIXME: MAGIC NUMBERS IN USE.
         let gui_scale_x = 2.0 * (scale as f32) / (viewport_width as f32);
         let gui_scale_y = 2.0 * (scale as f32) / (viewport_height as f32);
         let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 1.0);

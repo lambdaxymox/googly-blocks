@@ -241,7 +241,7 @@ dependencies = [
  "lean_cgmath 0.6.4 (git+https://github.com/lambdaxymox/lean-cgmath)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "tex_atlas 0.1.25 (git+https://github.com/lambdaxymox/tex_atlas)",
+ "tex_atlas 0.1.26 (git+https://github.com/lambdaxymox/tex_atlas)",
  "teximage2d 0.1.4 (git+https://github.com/lambdaxymox/teximage2d)",
  "toml 0.4.10 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -587,8 +587,8 @@ dependencies = [
 
 [[package]]
 name = "tex_atlas"
-version = "0.1.25"
-source = "git+https://github.com/lambdaxymox/tex_atlas#0982755a2bbd184f7cf4ee6e7983906b5961ea9f"
+version = "0.1.26"
+source = "git+https://github.com/lambdaxymox/tex_atlas#de96a89f45a2142d981fd469d1183421cca3828a"
 dependencies = [
  "image 0.23.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -767,7 +767,7 @@ dependencies = [
 "checksum serde_json 1.0.52 (registry+https://github.com/rust-lang/crates.io-index)" = "a7894c8ed05b7a3a279aeb79025fdec1d3158080b75b98a08faf2806bb799edd"
 "checksum stb_image 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "fda28e54a600dfee451fbab5eddef5e987e50f7ace7ceced3087dfb043ee7692"
 "checksum syn 1.0.18 (registry+https://github.com/rust-lang/crates.io-index)" = "410a7488c0a728c7ceb4ad59b9567eb4053d02e8cc7f5c0e0eeeb39518369213"
-"checksum tex_atlas 0.1.25 (git+https://github.com/lambdaxymox/tex_atlas)" = "<none>"
+"checksum tex_atlas 0.1.26 (git+https://github.com/lambdaxymox/tex_atlas)" = "<none>"
 "checksum teximage2d 0.1.4 (git+https://github.com/lambdaxymox/teximage2d)" = "<none>"
 "checksum texture 0.1.4 (git+https://github.com/lambdaxymox/teximage2d)" = "<none>"
 "checksum texture_gen 0.1.4 (git+https://github.com/lambdaxymox/teximage2d)" = "<none>"
