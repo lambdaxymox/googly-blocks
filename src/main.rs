@@ -419,72 +419,7 @@ fn send_to_gpu_geometry_ui_panel(handle: UIPanelHandle, mesh: &ObjMesh) {
         gl::EnableVertexAttribArray(handle.v_tex_loc);
     }
 }
-/*
-fn create_textures_ui_panel() -> TexImage2D {
-    let asset: &'static [u8; 58421] = include_asset!("ui_panel_atlas.png");
-    teximage2d::load_from_memory(asset).unwrap().image
-}
 
-
-#[derive(Copy, Clone, Eq, PartialEq, Hash)]
-enum UIPanelAtlasElement {
-    Panel,
-    PlayingFieldDefaultBackground,
-    PlayingFieldFlashingBackgroundDark,
-    PlayingFieldFlashingBackgroundLight,
-    GameOver,
-}
-
-struct UIPanelTextureAtlas {
-    image: TexImage2D,
-    coords: HashMap<UIPanelAtlasElement, Vec<[GLfloat; 2]>>,
-}
-
-impl UIPanelTextureAtlas {
-    fn new(image: TexImage2D, 
-           coords: HashMap<UIPanelAtlasElement, Vec<[GLfloat; 2]>>) -> UIPanelTextureAtlas {
-        UIPanelTextureAtlas {
-            image: image,
-            coords: coords,
-        }
-
-    }
-}
-
-fn create_atlas_ui_panel(image: TexImage2D) -> UIPanelTextureAtlas {
-    use UIPanelAtlasElement::*;
-
-    let tex_coords_panel: Vec<[GLfloat; 2]> = vec![
-        [1314_f32 / 2048_f32, 1032_f32 / 2048_f32], [0_f32 / 2048_f32,    0_f32 / 2048_f32], [1314_f32 / 2048_f32, 0_f32 / 2048_f32],
-        [1314_f32 / 2048_f32, 1032_f32 / 2048_f32], [0_f32 / 2048_f32, 1032_f32 / 2048_f32], [   0_f32 / 2048_f32, 0_f32 / 2048_f32],
-    ];
-    let tex_coords_playing_field_default_background: Vec<[GLfloat; 2]> = vec![
-        [508_f32 / 2048_f32, 2040_f32 / 2048_f32], [8_f32 / 2048_f32, 1040_f32 / 2048_f32], [508_f32 / 2048_f32, 1040_f32 / 2048_f32],
-        [508_f32 / 2048_f32, 2040_f32 / 2048_f32], [8_f32 / 2048_f32, 2040_f32 / 2048_f32], [  8_f32 / 2048_f32, 1040_f32 / 2048_f32],
-    ];
-    let tex_coords_playing_field_flashing_background_dark: Vec<[GLfloat; 2]> = vec![
-        [1016_f32 / 2048_f32, 2040_f32 / 2048_f32], [516_f32 / 2048_f32, 1040_f32 / 2048_f32], [1016_f32 / 2048_f32, 1040_f32 / 2048_f32],
-        [1016_f32 / 2048_f32, 2040_f32 / 2048_f32], [516_f32 / 2048_f32, 2040_f32 / 2048_f32],  [516_f32 / 2048_f32, 1040_f32 / 2048_f32],
-    ];
-    let tex_coords_playing_field_flashing_background_light: Vec<[GLfloat; 2]> = vec![
-        [1524_f32 / 2048_f32, 2040_f32 / 2048_f32], [1024_f32 / 2048_f32, 1040_f32 / 2048_f32], [1524_f32 / 2048_f32, 1040_f32 / 2048_f32],
-        [1524_f32 / 2048_f32, 2040_f32 / 2048_f32], [1024_f32 / 2048_f32, 2040_f32 / 2048_f32], [1024_f32 / 2048_f32, 1040_f32 / 2048_f32],
-    ];
-    let tex_coords_game_over: Vec<[GLfloat; 2]> = vec![
-        [1780_f32 / 2048_f32, 1025_f32 / 2048_f32], [1322_f32 / 2048_f32,  768_f32 / 2048_f32], [1780_f32 / 2048_f32, 768_f32 / 2048_f32],
-        [1780_f32 / 2048_f32, 1025_f32 / 2048_f32], [1322_f32 / 2048_f32, 1025_f32 / 2048_f32], [1322_f32 / 2048_f32, 768_f32 / 2048_f32],
-    ];
-
-    let mut coords = HashMap::new();
-    coords.insert(Panel, tex_coords_panel);
-    coords.insert(PlayingFieldDefaultBackground, tex_coords_playing_field_default_background);
-    coords.insert(PlayingFieldFlashingBackgroundDark, tex_coords_playing_field_flashing_background_dark);
-    coords.insert(PlayingFieldFlashingBackgroundLight, tex_coords_playing_field_flashing_background_light);
-    coords.insert(GameOver, tex_coords_game_over);
-    
-    UIPanelTextureAtlas::new(image, coords)
-}
-*/
 fn create_atlas_ui_panel() -> TextureAtlas2D {
     let asset = include_asset!("ui_panel.atlas");
     let atlas = tex_atlas::load_from_memory(asset).unwrap().atlas;
@@ -779,12 +714,6 @@ fn create_geometry_next_piece_panel(atlas: &TextureAtlas2D) -> PieceMeshes {
         i: create_geometry_i_piece(atlas),
     }
 }
-/*
-fn create_textures_next_piece_panel() -> TexImage2D {
-    let asset: &'static [u8; 1448] = include_asset!("blocks.png");
-    teximage2d::load_from_memory(asset).unwrap().image
-}
-*/
 
 /// Send the shaders for a textbox buffer to the GPU.
 fn send_to_gpu_shaders_next_piece_panel(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
@@ -1631,44 +1560,6 @@ fn generate_quad(bounding_box: tex_atlas::BoundingBoxTexCoords) -> TextureQuad {
 }
 
 fn create_textures_playing_field(atlas: &TextureAtlas2D) -> GooglyBlockElementTextureAtlas {
-    /*
-    let asset: &'static [u8; 1448] = include_asset!("blocks.png");
-    let tex_image = teximage2d::load_from_memory(asset).unwrap().image;
-    let tex_coords = [
-        (GooglyBlockElement::EmptySpace, TextureQuad::new(
-            [1_f32 / 3_f32, 3_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
-            [2_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 3_f32 / 3_f32]
-        )),
-        (GooglyBlockElement::T, TextureQuad::new(
-            [0_f32 / 3_f32, 3_f32 / 3_f32], [0_f32 / 3_f32, 2_f32 / 3_f32],
-            [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 3_f32 / 3_f32],
-        )),
-        (GooglyBlockElement::J, TextureQuad::new(
-            [0_f32 / 3_f32, 2_f32 / 3_f32], [0_f32 / 3_f32, 1_f32 / 3_f32],
-            [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 2_f32 / 3_f32],
-        )),
-        (GooglyBlockElement::Z, TextureQuad::new(
-            [2_f32 / 3_f32, 2_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
-            [3_f32 / 3_f32, 1_f32 / 3_f32], [3_f32 / 3_f32, 2_f32 / 3_f32],
-        )),
-        (GooglyBlockElement::O, TextureQuad::new(
-            [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 0_f32 / 3_f32],
-            [3_f32 / 3_f32, 0_f32 / 3_f32], [3_f32 / 3_f32, 1_f32 / 3_f32],
-        )),
-        (GooglyBlockElement::S, TextureQuad::new(
-            [1_f32 / 3_f32, 1_f32 / 3_f32], [1_f32 / 3_f32, 0_f32 / 3_f32],
-            [2_f32 / 3_f32, 0_f32 / 3_f32], [2_f32 / 3_f32, 1_f32 / 3_f32],
-        )),
-        (GooglyBlockElement::L, TextureQuad::new(
-            [1_f32 / 3_f32, 2_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
-            [2_f32 / 3_f32, 1_f32 / 3_f32], [2_f32 / 3_f32, 2_f32 / 3_f32],
-        )),
-        (GooglyBlockElement::I, TextureQuad::new(
-            [0_f32 / 3_f32, 1_f32 / 3_f32], [0_f32 / 3_f32, 0_f32 / 3_f32],
-            [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
-        ))
-    ].iter().map(|elem| *elem).collect();
-    */
     let tex_coords = [
         (GooglyBlockElement::EmptySpace, generate_quad(atlas.get_name_uv("empty_space").unwrap())),
         (GooglyBlockElement::T, generate_quad(atlas.get_name_uv("t_piece").unwrap())),
