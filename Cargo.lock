@@ -23,7 +23,7 @@ dependencies = [
  "image 0.23.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_json 1.0.51 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_json 1.0.52 (registry+https://github.com/rust-lang/crates.io-index)",
  "zip 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -232,7 +232,7 @@ dependencies = [
 
 [[package]]
 name = "googly-blocks"
-version = "0.3.45"
+version = "0.3.46"
 dependencies = [
  "bmfa 0.3.13 (git+https://github.com/lambdaxymox/bmfa)",
  "file_logger 0.4.5 (git+https://github.com/lambdaxymox/file-logger)",
@@ -241,7 +241,7 @@ dependencies = [
  "lean_cgmath 0.6.4 (git+https://github.com/lambdaxymox/lean-cgmath)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "tex_atlas 0.1.24 (git+https://github.com/lambdaxymox/tex_atlas)",
+ "tex_atlas 0.1.25 (git+https://github.com/lambdaxymox/tex_atlas)",
  "teximage2d 0.1.4 (git+https://github.com/lambdaxymox/teximage2d)",
  "toml 0.4.10 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -558,7 +558,7 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.51"
+version = "1.0.52"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "itoa 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -587,13 +587,13 @@ dependencies = [
 
 [[package]]
 name = "tex_atlas"
-version = "0.1.24"
-source = "git+https://github.com/lambdaxymox/tex_atlas#fec025a825bc3aef9135b7075e0134aa04b407e0"
+version = "0.1.25"
+source = "git+https://github.com/lambdaxymox/tex_atlas#0982755a2bbd184f7cf4ee6e7983906b5961ea9f"
 dependencies = [
  "image 0.23.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_json 1.0.51 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_json 1.0.52 (registry+https://github.com/rust-lang/crates.io-index)",
  "zip 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -764,10 +764,10 @@ dependencies = [
 "checksum semver-parser 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
 "checksum serde 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)" = "36df6ac6412072f67cf767ebbde4133a5b2e88e76dc6187fa7104cd16f783399"
 "checksum serde_derive 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)" = "9e549e3abf4fb8621bd1609f11dfc9f5e50320802273b12f3811a67e6716ea6c"
-"checksum serde_json 1.0.51 (registry+https://github.com/rust-lang/crates.io-index)" = "da07b57ee2623368351e9a0488bb0b261322a15a6e0ae53e243cbdc0f4208da9"
+"checksum serde_json 1.0.52 (registry+https://github.com/rust-lang/crates.io-index)" = "a7894c8ed05b7a3a279aeb79025fdec1d3158080b75b98a08faf2806bb799edd"
 "checksum stb_image 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "fda28e54a600dfee451fbab5eddef5e987e50f7ace7ceced3087dfb043ee7692"
 "checksum syn 1.0.18 (registry+https://github.com/rust-lang/crates.io-index)" = "410a7488c0a728c7ceb4ad59b9567eb4053d02e8cc7f5c0e0eeeb39518369213"
-"checksum tex_atlas 0.1.24 (git+https://github.com/lambdaxymox/tex_atlas)" = "<none>"
+"checksum tex_atlas 0.1.25 (git+https://github.com/lambdaxymox/tex_atlas)" = "<none>"
 "checksum teximage2d 0.1.4 (git+https://github.com/lambdaxymox/teximage2d)" = "<none>"
 "checksum texture 0.1.4 (git+https://github.com/lambdaxymox/teximage2d)" = "<none>"
 "checksum texture_gen 0.1.4 (git+https://github.com/lambdaxymox/teximage2d)" = "<none>"

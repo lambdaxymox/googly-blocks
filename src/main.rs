@@ -558,7 +558,7 @@ struct PieceMeshes {
     i: ObjMesh,
 }
 
-fn generate_texture_coords_block(bounding_box: tex_atlas::BoundingBoxTexCoords) -> Vec<[f32; 2]> {
+fn generate_texture_coords_block(bounding_box: tex_atlas::BoundingBoxPixelCoords) -> Vec<[f32; 2]> {
     let corners: tex_atlas::BoundingBoxCornersTexCoords = bounding_box.into();
     let top_left = [corners.top_left.u, corners.top_left.v];
     let bottom_left = [corners.bottom_left.u, corners.bottom_left.v];
@@ -585,7 +585,7 @@ fn create_geometry_t_piece(atlas: &TextureAtlas2D) -> ObjMesh {
         [ 0.5, 0.5], [1.0, 1.0], [ 0.5, 1.0],
         [ 0.5, 0.5], [1.0, 0.5], [ 1.0, 1.0],        
     ];
-    let bounding_box = atlas.get_name_uv("t_piece").unwrap();
+    let bounding_box = atlas.get_name("t_piece").unwrap();
     let tex_coords = generate_texture_coords_block(bounding_box);
     
     ObjMesh::new(points, tex_coords)
@@ -602,7 +602,7 @@ fn create_geometry_j_piece(atlas: &TextureAtlas2D) -> ObjMesh {
         [ 0.5, 0.0], [1.0, 0.5], [ 0.5, 0.5],
         [ 0.5, 0.0], [1.0, 0.0], [ 1.0, 0.5],       
     ];
-    let bounding_box = atlas.get_name_uv("j_piece").unwrap();
+    let bounding_box = atlas.get_name("j_piece").unwrap();
     let tex_coords = generate_texture_coords_block(bounding_box);
     
     ObjMesh::new(points, tex_coords)
@@ -619,7 +619,7 @@ fn create_geometry_z_piece(atlas: &TextureAtlas2D) -> ObjMesh {
         [ 0.5, 0.0], [1.0, 0.5], [ 0.5, 0.5],
         [ 0.5, 0.0], [1.0, 0.0], [ 1.0, 0.5],
     ];
-    let bounding_box = atlas.get_name_uv("z_piece").unwrap();
+    let bounding_box = atlas.get_name("z_piece").unwrap();
     let tex_coords = generate_texture_coords_block(bounding_box); 
 
     ObjMesh::new(points, tex_coords)
@@ -636,7 +636,7 @@ fn create_geometry_o_piece(atlas: &TextureAtlas2D) -> ObjMesh {
         [0.5, 0.0], [1.0, 0.5], [0.5, 0.5],
         [0.5, 0.0], [1.0, 0.0], [1.0, 0.5],        
     ];
-    let bounding_box = atlas.get_name_uv("o_piece").unwrap();
+    let bounding_box = atlas.get_name("o_piece").unwrap();
     let tex_coords = generate_texture_coords_block(bounding_box);
 
     ObjMesh::new(points, tex_coords)
@@ -653,7 +653,7 @@ fn create_geometry_s_piece(atlas: &TextureAtlas2D) -> ObjMesh {
         [ 0.5, 0.5], [1.0, 1.0], [ 0.5, 1.0],
         [ 0.5, 0.5], [1.0, 0.5], [ 1.0, 1.0],        
     ];
-    let bounding_box = atlas.get_name_uv("s_piece").unwrap();
+    let bounding_box = atlas.get_name("s_piece").unwrap();
     let tex_coords = generate_texture_coords_block(bounding_box);
     
     ObjMesh::new(points, tex_coords)
@@ -670,7 +670,7 @@ fn create_geometry_l_piece(atlas: &TextureAtlas2D) -> ObjMesh {
         [ 0.5, 0.0], [1.0, 0.5], [ 0.5, 0.5],
         [ 0.5, 0.0], [1.0, 0.0], [ 1.0, 0.5],        
     ];
-    let bounding_box = atlas.get_name_uv("l_piece").unwrap();
+    let bounding_box = atlas.get_name("l_piece").unwrap();
     let tex_coords = generate_texture_coords_block(bounding_box);
 
     ObjMesh::new(points, tex_coords)
@@ -687,7 +687,7 @@ fn create_geometry_i_piece(atlas: &TextureAtlas2D) -> ObjMesh {
         [ 0.5, 0.0], [ 1.0, 0.5], [ 0.5, 0.5],
         [ 0.5, 0.0], [ 1.0, 0.0], [ 1.0, 0.5],        
     ];
-    let bounding_box = atlas.get_name_uv("i_piece").unwrap();
+    let bounding_box = atlas.get_name("i_piece").unwrap();
     let tex_coords = generate_texture_coords_block(bounding_box);
 
     ObjMesh::new(points, tex_coords)
@@ -912,7 +912,6 @@ impl GLNextPiecePanel {
 fn create_next_piece_panel_buffer(gl_context: &mut glh::GLState, atlas: &TextureAtlas2D, uniforms: &PieceUniformsData) -> GLNextPiecePanel {
     let shader_source = create_shaders_next_piece_panel();
     let sp = send_to_gpu_shaders_next_piece_panel(gl_context, shader_source);
-    //let tex_image = create_textures_next_piece_panel();
     let tex = send_to_gpu_textures_next_piece_panel(atlas);
     let meshes = create_geometry_next_piece_panel(atlas);
     let handles = send_to_gpu_geometry_next_panel(&meshes);
@@ -1024,13 +1023,12 @@ fn create_geometry_playing_field_background(elem: &str, atlas: &TextureAtlas2D) 
         [1_f32, 1_f32], [-1_f32, -1_f32], [1_f32, -1_f32],
         [1_f32, 1_f32], [-1_f32,  1_f32], [-1_f32, -1_f32],
     ];
-    let bounding_box = atlas.get_name_uv(elem).unwrap();
-    let width = bounding_box.width;
-    let height = bounding_box.height;
-    let top_left = [bounding_box.top_left.u, bounding_box.top_left.v];
-    let bottom_left = [top_left[0], top_left[1] - height];
-    let top_right = [top_left[0] + width, top_left[1]];
-    let bottom_right = [top_left[0] + width, top_left[1] - height];
+    let bounding_box = atlas.get_name(elem).unwrap();
+    let corners: tex_atlas::BoundingBoxCornersTexCoords = bounding_box.into();
+    let top_left = [corners.top_left.u, corners.top_left.v];
+    let bottom_left = [corners.bottom_left.u, corners.bottom_left.v];
+    let top_right = [corners.top_right.u, corners.top_right.v];
+    let bottom_right = [corners.bottom_right.u, corners.bottom_right.v];
     let tex_coords: Vec<[f32; 2]> = vec![
         top_right, bottom_left, bottom_right,
         top_right, bottom_left, top_left,
