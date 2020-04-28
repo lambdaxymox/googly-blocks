@@ -80,16 +80,16 @@ const CLEAR_DEPTH: [f32; 4] = [1.0_f32, 1.0_f32, 1.0_f32, 1.0_f32];
 
 
 /// Load texture image into the GPU.
-fn send_to_gpu_texture(tex_data: &TexImage2D, wrapping_mode: GLuint) -> Result<GLuint, String> {
+fn send_to_gpu_texture(atlas: &TextureAtlas2D, wrapping_mode: GLuint) -> Result<GLuint, String> {
     let mut tex = 0;
     unsafe {
         gl::GenTextures(1, &mut tex);
         gl::ActiveTexture(gl::TEXTURE0);
         gl::BindTexture(gl::TEXTURE_2D, tex);
         gl::TexImage2D(
-            gl::TEXTURE_2D, 0, gl::RGBA as i32, tex_data.width as i32, tex_data.height as i32, 0,
+            gl::TEXTURE_2D, 0, gl::RGBA as i32, atlas.width as i32, atlas.height as i32, 0,
             gl::RGBA, gl::UNSIGNED_BYTE,
-            tex_data.as_ptr() as *const GLvoid
+            atlas.as_ptr() as *const GLvoid
         );
         gl::GenerateMipmap(gl::TEXTURE_2D);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, wrapping_mode as GLint);
@@ -146,6 +146,13 @@ fn create_shaders_background() -> ShaderSource {
 #[inline]
 fn send_to_gpu_shaders_background(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
     send_to_gpu_shaders(game, source)
+}
+
+fn create_background_panel_atlas() -> TextureAtlas2D {
+    let asset = include_asset!("background.atlas");
+    let atlas = tex_atlas::load_from_memory(asset).unwrap().atlas;
+
+    atlas
 }
 
 fn create_geometry_background() -> ObjMesh {
@@ -243,8 +250,8 @@ fn create_textures_background() -> TexImage2D {
     teximage2d::load_from_memory(asset).unwrap().image
 }
 
-fn send_to_gpu_textures_background(tex_image: &TexImage2D) -> GLuint {
-    send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()
+fn send_to_gpu_textures_background(atlas: &TextureAtlas2D) -> GLuint {
+    send_to_gpu_texture(atlas, gl::CLAMP_TO_EDGE).unwrap()
 }
 
 #[derive(Copy, Clone)]
@@ -264,9 +271,10 @@ fn send_to_gpu_uniforms_background_panel(sp: GLuint, uniforms: BackgroundPanelUn
 }
 
 #[derive(Copy, Clone)]
-struct BackgroundPanelSpec { 
+struct BackgroundPanelSpec<'a> { 
     height: usize, 
-    width: usize, 
+    width: usize,
+    atlas: &'a TextureAtlas2D,
 }
 
 #[derive(Copy, Clone)]
@@ -288,11 +296,10 @@ struct BackgroundPanel {
 fn load_background_panel(game: &mut glh::GLState, spec: BackgroundPanelSpec) -> BackgroundPanel {
     let shader_source = create_shaders_background();
     let mesh = create_geometry_background();
-    let tex_image = create_textures_background();
     let sp = send_to_gpu_shaders_background(game, shader_source);
     let handle = create_buffers_geometry_background();
     send_to_gpu_geometry_background(handle, &mesh);
-    let tex = send_to_gpu_textures_background(&tex_image);
+    let tex = send_to_gpu_textures_background(&spec.atlas);
     let buffer = GLBackgroundPanel {
         sp: sp,
         v_pos_vbo: handle.v_pos_vbo,
@@ -412,7 +419,7 @@ fn send_to_gpu_geometry_ui_panel(handle: UIPanelHandle, mesh: &ObjMesh) {
         gl::EnableVertexAttribArray(handle.v_tex_loc);
     }
 }
-
+/*
 fn create_textures_ui_panel() -> TexImage2D {
     let asset: &'static [u8; 58421] = include_asset!("ui_panel_atlas.png");
     teximage2d::load_from_memory(asset).unwrap().image
@@ -477,16 +484,23 @@ fn create_atlas_ui_panel(image: TexImage2D) -> UIPanelTextureAtlas {
     
     UIPanelTextureAtlas::new(image, coords)
 }
+*/
+fn create_atlas_ui_panel() -> TextureAtlas2D {
+    let asset = include_asset!("ui_panel.atlas");
+    let atlas = tex_atlas::load_from_memory(asset).unwrap().atlas;
 
-fn send_to_gpu_textures_ui_panel(tex_image: &TexImage2D) -> GLuint {
-    send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()
+    atlas
+}
+
+fn send_to_gpu_textures_ui_panel(atlas: &TextureAtlas2D) -> GLuint {
+    send_to_gpu_texture(atlas, gl::CLAMP_TO_EDGE).unwrap()
 }
 
 #[derive(Copy, Clone)]
 struct UIPanelSpec<'a> {
     height: usize,
     width: usize,
-    atlas: &'a UIPanelTextureAtlas,
+    atlas: &'a TextureAtlas2D,
 }
 
 struct UIPanel {
@@ -571,7 +585,7 @@ fn load_ui_panel(game: &mut glh::GLState, spec: UIPanelSpec, uniforms: UIPanelUn
     let mesh = create_geometry_ui_panel();
     let handle = create_buffers_geometry_ui_panel();
     send_to_gpu_geometry_ui_panel(handle, &mesh);
-    let tex = send_to_gpu_textures_ui_panel(&spec.atlas.image);
+    let tex = send_to_gpu_textures_ui_panel(&spec.atlas);
     send_to_gpu_uniforms_ui_panel(sp, uniforms);
 
     UIPanel {
@@ -765,11 +779,12 @@ fn create_geometry_next_piece_panel(atlas: &TextureAtlas2D) -> PieceMeshes {
         i: create_geometry_i_piece(atlas),
     }
 }
-
+/*
 fn create_textures_next_piece_panel() -> TexImage2D {
     let asset: &'static [u8; 1448] = include_asset!("blocks.png");
     teximage2d::load_from_memory(asset).unwrap().image
 }
+*/
 
 /// Send the shaders for a textbox buffer to the GPU.
 fn send_to_gpu_shaders_next_piece_panel(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
@@ -936,8 +951,8 @@ fn send_to_gpu_uniforms_next_piece_panel(sp: GLuint, uniforms: &PieceUniformsDat
 }
 
 
-fn send_to_gpu_textures_next_piece_panel(tex_image: &TexImage2D) -> GLuint {
-    send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()  
+fn send_to_gpu_textures_next_piece_panel(atlas: &TextureAtlas2D) -> GLuint {
+    send_to_gpu_texture(atlas, gl::CLAMP_TO_EDGE).unwrap()  
 }
 
 struct GLNextPiecePanel {
@@ -969,8 +984,8 @@ impl GLNextPiecePanel {
 fn create_next_piece_panel_buffer(gl_context: &mut glh::GLState, atlas: &TextureAtlas2D, uniforms: &PieceUniformsData) -> GLNextPiecePanel {
     let shader_source = create_shaders_next_piece_panel();
     let sp = send_to_gpu_shaders_next_piece_panel(gl_context, shader_source);
-    let tex_image = create_textures_next_piece_panel();
-    let tex = send_to_gpu_textures_next_piece_panel(&tex_image);
+    //let tex_image = create_textures_next_piece_panel();
+    let tex = send_to_gpu_textures_next_piece_panel(atlas);
     let meshes = create_geometry_next_piece_panel(atlas);
     let handles = send_to_gpu_geometry_next_panel(&meshes);
     send_to_gpu_uniforms_next_piece_panel(sp, uniforms);
@@ -1076,12 +1091,22 @@ fn create_shaders_playing_field_background() -> ShaderSource {
     }
 }
 
-fn create_geometry_playing_field_background(elem: UIPanelAtlasElement, atlas: &UIPanelTextureAtlas) -> ObjMesh {
+fn create_geometry_playing_field_background(elem: &str, atlas: &TextureAtlas2D) -> ObjMesh {
     let points: Vec<[f32; 2]> = vec![
         [1_f32, 1_f32], [-1_f32, -1_f32], [1_f32, -1_f32],
         [1_f32, 1_f32], [-1_f32,  1_f32], [-1_f32, -1_f32],
     ];
-    let tex_coords: Vec<[f32; 2]> = atlas.coords[&elem].clone();
+    let bounding_box = atlas.get_name_uv(elem).unwrap();
+    let width = bounding_box.width;
+    let height = bounding_box.height;
+    let top_left = [bounding_box.top_left.u, bounding_box.top_left.v];
+    let bottom_left = [top_left[0], top_left[1] - height];
+    let top_right = [top_left[0] + width, top_left[1]];
+    let bottom_right = [top_left[0] + width, top_left[1] - height];
+    let tex_coords: Vec<[f32; 2]> = vec![
+        top_right, bottom_left, bottom_right,
+        top_right, bottom_left, top_left,
+    ];
 
     ObjMesh::new(points, tex_coords)
 }
@@ -1158,27 +1183,27 @@ fn send_to_gpu_geometry_playing_field_background(handle: PlayingFieldBackgroundB
     }
 }
 
-fn send_to_gpu_textures_playing_field_background(tex_image: &TexImage2D) -> GLuint {
-    send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()
+fn send_to_gpu_textures_playing_field_background(atlas: &TextureAtlas2D) -> GLuint {
+    send_to_gpu_texture(atlas, gl::CLAMP_TO_EDGE).unwrap()
 }
 
 #[derive(Copy, Clone)]
 struct PlayingFieldBackgroundSpec<'a> { 
     height: usize, 
     width: usize,
-    atlas: &'a UIPanelTextureAtlas,
+    atlas: &'a TextureAtlas2D,
 }
 
 fn load_playing_field_background(game: &mut glh::GLState, spec: PlayingFieldBackgroundSpec) -> PlayingFieldBackgroundPanel {
     let shader_source = create_shaders_playing_field_background();
     let default_mesh = create_geometry_playing_field_background(
-        UIPanelAtlasElement::PlayingFieldDefaultBackground, &spec.atlas
+        "PlayingFieldDefaultBackground", &spec.atlas
     );
     let dark_mesh = create_geometry_playing_field_background(
-        UIPanelAtlasElement::PlayingFieldFlashingBackgroundDark, &spec.atlas
+        "PlayingFieldFlashingBackgroundDark", &spec.atlas
     );
     let light_mesh = create_geometry_playing_field_background(
-        UIPanelAtlasElement::PlayingFieldFlashingBackgroundLight, &spec.atlas
+        "PlayingFieldFlashingBackgroundLight", &spec.atlas
     );
     let sp = send_to_gpu_shaders_playing_field_background(game, shader_source);
     let default_buffer = create_buffers_geometry_playing_field_background();
@@ -1187,7 +1212,7 @@ fn load_playing_field_background(game: &mut glh::GLState, spec: PlayingFieldBack
     send_to_gpu_geometry_playing_field_background(default_buffer, &default_mesh);
     send_to_gpu_geometry_playing_field_background(dark_buffer, &dark_mesh);
     send_to_gpu_geometry_playing_field_background(light_buffer, &light_mesh);
-    let tex = send_to_gpu_textures_playing_field_background(&spec.atlas.image);  
+    let tex = send_to_gpu_textures_playing_field_background(&spec.atlas);  
     let v_pos_loc = default_buffer.v_pos_loc;
     let v_tex_loc = default_buffer.v_tex_loc;
     let default_handle = PlayingFieldBackgroundBufferHandle {
@@ -1384,15 +1409,15 @@ fn send_to_gpu_geometry_game_over(handle: GameOverPanelBuffers, mesh: &ObjMesh) 
     }
 }
 
-fn send_to_gpu_textures_game_over(tex_image: &TexImage2D) -> GLuint {
-    send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()
+fn send_to_gpu_textures_game_over(atlas: &TextureAtlas2D) -> GLuint {
+    send_to_gpu_texture(atlas, gl::CLAMP_TO_EDGE).unwrap()
 }
 
 #[derive(Copy, Clone)]
 struct GameOverPanelSpec<'a> { 
     height: usize, 
     width: usize,
-    atlas: &'a UIPanelTextureAtlas,
+    atlas: &'a TextureAtlas2D,
 }
 
 fn load_game_over_panel(game: &mut glh::GLState, spec: GameOverPanelSpec) -> GameOverPanel {
@@ -1401,7 +1426,7 @@ fn load_game_over_panel(game: &mut glh::GLState, spec: GameOverPanelSpec) -> Gam
     let sp = send_to_gpu_shaders_game_over(game, shader_source);
     let handle = create_buffers_geometry_game_over();
     send_to_gpu_geometry_game_over(handle, &mesh);
-    let tex = send_to_gpu_textures_game_over(&spec.atlas.image);
+    let tex = send_to_gpu_textures_game_over(&spec.atlas);
     let buffer = GameOverPanelHandle {
         sp: sp,
         v_pos_vbo: handle.v_pos_vbo,
@@ -1581,20 +1606,32 @@ fn send_to_gpu_geometry_playing_field(handle: PlayingFieldBuffers, mesh: &ObjMes
 }
 
 struct GooglyBlockElementTextureAtlas {
-    image: TexImage2D,
+    atlas: TextureAtlas2D,
     coords: HashMap<GooglyBlockElement, TextureQuad>,
 }
 
 impl GooglyBlockElementTextureAtlas {
-    fn new(image: TexImage2D, coords: HashMap<GooglyBlockElement, TextureQuad>) -> GooglyBlockElementTextureAtlas {
+    fn new(atlas: TextureAtlas2D, coords: HashMap<GooglyBlockElement, TextureQuad>) -> GooglyBlockElementTextureAtlas {
         GooglyBlockElementTextureAtlas {
-            image: image,
+            atlas: atlas,
             coords: coords,
         }
     }
 }
 
-fn create_textures_playing_field() -> GooglyBlockElementTextureAtlas {
+fn generate_quad(bounding_box: tex_atlas::BoundingBoxTexCoords) -> TextureQuad {
+    let width = bounding_box.width;
+    let height = bounding_box.height;
+    let top_left = [bounding_box.top_left.u, bounding_box.top_left.v];
+    let bottom_left = [top_left[0], top_left[1] - height];
+    let top_right = [top_left[0] + width, top_left[1]];
+    let bottom_right = [top_left[0] + width, top_left[1] - height];
+    
+    TextureQuad::new(top_left, bottom_left, bottom_right, top_right)
+}
+
+fn create_textures_playing_field(atlas: &TextureAtlas2D) -> GooglyBlockElementTextureAtlas {
+    /*
     let asset: &'static [u8; 1448] = include_asset!("blocks.png");
     let tex_image = teximage2d::load_from_memory(asset).unwrap().image;
     let tex_coords = [
@@ -1631,12 +1668,48 @@ fn create_textures_playing_field() -> GooglyBlockElementTextureAtlas {
             [1_f32 / 3_f32, 0_f32 / 3_f32], [1_f32 / 3_f32, 1_f32 / 3_f32],
         ))
     ].iter().map(|elem| *elem).collect();
-
-    GooglyBlockElementTextureAtlas::new(tex_image, tex_coords)
+    */
+    let tex_coords = [
+        (GooglyBlockElement::EmptySpace, generate_quad(atlas.get_name_uv("empty_space").unwrap())),
+        (GooglyBlockElement::T, generate_quad(atlas.get_name_uv("t_piece").unwrap())),
+        (GooglyBlockElement::J, generate_quad(atlas.get_name_uv("j_piece").unwrap())),
+        (GooglyBlockElement::Z, generate_quad(atlas.get_name_uv("z_piece").unwrap())),
+        (GooglyBlockElement::O, generate_quad(atlas.get_name_uv("o_piece").unwrap())),
+        (GooglyBlockElement::S, generate_quad(atlas.get_name_uv("s_piece").unwrap())),
+        (GooglyBlockElement::L, generate_quad(atlas.get_name_uv("l_piece").unwrap())),
+        (GooglyBlockElement::I, generate_quad(atlas.get_name_uv("i_piece").unwrap()))
+    ].iter().map(|elem| *elem).collect();
+    GooglyBlockElementTextureAtlas::new(atlas.clone(), tex_coords)
 }
 
-fn send_to_gpu_textures_playing_field(tex_image: &TexImage2D) -> GLuint {
-    send_to_gpu_texture(tex_image, gl::CLAMP_TO_EDGE).unwrap()
+fn send_to_gpu_textures_playing_field(atlas: &GooglyBlockElementTextureAtlas) -> GLuint {
+    //send_to_gpu_texture(atlas, gl::CLAMP_TO_EDGE).unwrap()
+    let mut tex = 0;
+    unsafe {
+        gl::GenTextures(1, &mut tex);
+        gl::ActiveTexture(gl::TEXTURE0);
+        gl::BindTexture(gl::TEXTURE_2D, tex);
+        gl::TexImage2D(
+            gl::TEXTURE_2D, 0, gl::RGBA as i32, atlas.atlas.width as i32, atlas.atlas.height as i32, 0,
+            gl::RGBA, gl::UNSIGNED_BYTE,
+            atlas.atlas.as_ptr() as *const GLvoid
+        );
+        gl::GenerateMipmap(gl::TEXTURE_2D);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::CLAMP_TO_EDGE as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::CLAMP_TO_EDGE as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR_MIPMAP_LINEAR as GLint);
+    }
+    debug_assert!(tex > 0);
+
+    let mut max_aniso = 0.0;
+    unsafe {
+        gl::GetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &mut max_aniso);
+        // Set the maximum!
+        gl::TexParameterf(gl::TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, max_aniso);
+    }
+
+    tex
 }
 
 struct PlayingFieldUniforms {
@@ -1774,7 +1847,7 @@ fn load_playing_field(game: &mut glh::GLState, spec: PlayingFieldHandleSpec, uni
     let sp = send_to_gpu_shaders_playing_field(game, shader_source);
     let handle = create_buffers_geometry_playing_field();
     send_to_gpu_geometry_playing_field(handle, &mesh);
-    let tex = send_to_gpu_textures_playing_field(&spec.atlas.image);
+    let tex = send_to_gpu_textures_playing_field(&spec.atlas);
     send_to_gpu_uniforms_playing_field(sp, uniforms);
 
     PlayingFieldHandle {
@@ -3721,10 +3794,15 @@ fn init_game() -> Game {
     let height = 504;
     let gl_context = Rc::new(RefCell::new(init_gl(width, height)));
     let font_atlas = Rc::new(load_font_atlas());
-
+    let block_texture_atlas = create_block_texture_atlas();
+    let background_panel_atlas = create_background_panel_atlas();
     let background_panel_height = height as usize;
     let background_panel_width = width as usize;
-    let background_panel_spec = BackgroundPanelSpec { height: background_panel_height, width: background_panel_width };
+    let background_panel_spec = BackgroundPanelSpec { 
+        height: background_panel_height, 
+        width: background_panel_width, 
+        atlas: &background_panel_atlas,
+    };
     let background = {
         let mut context = gl_context.borrow_mut(); 
         load_background_panel(&mut *context, background_panel_spec)
@@ -3741,9 +3819,7 @@ fn init_game() -> Game {
     let gui_scale_y = (panel_height as f32) / viewport_height;
     let ui_gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0_f32);
     let ui_trans_mat = Matrix4::one();
-
-    let ui_panel_tex_image = create_textures_ui_panel();
-    let ui_panel_atlas = create_atlas_ui_panel(ui_panel_tex_image);
+    let ui_panel_atlas = create_atlas_ui_panel();
     let ui_panel_spec = UIPanelSpec { 
         height: panel_height, 
         width: panel_width,
@@ -3772,7 +3848,6 @@ fn init_game() -> Game {
         scale_px: 48.0,
     };
     let text_panel = load_text_panel(gl_context.clone(), &text_panel_spec, text_panel_uniforms);
-    let block_texture_atlas = create_block_texture_atlas();
     let next_block_cell = NextBlockCell::new();
     let next_piece = next_block_cell.block;
     let next_piece_panel_spec = NextPiecePanelSpec {
@@ -3789,7 +3864,7 @@ fn init_game() -> Game {
         text_panel: text_panel,
         next_piece_panel: next_piece_panel,
     };
-    let block_element_atlas = create_textures_playing_field();
+    let block_element_atlas = create_textures_playing_field(&block_texture_atlas);
     let playing_field_background_spec = PlayingFieldBackgroundSpec {
         width: 250,
         height: 500,
