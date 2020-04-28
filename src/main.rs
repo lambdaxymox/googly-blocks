@@ -3607,6 +3607,7 @@ impl Game {
         }
     }
 
+    /*
     #[inline]
     fn update_framebuffer_size(&mut self) {
         let (viewport_width, viewport_height) = self.renderer_state_machine.context.get_framebuffer_size();
@@ -3617,6 +3618,7 @@ impl Game {
             );
         }
     }
+    */
 
     #[inline]
     fn handle_input(&mut self, input: Input, elapsed_milliseconds: Duration) {
@@ -3915,7 +3917,7 @@ fn main() {
 
         game.update_state(elapsed_milliseconds);
         game.update_fps_counter();
-        game.update_framebuffer_size();
+        // game.update_framebuffer_size();
         game.render();
 
         // Send the results to the output.
