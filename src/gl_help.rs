@@ -176,8 +176,10 @@ fn __init_glfw() -> Glfw {
     // Start a GL context and OS window using the GLFW helper library.
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
+    // We must place the window hints before creating the window because
+    // glfw cannot change the properties of a window after it has been created.
+    glfw.window_hint(glfw::WindowHint::Resizable(false));
     glfw.window_hint(glfw::WindowHint::Samples(Some(4)));
-
     glfw.window_hint(glfw::WindowHint::ContextVersionMajor(3));
     glfw.window_hint(glfw::WindowHint::ContextVersionMinor(3));
     glfw.window_hint(glfw::WindowHint::OpenGlForwardCompat(true));
@@ -192,6 +194,9 @@ fn __init_glfw() -> Glfw {
     // Start a GL context and OS window using the GLFW helper library.
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
+    // We must place the window hints before creating the window because
+    // glfw cannot change the properties of a window after it has been created.
+    glfw.window_hint(glfw::WindowHint::Resizable(false));
     glfw.window_hint(glfw::WindowHint::Samples(Some(4)));
     glfw.window_hint(glfw::WindowHint::ContextVersionMajor(3));
     glfw.window_hint(glfw::WindowHint::ContextVersionMinor(3));
@@ -206,6 +211,9 @@ fn __init_glfw() -> Glfw {
     // Start a GL context and OS window using the GLFW helper library.
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
+    // We must place the window hints before creating the window because
+    // glfw cannot change the properties of a window after it has been created.
+    glfw.window_hint(glfw::WindowHint::Resizable(false));
     glfw.window_hint(glfw::WindowHint::Samples(Some(4)));
 
     glfw
@@ -218,11 +226,7 @@ pub fn start_gl(width: u32, height: u32) -> Result<GLState, String> {
     info!("Using GLFW version {}", glfw::get_version_string());
 
     // Start a GL context and OS window using the GLFW helper library.
-    let mut glfw = __init_glfw();
-
-    // We must place the window hint before creating the window because
-    // glfw cannot change the properties of a window after it has been created.
-    glfw.window_hint(glfw::WindowHint::Resizable(false));
+    let glfw = __init_glfw();
 
     info!("Started GLFW successfully");
     let maybe_glfw_window = glfw.create_window(

@@ -274,7 +274,8 @@ fn send_to_gpu_uniforms_background_panel(sp: GLuint, uniforms: BackgroundPanelUn
 struct BackgroundPanelSpec<'a> { 
     height: usize, 
     width: usize,
-    atlas: &'a TextureAtlas2D,
+    background_atlas: &'a TextureAtlas2D,
+    title_atlas: &'a TextureAtlas2D,
 }
 
 #[derive(Copy, Clone)]
@@ -299,7 +300,7 @@ fn load_background_panel(game: &mut glh::GLState, spec: BackgroundPanelSpec) -> 
     let sp = send_to_gpu_shaders_background(game, shader_source);
     let handle = create_buffers_geometry_background();
     send_to_gpu_geometry_background(handle, &mesh);
-    let tex = send_to_gpu_textures_background(&spec.atlas);
+    let tex = send_to_gpu_textures_background(&spec.background_atlas);
     let buffer = GLBackgroundPanel {
         sp: sp,
         v_pos_vbo: handle.v_pos_vbo,
@@ -1570,7 +1571,6 @@ fn create_textures_playing_field(atlas: &TextureAtlas2D) -> GooglyBlockElementTe
 }
 
 fn send_to_gpu_textures_playing_field(atlas: &GooglyBlockElementTextureAtlas) -> GLuint {
-    //send_to_gpu_texture(atlas, gl::CLAMP_TO_EDGE).unwrap()
     let mut tex = 0;
     unsafe {
         gl::GenTextures(1, &mut tex);
@@ -3660,12 +3660,14 @@ fn init_game() -> Game {
     let font_atlas = Rc::new(load_font_atlas());
     let block_texture_atlas = create_block_texture_atlas();
     let background_panel_atlas = create_background_panel_atlas();
+    let title_atlas = create_title_texture_atlas();
     let background_panel_height = height as usize;
     let background_panel_width = width as usize;
     let background_panel_spec = BackgroundPanelSpec { 
         height: background_panel_height, 
         width: background_panel_width, 
-        atlas: &background_panel_atlas,
+        background_atlas: &background_panel_atlas,
+        title_atlas: &title_atlas,
     };
     let background = {
         let mut context = gl_context.borrow_mut(); 
