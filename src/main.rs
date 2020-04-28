@@ -291,28 +291,40 @@ struct GLBackgroundPanel {
 struct BackgroundPanel {
     height: usize,
     width: usize,
-    buffer: GLBackgroundPanel,
+    background_handle: GLBackgroundPanel,
+    title_handle: GLBackgroundPanel,
 }
 
 fn load_background_panel(game: &mut glh::GLState, spec: BackgroundPanelSpec) -> BackgroundPanel {
     let shader_source = create_shaders_background();
     let mesh = create_geometry_background();
     let sp = send_to_gpu_shaders_background(game, shader_source);
-    let handle = create_buffers_geometry_background();
-    send_to_gpu_geometry_background(handle, &mesh);
-    let tex = send_to_gpu_textures_background(&spec.background_atlas);
-    let buffer = GLBackgroundPanel {
+    let background_buffer = create_buffers_geometry_background();
+    send_to_gpu_geometry_background(background_buffer, &mesh);
+    let background_tex = send_to_gpu_textures_background(&spec.background_atlas);
+    let background_handle = GLBackgroundPanel {
         sp: sp,
-        v_pos_vbo: handle.v_pos_vbo,
-        v_tex_vbo: handle.v_tex_vbo,
-        vao: handle.vao,
-        tex: tex,
+        v_pos_vbo: background_buffer.v_pos_vbo,
+        v_tex_vbo: background_buffer.v_tex_vbo,
+        vao: background_buffer.vao,
+        tex: background_tex,
+    };
+    let title_buffer = create_buffers_geometry_background();
+    send_to_gpu_geometry_background(title_buffer, &mesh);
+    let title_tex = send_to_gpu_textures_background(&spec.title_atlas);
+    let title_handle = GLBackgroundPanel {
+        sp: sp,
+        v_pos_vbo: title_buffer.v_pos_vbo,
+        v_tex_vbo: title_buffer.v_tex_vbo,
+        vao: title_buffer.vao,
+        tex: title_tex,
     };
 
     BackgroundPanel {
-        buffer: buffer,
         height: spec.height,
         width: spec.width,
+        background_handle: background_handle,
+        title_handle: title_handle,
     }
 }
 
@@ -2982,7 +2994,7 @@ impl RendererContext {
         let gui_scale_y = panel_height / (viewport_height as f32);
         let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0_f32);
         let uniforms = BackgroundPanelUniforms { gui_scale_mat: gui_scale_mat };
-        send_to_gpu_uniforms_background_panel(self.background.buffer.sp, uniforms);
+        send_to_gpu_uniforms_background_panel(self.background.background_handle.sp, uniforms);
     }
 
     fn update_uniforms_ui_panel(&mut self) {
@@ -3093,10 +3105,10 @@ impl RendererFallingState {
 
     fn render_background(&self, context: &mut RendererContext) {
         unsafe {
-            gl::UseProgram(context.background.buffer.sp);
+            gl::UseProgram(context.background.background_handle.sp);
             gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, context.background.buffer.tex);
-            gl::BindVertexArray(context.background.buffer.vao);
+            gl::BindTexture(gl::TEXTURE_2D, context.background.background_handle.tex);
+            gl::BindVertexArray(context.background.background_handle.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
         }        
     }
@@ -3241,10 +3253,10 @@ impl RendererClearingState {
 
     fn render_background(&self, context: &mut RendererContext) {
         unsafe {
-            gl::UseProgram(context.background.buffer.sp);
+            gl::UseProgram(context.background.background_handle.sp);
             gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, context.background.buffer.tex);
-            gl::BindVertexArray(context.background.buffer.vao);
+            gl::BindTexture(gl::TEXTURE_2D, context.background.background_handle.tex);
+            gl::BindVertexArray(context.background.background_handle.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
         }        
     }
@@ -3390,10 +3402,10 @@ impl RendererGameOverState {
 
     fn render_background(&self, context: &mut RendererContext) {
         unsafe {
-            gl::UseProgram(context.background.buffer.sp);
+            gl::UseProgram(context.background.background_handle.sp);
             gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, context.background.buffer.tex);
-            gl::BindVertexArray(context.background.buffer.vao);
+            gl::BindTexture(gl::TEXTURE_2D, context.background.background_handle.tex);
+            gl::BindVertexArray(context.background.background_handle.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
         }        
     }
