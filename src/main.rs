@@ -245,9 +245,9 @@ fn send_to_gpu_geometry_background(handle: BackgroundPanelHandle, mesh: &ObjMesh
     }
 }
 
-fn create_textures_background() -> TexImage2D {
-    let asset: &'static [u8; 27695] = include_asset!("title.png");
-    teximage2d::load_from_memory(asset).unwrap().image
+fn create_title_texture_atlas() -> TextureAtlas2D {
+    let asset = include_asset!("title.atlas");
+    tex_atlas::load_from_memory(asset).unwrap().atlas
 }
 
 fn send_to_gpu_textures_background(atlas: &TextureAtlas2D) -> GLuint {
@@ -1031,7 +1031,7 @@ fn create_geometry_playing_field_background(elem: &str, atlas: &TextureAtlas2D) 
     let bottom_right = [corners.bottom_right.u, corners.bottom_right.v];
     let tex_coords: Vec<[f32; 2]> = vec![
         top_right, bottom_left, bottom_right,
-        top_right, bottom_left, top_left,
+        top_right, top_left, bottom_left
     ];
 
     ObjMesh::new(points, tex_coords)
@@ -1546,13 +1546,12 @@ impl GooglyBlockElementTextureAtlas {
 }
 
 fn generate_quad(bounding_box: tex_atlas::BoundingBoxTexCoords) -> TextureQuad {
-    let width = bounding_box.width;
-    let height = bounding_box.height;
-    let top_left = [bounding_box.top_left.u, bounding_box.top_left.v];
-    let bottom_left = [top_left[0], top_left[1] - height];
-    let top_right = [top_left[0] + width, top_left[1]];
-    let bottom_right = [top_left[0] + width, top_left[1] - height];
-    
+    let corners: tex_atlas::BoundingBoxCornersTexCoords = bounding_box.into();
+    let top_left = [corners.top_left.u, corners.top_left.v];
+    let bottom_left = [corners.bottom_left.u, corners.bottom_left.v];
+    let bottom_right = [corners.bottom_right.u, corners.bottom_right.v];
+    let top_right = [corners.top_right.u, corners.top_right.v];
+
     TextureQuad::new(top_left, bottom_left, bottom_right, top_right)
 }
 
@@ -3604,19 +3603,6 @@ impl Game {
         }
     }
 
-    /*
-    #[inline]
-    fn update_framebuffer_size(&mut self) {
-        let (viewport_width, viewport_height) = self.renderer_state_machine.context.get_framebuffer_size();
-        let dims = self.viewport_dimensions();
-        if (dims.width != viewport_width) && (dims.height != viewport_height) {
-            glfw_framebuffer_size_callback(
-                self, viewport_width as u32, viewport_height as u32
-            );
-        }
-    }
-    */
-
     #[inline]
     fn handle_input(&mut self, input: Input, elapsed_milliseconds: Duration) {
         self.state_machine.handle_input(input, elapsed_milliseconds);
@@ -3645,18 +3631,6 @@ impl Game {
             gl::Viewport(0, 0, dims.width, dims.height);
         }
     }
-}
-
-/// The GLFW frame buffer size callback function. This is normally set using
-/// the GLFW `glfwSetFramebufferSizeCallback` function, but instead we explicitly
-/// handle window resizing in our state updates on the application side. Run this function
-/// whenever the size of the viewport changes.
-#[inline]
-fn glfw_framebuffer_size_callback(game: &mut Game, width: u32, height: u32) {
-    let game_context = game.context.borrow_mut();
-    let mut context = game_context.gl.borrow_mut();
-    context.width = width;
-    context.height = height;
 }
 
 /// Initialize the logger.
