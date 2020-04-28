@@ -559,12 +559,11 @@ struct PieceMeshes {
 }
 
 fn generate_texture_coords_block(bounding_box: tex_atlas::BoundingBoxTexCoords) -> Vec<[f32; 2]> {
-    let width = bounding_box.width;
-    let height = bounding_box.height;
-    let top_left = [bounding_box.top_left.u, bounding_box.top_left.v];
-    let bottom_left = [top_left[0], top_left[1] - height];
-    let top_right = [top_left[0] + width, top_left[1]];
-    let bottom_right = [top_left[0] + width, top_left[1] - height];
+    let corners: tex_atlas::BoundingBoxCornersTexCoords = bounding_box.into();
+    let top_left = [corners.top_left.u, corners.top_left.v];
+    let bottom_left = [corners.bottom_left.u, corners.bottom_left.v];
+    let top_right = [corners.top_right.u, corners.top_right.v];
+    let bottom_right = [corners.bottom_right.u, corners.bottom_right.v];
     let tex_coords: Vec<[f32; 2]> = vec![
         bottom_left, top_right, top_left, bottom_left, bottom_right, top_right,
         bottom_left, top_right, top_left, bottom_left, bottom_right, top_right,
