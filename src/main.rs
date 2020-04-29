@@ -3399,7 +3399,7 @@ impl RendererClearingState {
 
     fn render_playing_field_background(&self, context: &mut RendererContext) {
         // Check which background image to use by introspecting the game context for the state of the 
-        //flashing state machine.
+        // flashing state machine.
         let game_context = context.game_context.borrow();
         let flashing_state_machine = game_context.flashing_state_machine.borrow();
         let flashing_state_handle = context.playing_field_background.handle;
