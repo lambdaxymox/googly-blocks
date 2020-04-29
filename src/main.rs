@@ -343,14 +343,21 @@ fn send_to_gpu_shaders_ui_panel(game: &mut glh::GLState, source: ShaderSource) -
     send_to_gpu_shaders(game, source)
 }
 
-fn create_geometry_ui_panel() -> ObjMesh {
+fn create_geometry_ui_panel(atlas: &TextureAtlas2D) -> ObjMesh {
     let points: Vec<[GLfloat; 2]> = vec![
         [1.0, 1.0], [-1.0, -1.0], [ 1.0, -1.0],
         [1.0, 1.0], [-1.0,  1.0], [-1.0, -1.0]
     ];
-    let tex_coords: Vec<[GLfloat; 2]> = vec![
-        [1314_f32 / 2048_f32, 1032_f32 / 2048_f32], [0_f32 / 2048_f32,    0_f32 / 2048_f32], [1314_f32 / 2048_f32, 0_f32 / 2048_f32],
-        [1314_f32 / 2048_f32, 1032_f32 / 2048_f32], [0_f32 / 2048_f32, 1032_f32 / 2048_f32], [   0_f32 / 2048_f32, 0_f32 / 2048_f32],
+    let corners: tex_atlas::BoundingBoxCornersTexCoords = atlas.get_name_corners_uv("Panel").unwrap();
+    let top_left = [corners.top_left.u, corners.top_left.v];
+    let bottom_left = [corners.bottom_left.u, corners.bottom_left.v];
+    let top_right = [corners.top_right.u, corners.top_right.v];
+    let bottom_right = [corners.bottom_right.u, corners.bottom_right.v];
+    let tex_coords: Vec<[f32; 2]> = vec![
+        top_right, bottom_left, bottom_right, top_right, top_left, bottom_left,
+        top_right, bottom_left, bottom_right, top_right, top_left, bottom_left,
+        top_right, bottom_left, bottom_right, top_right, top_left, bottom_left,
+        top_right, bottom_left, bottom_right, top_right, top_left, bottom_left,
     ];
 
     ObjMesh::new(points, tex_coords)
@@ -528,7 +535,7 @@ fn send_to_gpu_uniforms_ui_panel(sp: GLuint, uniforms: UIPanelUniforms) {
 fn load_ui_panel(game: &mut glh::GLState, spec: UIPanelSpec, uniforms: UIPanelUniforms) -> UIPanel {
     let shader_source = create_shaders_ui_panel();
     let sp = send_to_gpu_shaders_ui_panel(game, shader_source);
-    let mesh = create_geometry_ui_panel();
+    let mesh = create_geometry_ui_panel(&spec.atlas);
     let handle = create_buffers_geometry_ui_panel();
     send_to_gpu_geometry_ui_panel(handle, &mesh);
     let tex = send_to_gpu_textures_ui_panel(&spec.atlas);
@@ -1232,6 +1239,18 @@ fn send_to_gpu_uniforms_playing_field_background(sp: GLuint, uniforms: PlayingFi
         gl::UniformMatrix4fv(m_trans_loc, 1, gl::FALSE, uniforms.trans_mat.as_ptr());
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
