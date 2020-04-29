@@ -1304,14 +1304,19 @@ fn create_shaders_game_over() -> ShaderSource {
     }
 }
 
-fn create_geometry_game_over() -> ObjMesh {
+fn create_geometry_game_over(atlas: &TextureAtlas2D) -> ObjMesh {
     let points: Vec<[f32; 2]> = vec![
         [1_f32, 1_f32], [-1_f32, -1_f32], [1_f32, -1_f32],
         [1_f32, 1_f32], [-1_f32,  1_f32], [-1_f32, -1_f32],
     ];
+    let corners = atlas.get_name_corners_uv("GameOver").unwrap();
+    let top_left = [corners.top_left.u, corners.top_left.v];
+    let bottom_left = [corners.bottom_left.u, corners.bottom_left.v];
+    let top_right = [corners.top_right.u, corners.top_right.v];
+    let bottom_right = [corners.bottom_right.u, corners.bottom_right.v];
     let tex_coords: Vec<[f32; 2]> = vec![
-        [1780_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32,  768_f32 / 2048_f32], [1780_f32 / 2048_f32, 768_f32 / 2048_f32],
-        [1780_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32, 1023_f32 / 2048_f32], [1322_f32 / 2048_f32, 768_f32 / 2048_f32],
+        top_right, bottom_left, bottom_right,
+        top_right, top_left, bottom_left
     ];
 
     ObjMesh::new(points, tex_coords)
@@ -1402,7 +1407,7 @@ struct GameOverPanelSpec<'a> {
 
 fn load_game_over_panel(game: &mut glh::GLState, spec: GameOverPanelSpec) -> GameOverPanel {
     let shader_source = create_shaders_game_over();
-    let mesh = create_geometry_game_over();
+    let mesh = create_geometry_game_over(&spec.atlas);
     let sp = send_to_gpu_shaders_game_over(game, shader_source);
     let handle = create_buffers_geometry_game_over();
     send_to_gpu_geometry_game_over(handle, &mesh);
