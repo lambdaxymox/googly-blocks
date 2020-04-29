@@ -1,6 +1,6 @@
 [package]
 name = "googly-blocks"
-version = "0.3.46"
+version = "0.3.47"
 authors = ["LambdaXymox <lambda.xymox@gmail.com>"]
 build = "build.rs"
 
@@ -12,7 +12,6 @@ rand = "0.7.3"
 bmfa = { git = "https://github.com/lambdaxymox/bmfa" }
 file_logger = { git = "https://github.com/lambdaxymox/file-logger" }
 lean_cgmath = { git = "https://github.com/lambdaxymox/lean-cgmath" }
-teximage2d = { git = "https://github.com/lambdaxymox/teximage2d" }
 tex_atlas = { git = "https://github.com/lambdaxymox/tex_atlas" }
 
 [build-dependencies]

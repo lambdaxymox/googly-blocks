@@ -22,7 +22,6 @@ extern crate toml;
 extern crate log;
 extern crate rand;
 extern crate file_logger;
-extern crate teximage2d;
 extern crate tex_atlas;
 
 
@@ -46,7 +45,6 @@ use gl::types::{GLfloat, GLint, GLuint, GLvoid, GLsizeiptr};
 use log::{info};
 use math::{Array, One, Matrix4};
 use mesh::ObjMesh;
-use teximage2d::TexImage2D;
 use tex_atlas::TextureAtlas2D;
 use playing_field::{
     BlockPosition, GooglyBlock, PlayingFieldState,
@@ -2997,6 +2995,17 @@ impl RendererContext {
         send_to_gpu_uniforms_background_panel(self.background.background_handle.sp, uniforms);
     }
 
+    fn update_uniforms_title_background_panel(&mut self) {
+        let panel_width = self.background.width as f32;
+        let panel_height = self.background.height as f32;
+        let (viewport_width, viewport_height) = self.get_framebuffer_size();
+        let gui_scale_x = panel_width / (viewport_width as f32);
+        let gui_scale_y = panel_height / (viewport_height as f32);
+        let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0_f32);
+        let uniforms = BackgroundPanelUniforms { gui_scale_mat: gui_scale_mat };
+        send_to_gpu_uniforms_background_panel(self.background.background_handle.sp, uniforms);        
+    }
+
     fn update_uniforms_ui_panel(&mut self) {
         let panel_width = self.ui.ui_panel.width as f32;
         let panel_height = self.ui.ui_panel.height as f32;
@@ -3103,6 +3112,11 @@ impl RendererFallingState {
         context.update_uniforms_background_panel();
     }
 
+    #[inline]
+    fn update_title_background(&self, context: &mut RendererContext) {
+        context.update_uniforms_title_background_panel();
+    }
+
     fn render_background(&self, context: &mut RendererContext) {
         unsafe {
             gl::UseProgram(context.background.background_handle.sp);
@@ -3111,6 +3125,16 @@ impl RendererFallingState {
             gl::BindVertexArray(context.background.background_handle.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
         }        
+    }
+
+    fn render_title_background(&self, context: &mut RendererContext) {
+        unsafe {
+            gl::UseProgram(context.background.title_handle.sp);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, context.background.title_handle.tex);
+            gl::BindVertexArray(context.background.title_handle.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6);
+        }
     }
 
     fn update_ui(&self, context: &mut RendererContext) {
@@ -3211,6 +3235,8 @@ impl RendererFallingState {
         self.update_viewport(context);
         self.update_background(context);
         self.render_background(context);
+        self.update_title_background(context);
+        self.render_title_background(context);
         self.update_playing_field_background(context);
         self.render_playing_field_background(context);
         self.update_ui(context);
@@ -3251,6 +3277,11 @@ impl RendererClearingState {
         context.update_uniforms_background_panel();
     }
 
+    #[inline]
+    fn update_title_background(&self, context: &mut RendererContext) {
+        context.update_uniforms_title_background_panel();
+    }
+
     fn render_background(&self, context: &mut RendererContext) {
         unsafe {
             gl::UseProgram(context.background.background_handle.sp);
@@ -3259,6 +3290,16 @@ impl RendererClearingState {
             gl::BindVertexArray(context.background.background_handle.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
         }        
+    }
+
+    fn render_title_background(&self, context: &mut RendererContext) {
+        unsafe {
+            gl::UseProgram(context.background.title_handle.sp);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, context.background.title_handle.tex);
+            gl::BindVertexArray(context.background.title_handle.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6);            
+        }
     }
 
     fn update_ui(&self, context: &mut RendererContext) {
@@ -3360,6 +3401,8 @@ impl RendererClearingState {
         self.update_viewport(context);
         self.update_background(context);
         self.render_background(context);
+        self.update_title_background(context);
+        self.render_title_background(context);
         self.update_playing_field_background(context);
         self.render_playing_field_background(context);
         self.update_ui(context);
@@ -3400,6 +3443,11 @@ impl RendererGameOverState {
         context.update_uniforms_background_panel();
     }
 
+    #[inline]
+    fn update_title_background(&self, context: &mut RendererContext) {
+        context.update_uniforms_title_background_panel();
+    }
+
     fn render_background(&self, context: &mut RendererContext) {
         unsafe {
             gl::UseProgram(context.background.background_handle.sp);
@@ -3408,6 +3456,16 @@ impl RendererGameOverState {
             gl::BindVertexArray(context.background.background_handle.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
         }        
+    }
+
+    fn render_title_background(&self, context: &mut RendererContext) {
+        unsafe {
+            gl::UseProgram(context.background.title_handle.sp);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, context.background.title_handle.tex);
+            gl::BindVertexArray(context.background.title_handle.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6);
+        }
     }
 
     fn update_ui(&self, context: &mut RendererContext) {
@@ -3526,6 +3584,8 @@ impl RendererGameOverState {
         self.update_viewport(context);
         self.update_background(context);
         self.render_background(context);
+        self.update_title_background(context);
+        self.render_title_background(context);
         self.update_playing_field_background(context);
         self.render_playing_field_background(context);
         self.update_ui(context);
