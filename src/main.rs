@@ -505,7 +505,222 @@ fn send_to_gpu_uniforms_title_screen_background(sp: GLuint, uniforms: TitleScree
     }
 }
 
+#[derive(Copy, Clone)]
+struct TitleScreenFlashingBuffers {
+    vao: GLuint,
+    v_pos_vbo: GLuint,
+    v_tex_vbo: GLuint,
+    v_pos_loc: GLuint,
+    v_tex_loc: GLuint,
+}
 
+#[derive(Copy, Clone)]
+struct TitleScreenFlashingBufferHandle {
+    sp: GLuint,
+    vao: GLuint,
+    v_pos_vbo: GLuint,
+    v_tex_vbo: GLuint,
+    v_pos_loc: GLuint,
+    v_tex_loc: GLuint,
+    tex: GLuint,  
+}
+
+#[derive(Copy, Clone)]
+struct TitleScreenFlashingHandle {
+    width: usize,
+    height: usize,
+    handle: TitleScreenFlashingBufferHandle,
+}
+
+struct TitleScreenFlashingUniforms {
+    gui_scale_mat: Matrix4,
+    trans_mat: Matrix4,
+}
+
+fn create_shaders_title_screen_flashing() -> ShaderSource {
+    let vert_source = include_shader!("title_screen_background.vert.glsl");
+    let frag_source = include_shader!("title_screen_background.frag.glsl");
+
+    ShaderSource { 
+        vert_name: "title_screen_background.vert.glsl",
+        vert_source: vert_source, 
+        frag_name: "title_screen_background.frag.glsl",
+        frag_source: frag_source 
+    }
+}
+
+fn create_geometry_title_screen_flashing(atlas: &TextureAtlas2D) -> ObjMesh {
+    let points: Vec<[f32; 2]> = vec![
+        [1_f32, 1_f32], [-1_f32, -1_f32], [ 1_f32, -1_f32],
+        [1_f32, 1_f32], [-1_f32,  1_f32], [-1_f32, -1_f32],
+    ];
+    let corners = atlas.get_name_corners_uv("title").unwrap();
+    let top_left = [corners.top_left.u, corners.top_left.v];
+    let bottom_left = [corners.bottom_left.u, corners.bottom_left.v];
+    let top_right = [corners.top_right.u, corners.top_right.v];
+    let bottom_right = [corners.bottom_right.u, corners.bottom_right.v];
+    let tex_coords: Vec<[f32; 2]> = vec![
+        top_right, bottom_left, bottom_right,
+        top_right, top_left, bottom_left
+    ];
+
+    ObjMesh::new(points, tex_coords)
+}
+
+fn send_to_gpu_shaders_title_screen_flashing(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+    send_to_gpu_shaders(game, source)
+}
+
+fn create_buffers_geometry_title_screen_flashing() -> TitleScreenFlashingBuffers {
+    let v_pos_loc = 0;
+    let v_tex_loc = 1;
+
+    let mut v_pos_vbo = 0;
+    unsafe {
+        gl::CreateBuffers(1, &mut v_pos_vbo);
+    }
+    debug_assert!(v_pos_vbo > 0);
+
+    let mut v_tex_vbo = 0;
+    unsafe {
+        gl::CreateBuffers(1, &mut v_tex_vbo);
+    }
+    debug_assert!(v_tex_vbo > 0);
+
+    let mut vao = 0;
+    unsafe {
+        gl::GenVertexArrays(1, &mut vao);
+    }
+    debug_assert!(vao > 0);
+    unsafe {
+        gl::BindVertexArray(vao);
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_pos_vbo);
+        gl::VertexAttribPointer(v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::BindBuffer(gl::ARRAY_BUFFER, v_tex_vbo);
+        gl::VertexAttribPointer(v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(v_pos_loc);
+        gl::EnableVertexAttribArray(v_tex_loc);
+    }
+
+    TitleScreenFlashingBuffers {
+        vao: vao,
+        v_pos_vbo: v_pos_vbo,
+        v_tex_vbo: v_tex_vbo,
+        v_pos_loc: v_pos_loc,
+        v_tex_loc: v_tex_loc,
+    }
+}
+
+fn send_to_gpu_geometry_title_screen_flashing(handle: TitleScreenFlashingBuffers, mesh: &ObjMesh) {
+    unsafe {
+        // Load position data.
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            mesh.points.len_bytes() as GLsizeiptr,
+            mesh.points.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+        );
+        // Load the texture coordinates.
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            mesh.tex_coords.len_bytes() as GLsizeiptr,
+            mesh.tex_coords.as_ptr() as *const GLvoid, gl::STATIC_DRAW
+        );
+
+        // Enable the arrays for use by the shader.
+        gl::BindVertexArray(handle.vao);
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
+        gl::VertexAttribPointer(handle.v_pos_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
+        gl::VertexAttribPointer(handle.v_tex_loc, 2, gl::FLOAT, gl::FALSE, 0, ptr::null());
+        gl::EnableVertexAttribArray(handle.v_pos_loc);
+        gl::EnableVertexAttribArray(handle.v_tex_loc);
+    }
+}
+
+fn send_to_gpu_textures_title_screen_flashing(atlas: &TextureAtlas2D) -> GLuint {
+    send_to_gpu_texture(atlas, gl::CLAMP_TO_EDGE).unwrap()
+}
+
+
+struct TitleScreenSpec<'a, 'b> {
+    background_width: usize,
+    background_height: usize,
+    background_atlas: &'a TextureAtlas2D,
+    flashing_width: usize,
+    flashing_height: usize,
+    flashing_atlas: &'b TextureAtlas2D,
+}
+
+struct TitleScreenHandle {
+    background_handle: TitleScreenBackgroundHandle,
+    flashing_handle: TitleScreenFlashingHandle,
+}
+
+fn send_to_gpu_uniforms_title_screen_flashing(sp: GLuint, uniforms: TitleScreenFlashingUniforms) {
+    let m_gui_scale_loc = unsafe {
+        gl::GetUniformLocation(sp, glh::gl_str("m_gui_scale").as_ptr())
+    };
+    debug_assert!(m_gui_scale_loc > -1);
+    let m_trans_loc = unsafe {
+        gl::GetUniformLocation(sp, glh::gl_str("m_trans").as_ptr())
+    };
+    debug_assert!(m_trans_loc > -1);
+    unsafe {
+        gl::UseProgram(sp);
+        gl::UniformMatrix4fv(m_gui_scale_loc, 1, gl::FALSE, uniforms.gui_scale_mat.as_ptr());
+        gl::UniformMatrix4fv(m_trans_loc, 1, gl::FALSE, uniforms.trans_mat.as_ptr());
+    }
+}
+
+fn load_title_screen(game: &mut glh::GLState, spec: TitleScreenSpec) -> TitleScreenHandle {
+    let background_source = create_shaders_title_screen_background();
+    let background_mesh = create_geometry_title_screen_background(&spec.background_atlas);
+    let flashing_source = create_shaders_title_screen_flashing();
+    let flashing_mesh = create_geometry_title_screen_flashing(&spec.flashing_atlas);
+    let background_buffers = create_buffers_geometry_title_screen_background();
+    let flashing_buffers = create_buffers_geometry_title_screen_flashing();
+    let background_sp = send_to_gpu_shaders_title_screen_background(game, background_source);
+    let flashing_sp = send_to_gpu_shaders_title_screen_flashing(game, flashing_source);
+    send_to_gpu_geometry_title_screen_background(background_buffers, &background_mesh);
+    send_to_gpu_geometry_title_screen_flashing(flashing_buffers, &flashing_mesh);
+    let background_tex = send_to_gpu_textures_title_screen_background(&spec.background_atlas);
+    let flashing_tex = send_to_gpu_textures_title_screen_flashing(&spec.flashing_atlas);
+    let background_buffers_handle = TitleScreenBufferHandle {
+        sp: background_sp,
+        vao: background_buffers.vao,
+        v_pos_vbo: background_buffers.v_pos_vbo,
+        v_tex_vbo: background_buffers.v_tex_vbo,
+        v_pos_loc: background_buffers.v_pos_loc,
+        v_tex_loc: background_buffers.v_tex_loc,
+        tex: background_tex,  
+    };
+    let flashing_buffers_handle = TitleScreenFlashingBufferHandle {
+        sp: flashing_sp,
+        vao: flashing_buffers.vao,
+        v_pos_vbo: flashing_buffers.v_pos_vbo,
+        v_tex_vbo: flashing_buffers.v_tex_vbo,
+        v_pos_loc: flashing_buffers.v_pos_loc,
+        v_tex_loc: flashing_buffers.v_tex_loc,
+        tex: flashing_tex,  
+    };
+    let background_handle = TitleScreenBackgroundHandle {
+        width: spec.background_width,
+        height: spec.background_height,
+        handle: background_buffers_handle,
+    };
+    let flashing_handle = TitleScreenFlashingHandle {
+        width: spec.flashing_width,
+        height: spec.flashing_height,
+        handle: flashing_buffers_handle,
+    };
+
+    TitleScreenHandle {
+        background_handle: background_handle,
+        flashing_handle: flashing_handle,
+    }
+}
 
 
 
