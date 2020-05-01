@@ -554,7 +554,7 @@ fn create_geometry_title_screen_flashing(atlas: &TextureAtlas2D) -> ObjMesh {
         [1_f32, 1_f32], [-1_f32, -1_f32], [ 1_f32, -1_f32],
         [1_f32, 1_f32], [-1_f32,  1_f32], [-1_f32, -1_f32],
     ];
-    let corners = atlas.get_name_corners_uv("title").unwrap();
+    let corners = atlas.get_name_corners_uv("PressEnter").unwrap();
     let top_left = [corners.top_left.u, corners.top_left.v];
     let bottom_left = [corners.bottom_left.u, corners.bottom_left.v];
     let top_right = [corners.top_right.u, corners.top_right.v];
@@ -3121,8 +3121,8 @@ impl TitleScreenBlinkStateMachine {
     }
 
     #[inline]
-    fn is_pressed(&self) {
-        self.state == TitleScreenBlinkState::Pressed;
+    fn is_pressed(&self) -> bool {
+        self.state == TitleScreenBlinkState::Pressed
     }
 
     #[inline]
@@ -3169,8 +3169,10 @@ struct TitleScreenStateMachine {
 
 impl TitleScreenStateMachine {
     fn new(spec: TitleScreenStateMachineSpec) -> TitleScreenStateMachine {
+        let mut blink_state = TitleScreenBlinkStateMachine::new(&spec);
+        blink_state.unpressed(); 
         TitleScreenStateMachine {
-            blink_state: TitleScreenBlinkStateMachine::new(&spec),
+            blink_state: blink_state,
             transition_timer: Timer::new(spec.transition_interval),
         }
     }
@@ -3178,6 +3180,11 @@ impl TitleScreenStateMachine {
     #[inline]
     fn animation_is_on(&self) -> bool {
         self.blink_state.animation_state == TitleScreenAnimationState::On
+    }
+
+    #[inline]
+    fn is_pressed(&self) -> bool {
+        self.blink_state.is_pressed()
     }
 }
 
@@ -3211,7 +3218,12 @@ impl GameTitleScreenState {
         let mut title_screen = context.title_screen.borrow_mut();
         match input.kind {
             InputKind::StartGame => {
-                title_screen.blink_state.pressed();
+                match input.action {
+                    InputAction::Press | InputAction::Repeat => {
+                        title_screen.blink_state.pressed();
+                    }
+                    _ => {}
+                }
             }
             _ => {}
         }
@@ -3219,10 +3231,12 @@ impl GameTitleScreenState {
 
     fn update(&self, context: &mut GameContext, elapsed_milliseconds: Duration) -> GameState {
         let mut title_screen = context.title_screen.borrow_mut();
-        title_screen.transition_timer.update(elapsed_milliseconds);
-        if title_screen.transition_timer.event_triggered() {
-            title_screen.blink_state.disable();
-            return GameState::Falling(GameFallingState::new());
+        if title_screen.blink_state.is_pressed() {    
+            title_screen.transition_timer.update(elapsed_milliseconds);
+            if title_screen.transition_timer.event_triggered() {
+                title_screen.blink_state.disable();
+                return GameState::Falling(GameFallingState::new());
+            }
         }
 
         title_screen.blink_state.update(elapsed_milliseconds);
@@ -3783,10 +3797,13 @@ impl RendererTitleScreenState {
             let handle = context.title_screen.flashing_handle.handle;
             unsafe {
                 gl::UseProgram(handle.sp);
+                gl::Enable(gl::BLEND);
+                gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
                 gl::ActiveTexture(gl::TEXTURE0);
                 gl::BindTexture(gl::TEXTURE_2D, handle.tex);
                 gl::BindVertexArray(handle.vao);
                 gl::DrawArrays(gl::TRIANGLES, 0, 6);
+                gl::Disable(gl::BLEND);
             }
         }
     }
@@ -4638,7 +4655,7 @@ fn init_game() -> Game {
         exiting: false,
         title_screen: title_screen,
     }));
-    let initial_game_state = GameState::Falling(GameFallingState::new());
+    let initial_game_state = GameState::TitleScreen(GameTitleScreenState::new());
     let state_machine = GameStateMachine::new(context.clone(), initial_game_state);
     let renderer_context = RendererContext {
         game_context: context.clone(),
@@ -4649,7 +4666,7 @@ fn init_game() -> Game {
         playing_field_background: playing_field_background,
         title_screen: title_screen_handle,
     };
-    let initial_renderer_state = RendererState::Falling(RendererFallingState {});
+    let initial_renderer_state = RendererState::TitleScreen(RendererTitleScreenState {});
     let renderer_state_machine = RendererStateMachine::new(renderer_context, initial_renderer_state); 
 
     let mut game = Game {
