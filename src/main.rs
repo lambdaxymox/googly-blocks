@@ -4737,7 +4737,6 @@ fn main() {
 
         game.update_state(elapsed_milliseconds);
         game.update_fps_counter();
-        // game.update_framebuffer_size();
         game.render();
 
         // Send the results to the output.
