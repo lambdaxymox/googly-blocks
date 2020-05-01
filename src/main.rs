@@ -3108,8 +3108,8 @@ impl TitleScreenBlinkStateMachine {
     }
 
     #[inline]
-    fn is_unpressed(&self) {
-        self.state == TitleScreenBlinkState::Unpressed;
+    fn is_unpressed(&self) -> bool {
+        self.state == TitleScreenBlinkState::Unpressed
     }
 
     #[inline]
@@ -4673,8 +4673,8 @@ fn init_game() -> Game {
     };
     let flashing_state_machine = Rc::new(RefCell::new(FlashAnimationStateMachine::new()));
     let title_screen_state_machine_spec = TitleScreenStateMachineSpec {
-        transition_interval: Interval::Milliseconds(2500),
-        pressed_interval: Interval::Milliseconds(200),
+        transition_interval: Interval::Milliseconds(2000),
+        pressed_interval: Interval::Milliseconds(100),
         unpressed_interval: Interval::Milliseconds(500),
     };
     let title_screen = Rc::new(RefCell::new(TitleScreenStateMachine::new(title_screen_state_machine_spec)));
