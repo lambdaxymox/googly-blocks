@@ -529,6 +529,7 @@ struct TitleScreenFlashingBufferHandle {
 struct TitleScreenFlashingHandle {
     width: usize,
     height: usize,
+    placement: AbsolutePlacement,
     handle: TitleScreenFlashingBufferHandle,
 }
 
@@ -650,6 +651,7 @@ struct TitleScreenSpec<'a, 'b> {
     background_atlas: &'a TextureAtlas2D,
     flashing_width: usize,
     flashing_height: usize,
+    flashing_placement: AbsolutePlacement,
     flashing_atlas: &'b TextureAtlas2D,
 }
 
@@ -713,6 +715,7 @@ fn load_title_screen(game: &mut glh::GLState, spec: TitleScreenSpec) -> TitleScr
     let flashing_handle = TitleScreenFlashingHandle {
         width: spec.flashing_width,
         height: spec.flashing_height,
+        placement: spec.flashing_placement,
         handle: flashing_buffers_handle,
     };
 
@@ -3798,7 +3801,8 @@ impl RendererContext {
         let gui_scale_x = panel_width / (viewport_width as f32);
         let gui_scale_y = panel_height / (viewport_height as f32);
         let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0.0);
-        let trans_mat = Matrix4::from_translation(cgmath::vec3((0.0, 0.0, 0.0)));
+        let placement = self.title_screen.flashing_handle.placement;
+        let trans_mat = Matrix4::from_translation(cgmath::vec3((placement.x, placement.y, 0.0)));
         let uniforms = TitleScreenFlashingUniforms { 
             gui_scale_mat: gui_scale_mat,
             trans_mat: trans_mat,
@@ -4678,12 +4682,14 @@ fn init_game() -> Game {
         unpressed_interval: Interval::Milliseconds(500),
     };
     let title_screen = Rc::new(RefCell::new(TitleScreenStateMachine::new(title_screen_state_machine_spec)));
+    let flashing_placement = AbsolutePlacement { x: 0.0, y: -0.7 };
     let title_screen_handle_spec = TitleScreenSpec {
         background_width: width as usize,
         background_height: height as usize,
         background_atlas: &title_atlas,
         flashing_width: 370,
         flashing_height: 50,
+        flashing_placement: flashing_placement,
         flashing_atlas: &ui_panel_atlas,
     };
     let title_screen_handle = {
