@@ -4673,17 +4673,17 @@ fn init_game() -> Game {
     };
     let flashing_state_machine = Rc::new(RefCell::new(FlashAnimationStateMachine::new()));
     let title_screen_state_machine_spec = TitleScreenStateMachineSpec {
-        transition_interval: Interval::Milliseconds(1500),
-        pressed_interval: Interval::Milliseconds(100),
-        unpressed_interval: Interval::Milliseconds(200),
+        transition_interval: Interval::Milliseconds(2500),
+        pressed_interval: Interval::Milliseconds(200),
+        unpressed_interval: Interval::Milliseconds(500),
     };
     let title_screen = Rc::new(RefCell::new(TitleScreenStateMachine::new(title_screen_state_machine_spec)));
     let title_screen_handle_spec = TitleScreenSpec {
         background_width: width as usize,
         background_height: height as usize,
         background_atlas: &title_atlas,
-        flashing_width: 200,
-        flashing_height: 100,
+        flashing_width: 370,
+        flashing_height: 50,
         flashing_atlas: &ui_panel_atlas,
     };
     let title_screen_handle = {
