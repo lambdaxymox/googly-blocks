@@ -3770,12 +3770,48 @@ impl RendererContext {
         let sp = self.playing_field_background.handle.default.sp;
         send_to_gpu_uniforms_playing_field_background(sp, uniforms);
     }
+
+    fn update_uniforms_title_screen_background(&mut self) {
+        let panel_width = self.title_screen.background_handle.width as f32;
+        let panel_height = self.title_screen.background_handle.height as f32;
+        let (viewport_width, viewport_height) = self.get_framebuffer_size();
+        let gui_scale_x = panel_width / (viewport_width as f32);
+        let gui_scale_y = panel_height / (viewport_height as f32);
+        let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0.0);
+        let trans_mat = Matrix4::from_translation(cgmath::vec3((0.0, 0.0, 0.0)));
+        let uniforms = TitleScreenBackgroundUniforms { 
+            gui_scale_mat: gui_scale_mat,
+            trans_mat: trans_mat,
+        };
+        let sp = self.title_screen.background_handle.handle.sp;
+        send_to_gpu_uniforms_title_screen_background(sp, uniforms);
+    }
+
+    fn update_uniforms_title_screen_flashing(&mut self) {
+        let panel_width = self.title_screen.flashing_handle.width as f32;
+        let panel_height = self.title_screen.flashing_handle.height as f32;
+        let (viewport_width, viewport_height) = self.get_framebuffer_size();
+        let gui_scale_x = panel_width / (viewport_width as f32);
+        let gui_scale_y = panel_height / (viewport_height as f32);
+        let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0.0);
+        let trans_mat = Matrix4::from_translation(cgmath::vec3((0.0, 0.0, 0.0)));
+        let uniforms = TitleScreenFlashingUniforms { 
+            gui_scale_mat: gui_scale_mat,
+            trans_mat: trans_mat,
+        };
+        let sp = self.title_screen.flashing_handle.handle.sp;
+        send_to_gpu_uniforms_title_screen_flashing(sp, uniforms);
+    }
 }
 
 #[derive(Copy, Clone)]
 struct RendererTitleScreenState {}
 
 impl RendererTitleScreenState {
+    fn update_uniforms_background(&self, context: &mut RendererContext) {
+        context.update_uniforms_title_screen_background();
+    }
+
     fn render_background(&self, context: &mut RendererContext) {
         let handle = context.title_screen.background_handle.handle;
         unsafe {
@@ -3785,6 +3821,10 @@ impl RendererTitleScreenState {
             gl::BindVertexArray(handle.vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
         }
+    }
+
+    fn update_uniforms_start_prompt(&self, context: &mut RendererContext) {
+        context.update_uniforms_title_screen_flashing();
     }
 
     fn render_start_prompt(&self, context: &mut RendererContext) {
@@ -3809,7 +3849,9 @@ impl RendererTitleScreenState {
     }
 
     fn render(&self, context: &mut RendererContext) {
+        self.update_uniforms_background(context);
         self.render_background(context);
+        self.update_uniforms_start_prompt(context);
         self.render_start_prompt(context);
     }
 }
