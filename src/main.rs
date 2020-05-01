@@ -993,6 +993,15 @@ fn load_ui_panel(game: &mut glh::GLState, spec: UIPanelSpec, uniforms: UIPanelUn
 
 
 
+
+
+
+
+
+
+
+
+
 /// Create the shaders for the next panel in the game's user interface.
 fn create_shaders_next_piece_panel() -> ShaderSource {
     let vert_source = include_shader!("next_piece_panel.vert.glsl");
@@ -2938,6 +2947,7 @@ enum InputKind {
     Down,
     Exit,
     Rotate,
+    StartGame,
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -3001,6 +3011,222 @@ impl FlashAnimationStateMachine {
             FlashAnimationState::Dark => FlashAnimationState::Light,
             FlashAnimationState::Light => FlashAnimationState::Dark,
         };
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#[derive(Clone)]
+struct TitleScreenStateMachineSpec {
+    transition_interval: Interval,
+    pressed_interval: Interval,
+    unpressed_interval: Interval,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+enum TitleScreenBlinkState {
+    Disabled,
+    Unpressed,
+    Pressed,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+enum TitleScreenAnimationState {
+    Disabled,
+    On,
+    Off,
+}
+
+struct TitleScreenBlinkStateMachine {
+    state: TitleScreenBlinkState,
+    animation_state: TitleScreenAnimationState,
+    unpressed_blink_timer: Timer,
+    pressed_blink_timer: Timer,
+}
+
+impl TitleScreenBlinkStateMachine {
+    fn new(spec: &TitleScreenStateMachineSpec) -> TitleScreenBlinkStateMachine {
+        TitleScreenBlinkStateMachine {
+            state: TitleScreenBlinkState::Disabled,
+            animation_state: TitleScreenAnimationState::Disabled,
+            unpressed_blink_timer: Timer::new(spec.unpressed_interval),
+            pressed_blink_timer: Timer::new(spec.pressed_interval),
+        }
+    }
+
+    #[inline]
+    fn is_enabled(&self) -> bool {
+        self.state != TitleScreenBlinkState::Disabled
+    }
+
+    #[inline]
+    fn enable(&mut self) {
+        if self.state == TitleScreenBlinkState::Disabled {
+            self.state = TitleScreenBlinkState::Unpressed;
+            self.animation_state = TitleScreenAnimationState::On;
+            self.unpressed_blink_timer.reset();
+            self.pressed_blink_timer.reset();
+        }
+    }
+
+    #[inline]
+    fn disable(&mut self) {
+        self.state = TitleScreenBlinkState::Disabled;
+        self.animation_state = TitleScreenAnimationState::Disabled;
+        self.unpressed_blink_timer.reset();
+        self.pressed_blink_timer.reset();
+    }
+
+    #[inline]
+    fn is_disabled(&self) -> bool {
+        self.state == TitleScreenBlinkState::Disabled
+    }
+
+    #[inline]
+    fn unpressed(&mut self) {
+        self.state = TitleScreenBlinkState::Unpressed;
+        self.animation_state = TitleScreenAnimationState::On;
+        self.unpressed_blink_timer.reset();
+        self.pressed_blink_timer.reset();
+    }
+
+    #[inline]
+    fn is_unpressed(&self) {
+        self.state == TitleScreenBlinkState::Unpressed;
+    }
+
+    #[inline]
+    fn pressed(&mut self) {
+        self.state = TitleScreenBlinkState::Pressed;
+        self.animation_state = TitleScreenAnimationState::On;
+        self.unpressed_blink_timer.reset();
+        self.pressed_blink_timer.reset();
+    }
+
+    #[inline]
+    fn is_pressed(&self) {
+        self.state == TitleScreenBlinkState::Pressed;
+    }
+
+    #[inline]
+    fn animation_is_on(&self) -> bool {
+        self.animation_state == TitleScreenAnimationState::On
+    }
+
+    #[inline]
+    fn update(&mut self, elapsed_milliseconds: Duration) {
+        match self.state {
+            TitleScreenBlinkState::Disabled => {}
+            TitleScreenBlinkState::Unpressed => {
+                self.pressed_blink_timer.reset();
+                self.unpressed_blink_timer.update(elapsed_milliseconds);
+                if self.unpressed_blink_timer.event_triggered() {
+                    self.animation_state = match self.animation_state {
+                        TitleScreenAnimationState::On => TitleScreenAnimationState::Off,
+                        TitleScreenAnimationState::Off => TitleScreenAnimationState::On,
+                        TitleScreenAnimationState::Disabled => TitleScreenAnimationState::Disabled,
+                    };
+                    self.unpressed_blink_timer.reset();
+                }
+            }
+            TitleScreenBlinkState::Pressed => {
+                self.unpressed_blink_timer.reset();
+                self.pressed_blink_timer.update(elapsed_milliseconds);
+                if self.pressed_blink_timer.event_triggered() {
+                    self.animation_state = match self.animation_state {
+                        TitleScreenAnimationState::On => TitleScreenAnimationState::Off,
+                        TitleScreenAnimationState::Off => TitleScreenAnimationState::On,
+                        TitleScreenAnimationState::Disabled => TitleScreenAnimationState::Disabled,
+                    };
+                    self.pressed_blink_timer.reset();
+                }
+            }
+        }
+    }
+}
+
+struct TitleScreenStateMachine {
+    blink_state: TitleScreenBlinkStateMachine,
+    transition_timer: Timer,
+}
+
+impl TitleScreenStateMachine {
+    fn new(spec: TitleScreenStateMachineSpec) -> TitleScreenStateMachine {
+        TitleScreenStateMachine {
+            blink_state: TitleScreenBlinkStateMachine::new(&spec),
+            transition_timer: Timer::new(spec.transition_interval),
+        }
+    }
+    
+    #[inline]
+    fn animation_is_on(&self) -> bool {
+        self.blink_state.animation_state == TitleScreenAnimationState::On
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#[derive(Copy, Clone)]
+struct GameTitleScreenState {}
+
+impl GameTitleScreenState {
+    fn new() -> GameTitleScreenState {
+        GameTitleScreenState {}
+    }
+
+    fn handle_input(&self, context: &mut GameContext, input: Input, elapsed_milliseconds: Duration) {
+        let mut title_screen = context.title_screen.borrow_mut();
+        match input.kind {
+            InputKind::StartGame => {
+                title_screen.blink_state.pressed();
+            }
+            _ => {}
+        }
+    }
+
+    fn update(&self, context: &mut GameContext, elapsed_milliseconds: Duration) -> GameState {
+        let mut title_screen = context.title_screen.borrow_mut();
+        title_screen.transition_timer.update(elapsed_milliseconds);
+        if title_screen.transition_timer.event_triggered() {
+            title_screen.blink_state.disable();
+            return GameState::Falling(GameFallingState::new());
+        }
+
+        title_screen.blink_state.update(elapsed_milliseconds);
+        GameState::TitleScreen(*self)
     }
 }
 
@@ -3281,6 +3507,7 @@ impl GameExitingState {
 
 #[derive(Copy, Clone)]
 enum GameState {
+    TitleScreen(GameTitleScreenState),
     Falling(GameFallingState),
     Clearing(GameClearingState),
     GameOver(GameGameOverState),
@@ -3303,6 +3530,7 @@ impl GameStateMachine {
     fn handle_input(&mut self, input: Input, elapsed_milliseconds: Duration) {
         let mut context = self.context.borrow_mut();
         match self.state {
+            GameState::TitleScreen(s) => s.handle_input(&mut context, input, elapsed_milliseconds),
             GameState::Falling(mut s) => s.handle_input(&mut context, input, elapsed_milliseconds),
             GameState::Clearing(mut s) => s.handle_input(&mut context, input, elapsed_milliseconds),
             GameState::GameOver(mut s) => s.handle_input(&mut context, input, elapsed_milliseconds),
@@ -3313,6 +3541,7 @@ impl GameStateMachine {
     fn update(&mut self, elapsed_milliseconds: Duration) -> GameState {
         let mut context = self.context.borrow_mut();
         self.state = match self.state {
+            GameState::TitleScreen(s) => s.update(&mut context, elapsed_milliseconds),
             GameState::Falling(mut s) => s.update(&mut context, elapsed_milliseconds),
             GameState::Clearing(mut s) => s.update(&mut context, elapsed_milliseconds),
             GameState::GameOver(mut s) => s.update(&mut context, elapsed_milliseconds),
@@ -3399,10 +3628,12 @@ struct GameContext {
     full_rows: Rc<RefCell<FullRows>>,
     flashing_state_machine: Rc<RefCell<FlashAnimationStateMachine>>,
     exiting: bool,
+    title_screen: Rc<RefCell<TitleScreenStateMachine>>,
 }
 
 struct RendererContext {
     game_context: Rc<RefCell<GameContext>>,
+    title_screen: TitleScreenHandle,
     playing_field: PlayingField,
     ui: UI,
     background: BackgroundPanel,
@@ -3524,6 +3755,45 @@ impl RendererContext {
         };
         let sp = self.playing_field_background.handle.default.sp;
         send_to_gpu_uniforms_playing_field_background(sp, uniforms);
+    }
+}
+
+#[derive(Copy, Clone)]
+struct RendererTitleScreenState {}
+
+impl RendererTitleScreenState {
+    fn render_background(&self, context: &mut RendererContext) {
+        let handle = context.title_screen.background_handle.handle;
+        unsafe {
+            gl::UseProgram(handle.sp);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, handle.tex);
+            gl::BindVertexArray(handle.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6);
+        }
+    }
+
+    fn render_start_prompt(&self, context: &mut RendererContext) {
+        let game_context = context.game_context.borrow();
+        // If the text prompt animation is in the off part of the animation,
+        // we do not want to render anything. Otherwise, we display the start prompt.
+        // Oscillating between these states is what produces the blinking pattern.
+        let game_title_screen = game_context.title_screen.borrow();
+        if game_title_screen.animation_is_on() {
+            let handle = context.title_screen.flashing_handle.handle;
+            unsafe {
+                gl::UseProgram(handle.sp);
+                gl::ActiveTexture(gl::TEXTURE0);
+                gl::BindTexture(gl::TEXTURE_2D, handle.tex);
+                gl::BindVertexArray(handle.vao);
+                gl::DrawArrays(gl::TRIANGLES, 0, 6);
+            }
+        }
+    }
+
+    fn render(&self, context: &mut RendererContext) {
+        self.render_background(context);
+        self.render_start_prompt(context);
     }
 }
 
@@ -4051,6 +4321,7 @@ impl RendererExitingState {
 }
 
 enum RendererState {
+    TitleScreen(RendererTitleScreenState),
     Falling(RendererFallingState),
     Clearing(RendererClearingState),
     GameOver(RendererGameOverState),
@@ -4072,6 +4343,7 @@ impl RendererStateMachine {
 
     fn update(&mut self, game_state: GameState) {
         self.state = match game_state {
+            GameState::TitleScreen(_) => RendererState::TitleScreen(RendererTitleScreenState {}),
             GameState::Falling(_) => RendererState::Falling(RendererFallingState {}),
             GameState::Clearing(_) => RendererState::Clearing(RendererClearingState {}),
             GameState::GameOver(_) => RendererState::GameOver(RendererGameOverState {}),
@@ -4081,6 +4353,7 @@ impl RendererStateMachine {
 
     fn render(&mut self) {
         match self.state {
+            RendererState::TitleScreen(s) => s.render(&mut self.context),
             RendererState::Falling(s) => s.render(&mut self.context),
             RendererState::Clearing(s) => s.render(&mut self.context),
             RendererState::GameOver(s) => s.render(&mut self.context),
@@ -4335,6 +4608,24 @@ fn init_game() -> Game {
         load_game_over_panel(&mut context, game_over_panel_spec)
     };
     let flashing_state_machine = Rc::new(RefCell::new(FlashAnimationStateMachine::new()));
+    let title_screen_state_machine_spec = TitleScreenStateMachineSpec {
+        transition_interval: Interval::Milliseconds(1500),
+        pressed_interval: Interval::Milliseconds(100),
+        unpressed_interval: Interval::Milliseconds(200),
+    };
+    let title_screen = Rc::new(RefCell::new(TitleScreenStateMachine::new(title_screen_state_machine_spec)));
+    let title_screen_handle_spec = TitleScreenSpec {
+        background_width: width as usize,
+        background_height: height as usize,
+        background_atlas: &title_atlas,
+        flashing_width: 200,
+        flashing_height: 100,
+        flashing_atlas: &ui_panel_atlas,
+    };
+    let title_screen_handle = {
+        let mut context = gl_context.borrow_mut();
+        load_title_screen(&mut context, title_screen_handle_spec)
+    };
     let context = Rc::new(RefCell::new(GameContext {
         gl: gl_context,
         timers: timers,
@@ -4345,6 +4636,7 @@ fn init_game() -> Game {
         full_rows: full_rows,
         flashing_state_machine: flashing_state_machine,
         exiting: false,
+        title_screen: title_screen,
     }));
     let initial_game_state = GameState::Falling(GameFallingState::new());
     let state_machine = GameStateMachine::new(context.clone(), initial_game_state);
@@ -4355,6 +4647,7 @@ fn init_game() -> Game {
         background: background,
         game_over: game_over,
         playing_field_background: playing_field_background,
+        title_screen: title_screen_handle,
     };
     let initial_renderer_state = RendererState::Falling(RendererFallingState {});
     let renderer_state_machine = RendererStateMachine::new(renderer_context, initial_renderer_state); 
@@ -4426,6 +4719,17 @@ fn main() {
             }
             Action::Repeat => {
                 let input = Input::new(InputKind::Rotate, InputAction::Repeat);
+                game.handle_input(input, elapsed_milliseconds);
+            }
+            _ => {}
+        }
+        match game.get_key(Key::Enter) {
+            Action::Press => {
+                let input = Input::new(InputKind::StartGame, InputAction::Press);
+                game.handle_input(input, elapsed_milliseconds);
+            }
+            Action::Repeat => {
+                let input = Input::new(InputKind::StartGame, InputAction::Repeat);
                 game.handle_input(input, elapsed_milliseconds);
             }
             _ => {}
