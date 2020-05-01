@@ -3179,7 +3179,7 @@ impl TitleScreenStateMachine {
     
     #[inline]
     fn animation_is_on(&self) -> bool {
-        self.blink_state.animation_state == TitleScreenAnimationState::On
+        self.blink_state.animation_is_on()
     }
 
     #[inline]
@@ -3231,6 +3231,10 @@ impl GameTitleScreenState {
 
     fn update(&self, context: &mut GameContext, elapsed_milliseconds: Duration) -> GameState {
         let mut title_screen = context.title_screen.borrow_mut();
+        if title_screen.blink_state.is_disabled() {
+            title_screen.blink_state.enable();
+        }
+
         if title_screen.blink_state.is_pressed() {    
             title_screen.transition_timer.update(elapsed_milliseconds);
             if title_screen.transition_timer.event_triggered() {
@@ -3837,6 +3841,7 @@ impl RendererTitleScreenState {
             let handle = context.title_screen.flashing_handle.handle;
             unsafe {
                 gl::UseProgram(handle.sp);
+                gl::Disable(gl::DEPTH_TEST);
                 gl::Enable(gl::BLEND);
                 gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
                 gl::ActiveTexture(gl::TEXTURE0);
