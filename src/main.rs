@@ -3479,7 +3479,7 @@ impl GameGameOverState {
         GameGameOverState {}
     }
 
-    fn handle_input(&mut self, context: &mut GameContext, input: Input, elapsed_milliseconds: Duration) {
+    fn handle_input(&self, context: &mut GameContext, input: Input, elapsed_milliseconds: Duration) {
         match input.kind {
             InputKind::Exit => {
                 let mut exiting = context.exiting.borrow_mut();
@@ -3489,7 +3489,7 @@ impl GameGameOverState {
         }
     }
 
-    fn update(&mut self, context: &mut GameContext, elapsed_milliseconds: Duration) -> GameState {
+    fn update(&self, context: &mut GameContext, elapsed_milliseconds: Duration) -> GameState {
         let exiting = *context.exiting.borrow();
         if exiting {
             GameState::Exiting(GameExitingState::new())
@@ -3511,13 +3511,13 @@ impl GameExitingState {
         GameExitingState {} 
     }
 
-    fn handle_input(&mut self, context: &mut GameContext, input: Input, elapsed_milliseconds: Duration) {
+    fn handle_input(&self, context: &mut GameContext, input: Input, elapsed_milliseconds: Duration) {
         match input.kind {
             _ => {}
         }
     }
 
-    fn update(&mut self, context: &mut GameContext, elapsed_milliseconds: Duration) -> GameState {
+    fn update(&self, context: &mut GameContext, elapsed_milliseconds: Duration) -> GameState {
         context.gl.borrow_mut().window.set_should_close(true);
         GameState::Exiting(*self)
     }
@@ -3549,8 +3549,8 @@ impl GameStateMachine {
         match self.state {
             GameState::TitleScreen(s) => s.handle_input(&mut context, input, elapsed_milliseconds),
             GameState::Playing(s) => s.handle_input(&mut context, input, elapsed_milliseconds),
-            GameState::GameOver(mut s) => s.handle_input(&mut context, input, elapsed_milliseconds),
-            GameState::Exiting(mut s) => s.handle_input(&mut context, input, elapsed_milliseconds),
+            GameState::GameOver(s) => s.handle_input(&mut context, input, elapsed_milliseconds),
+            GameState::Exiting(s) => s.handle_input(&mut context, input, elapsed_milliseconds),
         }
     }
 
@@ -3559,8 +3559,8 @@ impl GameStateMachine {
         self.state = match self.state {
             GameState::TitleScreen(s) => s.update(&mut context, elapsed_milliseconds),
             GameState::Playing(s) => s.update(&mut context, elapsed_milliseconds),
-            GameState::GameOver(mut s) => s.update(&mut context, elapsed_milliseconds),
-            GameState::Exiting(mut s) => s.update(&mut context, elapsed_milliseconds),
+            GameState::GameOver(s) => s.update(&mut context, elapsed_milliseconds),
+            GameState::Exiting(s) => s.update(&mut context, elapsed_milliseconds),
         };
 
         self.state
