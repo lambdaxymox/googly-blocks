@@ -35,6 +35,7 @@ mod macros;
 mod mesh;
 mod gl_help;
 mod playing_field;
+mod timer;
 
 use gl_help as glh;
 use cgmath as math; 
@@ -47,12 +48,24 @@ use math::{Array, One, Matrix4};
 use mesh::ObjMesh;
 use tex_atlas::TextureAtlas2D;
 use playing_field::{
-    BlockPosition, GooglyBlock, PlayingFieldState,
-    GooglyBlockPiece, GooglyBlockRotation, GooglyBlockElement, GooglyBlockMove,
+    BlockPosition, 
+    GooglyBlock, 
+    PlayingFieldState,
+    GooglyBlockPiece, 
+    GooglyBlockRotation, 
+    GooglyBlockElement, 
+    GooglyBlockMove,
     PlayingFieldStateSpec,
 };
+use timer::{
+    Interval, 
+    Timer,
+};
 use rand::prelude as rng;
-use rand::distributions::{Distribution, Uniform};
+use rand::distributions::{
+    Distribution, 
+    Uniform
+};
 
 use std::io;
 use std::mem;
@@ -2741,7 +2754,7 @@ impl UI {
         self.next_piece_panel.update(piece);
     }
 }
-
+/*
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 enum Interval {
     Milliseconds(u64),
@@ -2783,7 +2796,7 @@ impl Timer {
         self.event_count = 0;
     }
 }
-
+*/
 #[derive(Copy, Clone)]
 struct PlayingFieldTimerSpec {
     fall_interval: Interval,
