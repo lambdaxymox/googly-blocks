@@ -37,6 +37,7 @@ mod gl_help;
 mod playing_field;
 mod timer;
 mod next_block;
+mod score;
 
 use gl_help as glh;
 use cgmath as math; 
@@ -59,6 +60,10 @@ use playing_field::{
     PlayingFieldStateSpec,
 };
 use next_block::NextBlockCell;
+use score::{
+    ScoreBoard,
+    Statistics,
+};
 use timer::{
     Interval, 
     Timer,
@@ -2833,7 +2838,7 @@ impl PlayingFieldTimers {
         }
     }
 }
-
+/*
 struct Statistics {
     t_pieces: usize,
     j_pieces: usize,
@@ -2869,7 +2874,8 @@ impl Statistics {
         }
     }
 }
-
+*/
+/*
 struct ScoreBoard {
     score: usize,
     level: usize,
@@ -2916,6 +2922,7 @@ impl ScoreBoard {
         }
     }
 }
+*/
 
 struct FullRows {
     rows: [isize; 20],
@@ -4650,7 +4657,7 @@ fn init_game() -> Game {
     let next_block_cell_ref = Rc::new(RefCell::new(next_block_cell));
     let timers = Rc::new(RefCell::new(PlayingFieldTimers::new(timer_spec)));
     let statistics = Rc::new(RefCell::new(Statistics::new()));
-    let score_board = Rc::new(RefCell::new(ScoreBoard::new()));
+    let score_board = Rc::new(RefCell::new(ScoreBoard::new(20)));
     let full_rows = Rc::new(RefCell::new(FullRows::new()));
     let game_over_panel_spec = GameOverPanelSpec {
         width: 300,
