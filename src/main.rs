@@ -3567,13 +3567,11 @@ impl GameStateMachine {
 }
 struct GameContext {
     gl: Rc<RefCell<glh::GLState>>,
-    timers: Rc<RefCell<PlayingFieldTimers>>,
     playing_field_state: Rc<RefCell<PlayingFieldContext>>,
     playing_field_state_machine: Rc<RefCell<PlayingFieldStateMachine>>,
     next_block: Rc<RefCell<NextBlockCell>>,
     statistics: Rc<RefCell<Statistics>>,
     score_board: Rc<RefCell<ScoreBoard>>,
-    full_rows: Rc<RefCell<FullRows>>,
     flashing_state_machine: Rc<RefCell<FlashAnimationStateMachine>>,
     exiting: Rc<RefCell<bool>>,
     title_screen: Rc<RefCell<TitleScreenStateMachine>>,
@@ -4554,13 +4552,11 @@ fn init_game() -> Game {
     )));
     let context = Rc::new(RefCell::new(GameContext {
         gl: gl_context,
-        timers: timers,
         playing_field_state: playing_field_context,
         playing_field_state_machine: playing_field_state_machine,
         statistics: statistics,
         score_board: score_board,
         next_block: next_block_cell_ref,
-        full_rows: full_rows,
         flashing_state_machine: flashing_state_machine,
         exiting: exiting,
         title_screen: title_screen,
