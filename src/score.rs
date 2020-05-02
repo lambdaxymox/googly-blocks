@@ -81,17 +81,27 @@ impl ScoreBoard {
     }
 }
 
+/// The statistics type keeps track of the number of each type of piece
+/// have landed in the playing field in the game so far.
 pub struct Statistics {
+    /// The number of T pieces.
     pub t_pieces: usize,
+    /// The number of J pieces.
     pub j_pieces: usize,
+    /// The number of J pieces.
     pub z_pieces: usize,
+    /// The number of O pieces.
     pub o_pieces: usize,
+    /// The number of S pieces.
     pub s_pieces: usize,
+    /// The number of L pieces.
     pub l_pieces: usize,
+    /// The number of I pieces.
     pub i_pieces: usize, 
 }
 
 impl Statistics {
+    /// Construct a new statistics struct.
     pub fn new() -> Statistics {
         Statistics {
             t_pieces: 0,
@@ -104,6 +114,7 @@ impl Statistics {
         }
     }
 
+    /// Update the currently seen pieces seen so far.
     pub fn update(&mut self, block: GooglyBlock) {
         match block.piece {
             GooglyBlockPiece::T => self.t_pieces += 1,
