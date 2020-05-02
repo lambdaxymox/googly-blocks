@@ -3,26 +3,30 @@ use rand::distributions::{
     Distribution, 
     Uniform
 };
-use playing_field::GooglyBlockPiece;
+use playing_field::{
+    GooglyBlockPiece,
+    GooglyBlockRotation,
+    GooglyBlock,   
+};
 
 
 struct NextBlockGen {
     rng: rng::ThreadRng,
     between: Uniform<u32>,
-    last_block: GooglyBlockPiece,
-    table: [GooglyBlockPiece; 7],
+    last_block: GooglyBlock,
+    table: [GooglyBlock; 7],
 }
 
 impl NextBlockGen {
     fn new() -> NextBlockGen {
         let table = [
-            GooglyBlockPiece::T,
-            GooglyBlockPiece::J,
-            GooglyBlockPiece::Z,
-            GooglyBlockPiece::O,
-            GooglyBlockPiece::S,
-            GooglyBlockPiece::L,
-            GooglyBlockPiece::I,
+            GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0),
+            GooglyBlock::new(GooglyBlockPiece::J, GooglyBlockRotation::R0),
+            GooglyBlock::new(GooglyBlockPiece::Z, GooglyBlockRotation::R0),
+            GooglyBlock::new(GooglyBlockPiece::O, GooglyBlockRotation::R0),
+            GooglyBlock::new(GooglyBlockPiece::S, GooglyBlockRotation::R0),
+            GooglyBlock::new(GooglyBlockPiece::L, GooglyBlockRotation::R0),
+            GooglyBlock::new(GooglyBlockPiece::I, GooglyBlockRotation::R0),
         ];
         let mut rng = rng::thread_rng();
         let between = Uniform::new_inclusive(0, 6);
@@ -37,7 +41,7 @@ impl NextBlockGen {
         }
     }
 
-    fn next(&mut self) -> GooglyBlockPiece {
+    fn next(&mut self) -> GooglyBlock {
         let mut block = self.table[self.between.sample(&mut self.rng) as usize];
         let mut gas = 0;
         while (gas < 8) && (block == self.last_block) {
@@ -53,7 +57,7 @@ impl NextBlockGen {
 
 pub struct NextBlockCell {
     gen: NextBlockGen,
-    block: GooglyBlockPiece,
+    block: GooglyBlock,
 }
 
 impl NextBlockCell {
@@ -72,7 +76,7 @@ impl NextBlockCell {
     }
 
     #[inline]
-    pub fn block(&self) -> GooglyBlockPiece {
+    pub fn block(&self) -> GooglyBlock {
         self.block
     }
 }

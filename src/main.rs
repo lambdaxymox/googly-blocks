@@ -1313,13 +1313,13 @@ struct PieceUniformsData {
 }
 
 fn create_uniforms_next_piece_panel(
-    piece: GooglyBlockPiece, scale: u32, viewport_width: u32, viewport_height: u32) -> PieceUniformsData {
+    block: GooglyBlock, scale: u32, viewport_width: u32, viewport_height: u32) -> PieceUniformsData {
 
     // FIXME: MAGIC NUMBERS IN USE HERE.
     let block_width = 2.0 * (scale as f32 / viewport_width as f32);
     let block_height = 2.0 * (scale as f32 / viewport_height as f32);
     let gui_scale_mat = Matrix4::from_nonuniform_scale(block_width, block_height, 1.0);
-    let trans_mat = match piece {
+    let trans_mat = match block.piece {
         GooglyBlockPiece::T => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
         GooglyBlockPiece::J => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
         GooglyBlockPiece::Z => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
@@ -1408,18 +1408,18 @@ fn create_next_piece_panel_buffer(gl_context: &mut glh::GLState, atlas: &Texture
 }
 
 struct NextPiecePanel {
-    current_piece: GooglyBlockPiece,
+    current_piece: GooglyBlock,
     buffer: GLNextPiecePanel,
 }
 
 impl NextPiecePanel {
-    fn update(&mut self, piece: GooglyBlockPiece) {
-        self.current_piece = piece;
+    fn update(&mut self, block: GooglyBlock) {
+        self.current_piece = block;
     }
 }
 
 struct NextPiecePanelSpec<'a> {
-    piece: GooglyBlockPiece,
+    piece: GooglyBlock,
     atlas: &'a TextureAtlas2D,
 }
 
@@ -2752,8 +2752,8 @@ impl UI {
         self.text_panel.update_statistics(statistics);
     }
 
-    fn update_next_piece(&mut self, piece: GooglyBlockPiece) {
-        self.next_piece_panel.update(piece);
+    fn update_next_piece(&mut self, block: GooglyBlock) {
+        self.next_piece_panel.update(block);
     }
 }
 
@@ -3351,7 +3351,7 @@ impl GameFallingState {
             statistics.update(current_block);
             let old_next_block = next_block.block();
             next_block.update();
-            let new_next_block = GooglyBlock::new(old_next_block, GooglyBlockRotation::R0);
+            let new_next_block = old_next_block;
             playing_field_state.update_new_block(new_next_block);
             timers.collision_timer.reset();
         }
@@ -3696,7 +3696,7 @@ impl RendererContext {
         let gui_scale_x = 2.0 * (scale as f32) / (viewport_width as f32);
         let gui_scale_y = 2.0 * (scale as f32) / (viewport_height as f32);
         let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 1.0);
-        let trans_mat = match self.game_context.borrow().next_block.borrow().block() {
+        let trans_mat = match self.game_context.borrow().next_block.borrow().block().piece {
             GooglyBlockPiece::T => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
             GooglyBlockPiece::J => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
             GooglyBlockPiece::Z => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
@@ -3933,7 +3933,7 @@ impl RendererFallingState {
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, context.ui.next_piece_panel.buffer.tex);
-            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().block()).vao);
+            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().block().piece).vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 3 * 8);
             gl::Disable(gl::BLEND);
         }
@@ -4098,7 +4098,7 @@ impl RendererClearingState {
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, context.ui.next_piece_panel.buffer.tex);
-            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().block()).vao);
+            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().block().piece).vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 3 * 8);
             gl::Disable(gl::BLEND);
         }
@@ -4264,7 +4264,7 @@ impl RendererGameOverState {
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, context.ui.next_piece_panel.buffer.tex);
-            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().block()).vao);
+            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().block().piece).vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 3 * 8);
             gl::Disable(gl::BLEND);
         }
@@ -4572,12 +4572,12 @@ fn init_game() -> Game {
     };
     let text_panel = load_text_panel(gl_context.clone(), &text_panel_spec, text_panel_uniforms);
     let next_block_cell = NextBlockCell::new();
-    let next_piece = next_block_cell.block();
+    let next_block = next_block_cell.block();
     let next_piece_panel_spec = NextPiecePanelSpec {
-        piece: next_piece,
+        piece: next_block,
         atlas: &block_texture_atlas,
     };
-    let next_piece_panel_uniforms = create_uniforms_next_piece_panel(next_piece, 50, width, height);
+    let next_piece_panel_uniforms = create_uniforms_next_piece_panel(next_block, 50, width, height);
     let next_piece_panel = {
         let mut context = gl_context.borrow_mut();
         load_next_piece_panel(&mut *context, next_piece_panel_spec, &next_piece_panel_uniforms)
