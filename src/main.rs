@@ -2904,7 +2904,6 @@ struct ViewportDimensions {
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 enum InputAction {
-    Unit,
     Press,
     Repeat,
     Release,
@@ -2912,7 +2911,6 @@ enum InputAction {
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 enum InputKind {
-    Unit,
     Left,
     Right,
     Down,
@@ -3158,24 +3156,6 @@ impl TitleScreenStateMachine {
         self.blink_state.is_pressed()
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #[derive(Copy, Clone)]
 struct GameTitleScreenState {}
@@ -3552,6 +3532,34 @@ struct GameContext {
     exiting: bool,
     title_screen: Rc<RefCell<TitleScreenStateMachine>>,
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 struct RendererContext {
     game_context: Rc<RefCell<GameContext>>,
