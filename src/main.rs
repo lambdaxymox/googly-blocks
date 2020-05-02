@@ -2807,8 +2807,6 @@ struct PlayingFieldTimerSpec {
     down_hold_interval: Interval,
     rotate_interval: Interval,
     clearing_interval: Interval,
-    //flash_switch_interval: Interval,
-    //flash_stop_interval: Interval,
 }
 
 struct PlayingFieldTimers {
@@ -2819,8 +2817,6 @@ struct PlayingFieldTimers {
     down_hold_timer: Timer,
     rotate_timer: Timer,
     clearing_timer: Timer,
-    //flash_switch_timer: Timer,
-    //flash_stop_timer: Timer,
 }
 
 impl PlayingFieldTimers {
@@ -2833,8 +2829,6 @@ impl PlayingFieldTimers {
             down_hold_timer: Timer::new(spec.down_hold_interval),
             rotate_timer: Timer::new(spec.rotate_interval),
             clearing_timer: Timer::new(spec.clearing_interval),
-            //flash_switch_timer: Timer::new(spec.flash_switch_interval),
-            //flash_stop_timer: Timer::new(spec.flash_stop_interval),
         }
     }
 }
@@ -3295,20 +3289,6 @@ impl GameFallingState {
         }
         
         flashing_state_machine.update(elapsed_milliseconds);
-        /*
-        if flashing_state_machine.is_enabled() {
-            timers.flash_switch_timer.update(elapsed_milliseconds);
-            timers.flash_stop_timer.update(elapsed_milliseconds);
-            if timers.flash_stop_timer.event_triggered() {
-                timers.flash_switch_timer.reset();
-                timers.flash_stop_timer.reset();
-                flashing_state_machine.disable();
-            } else if timers.flash_switch_timer.event_triggered() {
-                timers.flash_switch_timer.reset();
-                flashing_state_machine.update();
-            }
-        }
-        */
 
         let full_row_count = playing_field_state.get_full_rows(&mut full_rows.rows);
         full_rows.count = full_row_count;
@@ -3366,20 +3346,6 @@ impl GameClearingState {
         }
 
         flashing_state_machine.update(elapsed_milliseconds);
-        /*
-        if flashing_state_machine.is_enabled() {
-            timers.flash_switch_timer.update(elapsed_milliseconds);
-            timers.flash_stop_timer.update(elapsed_milliseconds);
-            if timers.flash_stop_timer.event_triggered() {
-                timers.flash_switch_timer.reset();
-                timers.flash_stop_timer.reset();
-                flashing_state_machine.disable();
-            } else if timers.flash_switch_timer.event_triggered() {
-                timers.flash_switch_timer.reset();
-                flashing_state_machine.update();
-            }
-        }
-        */
 
         if self.columns_cleared >= 10 {
             playing_field_state.collapse_empty_rows();
