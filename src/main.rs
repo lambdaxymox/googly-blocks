@@ -2968,7 +2968,6 @@ struct PlayingFieldStateMachineContext {
     score_board: Rc<RefCell<ScoreBoard>>,
     full_rows: Rc<RefCell<FullRows>>,
     flashing_state_machine: Rc<RefCell<FlashAnimationStateMachine>>,
-    exiting: Rc<RefCell<bool>>,
     columns_cleared: usize,
 }
 
@@ -4548,7 +4547,6 @@ fn init_game() -> Game {
         score_board: score_board.clone(),
         full_rows: full_rows.clone(),
         flashing_state_machine: flashing_state_machine.clone(),
-        exiting: exiting.clone(),
         columns_cleared: 0,
     }));
     let playing_field_state_machine = Rc::new(RefCell::new(PlayingFieldStateMachine::new(

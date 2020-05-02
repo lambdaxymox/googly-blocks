@@ -1158,7 +1158,7 @@ mod playing_field_tests {
     use super::{
         GooglyBlock, GooglyBlockPiece, GooglyBlockElement, 
         GooglyBlockRotation, LandedBlocksGrid,
-        BlockPosition, PlayingFieldContext, PlayingFieldStateSpec, GooglyBlockMove,
+        BlockPosition, PlayingFieldContext, PlayingFieldContextSpec, GooglyBlockMove,
     };
     use std::collections::hash_map::HashMap;
 
@@ -1215,7 +1215,7 @@ mod playing_field_tests {
             (GooglyBlockPiece::L, BlockPosition::new(-3, 4)),
             (GooglyBlockPiece::I, BlockPosition::new(-3, 3)),
         ].iter().map(|elem| *elem).collect();
-        let spec = PlayingFieldStateSpec {
+        let spec = PlayingFieldContextSpec {
             starting_block: starting_block,
             starting_positions: starting_positions,
         };
@@ -1239,7 +1239,7 @@ mod playing_field_tests {
             (GooglyBlockPiece::L, BlockPosition::new(-3, 4)),
             (GooglyBlockPiece::I, BlockPosition::new(-3, 3)),
         ].iter().map(|elem| *elem).collect();
-        let spec = PlayingFieldStateSpec {
+        let spec = PlayingFieldContextSpec {
             starting_block: starting_block,
             starting_positions: starting_positions,
         };
