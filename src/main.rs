@@ -2752,6 +2752,47 @@ impl UI {
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #[derive(Copy, Clone)]
 struct PlayingFieldTimerSpec {
     fall_interval: Interval,
@@ -2982,25 +3023,6 @@ impl FlashAnimationStateMachine {
         };
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #[derive(Clone)]
 struct TitleScreenStateMachineSpec {
@@ -3532,6 +3554,27 @@ struct GameContext {
     exiting: bool,
     title_screen: Rc<RefCell<TitleScreenStateMachine>>,
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4338,6 +4381,40 @@ impl RendererStateMachine {
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 struct Game {
     context: Rc<RefCell<GameContext>>,
