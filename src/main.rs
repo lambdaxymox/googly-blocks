@@ -36,6 +36,7 @@ mod mesh;
 mod gl_help;
 mod playing_field;
 mod timer;
+mod next_block;
 
 use gl_help as glh;
 use cgmath as math; 
@@ -57,6 +58,7 @@ use playing_field::{
     GooglyBlockMove,
     PlayingFieldStateSpec,
 };
+use next_block::NextBlockCell;
 use timer::{
     Interval, 
     Timer,
@@ -3347,7 +3349,7 @@ impl GameFallingState {
             }
             
             statistics.update(current_block);
-            let old_next_block = next_block.block;
+            let old_next_block = next_block.block();
             next_block.update();
             let new_next_block = GooglyBlock::new(old_next_block, GooglyBlockRotation::R0);
             playing_field_state.update_new_block(new_next_block);
@@ -3543,7 +3545,7 @@ impl GameStateMachine {
         self.state
     }
 }
-
+/*
 struct NextBlockGen {
     rng: rng::ThreadRng,
     between: Uniform<u32>,
@@ -3609,7 +3611,7 @@ impl NextBlockCell {
         self.block = self.gen.next();
     }
 }
-
+*/
 struct GameContext {
     gl: Rc<RefCell<glh::GLState>>,
     timers: Rc<RefCell<PlayingFieldTimers>>,
@@ -3694,7 +3696,7 @@ impl RendererContext {
         let gui_scale_x = 2.0 * (scale as f32) / (viewport_width as f32);
         let gui_scale_y = 2.0 * (scale as f32) / (viewport_height as f32);
         let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 1.0);
-        let trans_mat = match self.game_context.borrow().next_block.borrow().block {
+        let trans_mat = match self.game_context.borrow().next_block.borrow().block() {
             GooglyBlockPiece::T => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
             GooglyBlockPiece::J => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
             GooglyBlockPiece::Z => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
@@ -3902,7 +3904,7 @@ impl RendererFallingState {
         context.ui.update_level(score_board.level);
         context.ui.update_tetrises(score_board.tetrises);
         context.ui.update_statistics(&game_context.statistics.borrow());
-        context.ui.update_next_piece(game_context.next_block.borrow().block);
+        context.ui.update_next_piece(game_context.next_block.borrow().block());
         context.ui.update_panel();   
     }
 
@@ -3931,7 +3933,7 @@ impl RendererFallingState {
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, context.ui.next_piece_panel.buffer.tex);
-            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().block).vao);
+            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().block()).vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 3 * 8);
             gl::Disable(gl::BLEND);
         }
@@ -4067,7 +4069,7 @@ impl RendererClearingState {
         context.ui.update_level(score_board.level);
         context.ui.update_tetrises(score_board.tetrises);
         context.ui.update_statistics(&game_context.statistics.borrow());
-        context.ui.update_next_piece(game_context.next_block.borrow().block);
+        context.ui.update_next_piece(game_context.next_block.borrow().block());
         context.ui.update_panel();   
     }
 
@@ -4096,7 +4098,7 @@ impl RendererClearingState {
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, context.ui.next_piece_panel.buffer.tex);
-            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().block).vao);
+            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().block()).vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 3 * 8);
             gl::Disable(gl::BLEND);
         }
@@ -4233,7 +4235,7 @@ impl RendererGameOverState {
         context.ui.update_level(score_board.level);
         context.ui.update_tetrises(score_board.tetrises);
         context.ui.update_statistics(&game_context.statistics.borrow());
-        context.ui.update_next_piece(game_context.next_block.borrow().block);
+        context.ui.update_next_piece(game_context.next_block.borrow().block());
         context.ui.update_panel();   
     }
 
@@ -4262,7 +4264,7 @@ impl RendererGameOverState {
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, context.ui.next_piece_panel.buffer.tex);
-            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().block).vao);
+            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().block()).vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 3 * 8);
             gl::Disable(gl::BLEND);
         }
@@ -4570,7 +4572,7 @@ fn init_game() -> Game {
     };
     let text_panel = load_text_panel(gl_context.clone(), &text_panel_spec, text_panel_uniforms);
     let next_block_cell = NextBlockCell::new();
-    let next_piece = next_block_cell.block;
+    let next_piece = next_block_cell.block();
     let next_piece_panel_spec = NextPiecePanelSpec {
         piece: next_piece,
         atlas: &block_texture_atlas,
