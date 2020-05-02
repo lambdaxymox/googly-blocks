@@ -2959,6 +2959,302 @@ impl FlashAnimationStateMachine {
     }
 }
 
+
+struct PlayingFieldStateMachineContext {
+    timers: Rc<RefCell<PlayingFieldTimers>>,
+    playing_field_state: Rc<RefCell<PlayingFieldContext>>,
+    next_block: Rc<RefCell<NextBlockCell>>,
+    statistics: Rc<RefCell<Statistics>>,
+    score_board: Rc<RefCell<ScoreBoard>>,
+    full_rows: Rc<RefCell<FullRows>>,
+    flashing_state_machine: Rc<RefCell<FlashAnimationStateMachine>>,
+    exiting: Rc<RefCell<bool>>,
+    columns_cleared: usize,
+}
+
+#[derive(Copy, Clone)]
+struct PlayingFieldFallingState {}
+
+impl PlayingFieldFallingState {
+    fn new() -> PlayingFieldFallingState {
+        PlayingFieldFallingState {}
+    }
+
+    fn handle_input(&self, context: &mut PlayingFieldStateMachineContext, input: Input, elapsed_milliseconds: Duration) {
+        let mut timers = context.timers.borrow_mut();
+        let mut playing_field_state = context.playing_field_state.borrow_mut();
+        match input.kind {
+            InputKind::Left => {
+                match input.action {
+                    InputAction::Press | InputAction::Repeat => {
+                        timers.left_hold_timer.update(elapsed_milliseconds);
+                        if timers.left_hold_timer.event_triggered() {
+                            let collides_with_floor = playing_field_state.collides_with_floor_below();
+                            let collides_with_element = playing_field_state.collides_with_element_below();
+                            let collides_with_left_element = playing_field_state.collides_with_element_to_the_left();
+                            let collides_with_left_wall = playing_field_state.collides_with_left_wall();
+                            if !collides_with_left_element || !collides_with_left_wall {
+                                if collides_with_floor || collides_with_element {
+                                    timers.fall_timer.reset();
+                                }
+                                playing_field_state.update_block_position(GooglyBlockMove::Left);
+                            }
+                            timers.left_hold_timer.reset();
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            InputKind::Right => {
+                match input.action {
+                    InputAction::Press | InputAction::Repeat => {
+                        timers.right_hold_timer.update(elapsed_milliseconds);
+                        if timers.right_hold_timer.event_triggered() {
+                            let collides_with_floor = playing_field_state.collides_with_floor_below();
+                            let collides_with_element = playing_field_state.collides_with_element_below();
+                            let collides_with_right_element = playing_field_state.collides_with_element_to_the_right();
+                            let collides_with_right_wall = playing_field_state.collides_with_right_wall();
+                            if !collides_with_right_element || !collides_with_right_wall {
+                                if collides_with_floor || collides_with_element {
+                                    timers.fall_timer.reset();
+                                }
+                                playing_field_state.update_block_position(GooglyBlockMove::Right);
+                            }
+                            timers.right_hold_timer.reset();
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            InputKind::Down => {
+                match input.action {
+                    InputAction::Press | InputAction::Repeat => {
+                        timers.down_hold_timer.update(elapsed_milliseconds);
+                        if timers.down_hold_timer.event_triggered() {
+                            let collides_with_floor = playing_field_state.collides_with_floor_below();
+                            let collides_with_element = playing_field_state.collides_with_element_below();
+                            if collides_with_floor || collides_with_element {
+                                timers.fall_timer.reset();
+                            }
+                            playing_field_state.update_block_position(GooglyBlockMove::Down);
+                            timers.down_hold_timer.reset();
+                        }                        
+                    }
+                    _ => {}
+                }
+            }
+            InputKind::Rotate => {
+                match input.action {
+                    InputAction::Press | InputAction::Repeat => {
+                        timers.rotate_timer.update(elapsed_milliseconds);
+                        if timers.rotate_timer.event_triggered() {
+                            playing_field_state.update_block_position(GooglyBlockMove::Rotate);
+                            timers.rotate_timer.reset();
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            /*
+            InputKind::Exit => {
+                // TODO: GET RID OF THIS INPUT CHECK HERE.
+                let exiting = context.exiting.borrow_mut();
+                *exiting = true;
+            }
+            */
+            _ => {}
+        } 
+    }
+
+    fn update(&self, context: &mut PlayingFieldStateMachineContext, elapsed_milliseconds: Duration) -> PlayingFieldState {        
+        let mut timers = context.timers.borrow_mut();
+        let mut playing_field_state = context.playing_field_state.borrow_mut();
+        let mut statistics = context.statistics.borrow_mut();
+        let mut next_block = context.next_block.borrow_mut();
+        let mut full_rows = context.full_rows.borrow_mut();
+        let mut flashing_state_machine = context.flashing_state_machine.borrow_mut();
+
+        let collides_with_floor = playing_field_state.collides_with_floor_below();
+        let collides_with_element = playing_field_state.collides_with_element_below();
+
+        timers.fall_timer.update(elapsed_milliseconds);
+        if collides_with_floor || collides_with_element {
+            timers.collision_timer.update(elapsed_milliseconds);
+        } else {
+            timers.collision_timer.reset();
+        }
+
+        if timers.fall_timer.event_triggered() {
+            playing_field_state.update_block_position(GooglyBlockMove::Fall);
+            timers.fall_timer.reset();
+        }
+
+        if timers.collision_timer.event_triggered() {
+            let current_block = playing_field_state.current_block;
+            playing_field_state.update_landed();
+            if !playing_field_state.has_empty_row(0) {
+                return PlayingFieldState::GameOver(PlayingFieldGameOverState::new());
+            }
+            
+            statistics.update(current_block);
+            let old_next_block = next_block.current_block();
+            next_block.update();
+            let new_next_block = old_next_block;
+            playing_field_state.update_new_block(new_next_block);
+            timers.collision_timer.reset();
+        }
+        
+        flashing_state_machine.update(elapsed_milliseconds);
+
+        let full_row_count = playing_field_state.get_full_rows(&mut full_rows.rows);
+        full_rows.count = full_row_count;
+        if full_row_count > 0 {
+            if full_row_count >= 4 {
+                flashing_state_machine.enable();
+            }
+            return PlayingFieldState::Clearing(PlayingFieldClearingState::new());
+        } else {
+            return PlayingFieldState::Falling(PlayingFieldFallingState::new());
+        }
+    }
+}
+
+#[derive(Copy, Clone)]
+struct PlayingFieldClearingState {}
+
+impl PlayingFieldClearingState {
+    fn new() -> PlayingFieldClearingState {
+        PlayingFieldClearingState {}
+    }
+
+    fn handle_input(&self, context: &mut PlayingFieldStateMachineContext, input: Input, elapsed_milliseconds: Duration) {
+        match input.kind {
+            /*
+            InputKind::Exit => {
+                let mut exiting = context.exiting.borrow_mut();
+                *exiting = true;
+            }
+            */
+            _ => {}
+        }
+    }
+
+    fn update(&self, context: &mut PlayingFieldStateMachineContext, elapsed_milliseconds: Duration) -> PlayingFieldState {
+        let mut timers = context.timers.borrow_mut();
+        let mut playing_field_state = context.playing_field_state.borrow_mut();
+        let mut full_rows = context.full_rows.borrow_mut();
+        let mut score_board = context.score_board.borrow_mut();
+        let mut flashing_state_machine = context.flashing_state_machine.borrow_mut();
+        
+        timers.clearing_timer.update(elapsed_milliseconds);
+        if timers.clearing_timer.event_triggered() {
+            timers.clearing_timer.reset();
+            let center_left = (4 - context.columns_cleared / 2) as isize;
+            let center_right = (5 + context.columns_cleared / 2) as isize;
+            for row in full_rows.rows.iter() {
+                if *row >= 0 {
+                    playing_field_state.landed_blocks.clear(*row, center_left);
+                    playing_field_state.landed_blocks.clear(*row, center_right);
+                }
+            }
+            context.columns_cleared += 2;
+        }
+
+        flashing_state_machine.update(elapsed_milliseconds);
+
+        if context.columns_cleared >= 10 {
+            playing_field_state.collapse_empty_rows();
+            score_board.update(full_rows.count);
+            full_rows.clear();
+            context.columns_cleared = 0;
+
+            return PlayingFieldState::Falling(PlayingFieldFallingState::new());
+        }
+
+        PlayingFieldState::Clearing(self.clone())
+    }
+}
+
+#[derive(Copy, Clone)]
+struct PlayingFieldGameOverState {}
+
+impl PlayingFieldGameOverState {
+    fn new() -> PlayingFieldGameOverState {
+        PlayingFieldGameOverState {}
+    }
+
+    fn handle_input(&self, context: &mut PlayingFieldStateMachineContext, input: Input, elapsed_milliseconds: Duration) {
+        match input.kind {
+            _ => {}
+        }
+    }
+
+    fn update(&self, context: &mut PlayingFieldStateMachineContext, elapsed_milliseconds: Duration) -> PlayingFieldState {
+        let mut flashing_state_machine = context.flashing_state_machine.borrow_mut();
+        flashing_state_machine.disable();
+
+        PlayingFieldState::GameOver(*self)
+    }
+}
+
+enum PlayingFieldState {
+    Falling(PlayingFieldFallingState),
+    Clearing(PlayingFieldClearingState),
+    GameOver(PlayingFieldGameOverState),
+}
+
+struct PlayingFieldStateMachine {
+    context: Rc<RefCell<PlayingFieldStateMachineContext>>,
+    playing_field_context: Rc<RefCell<PlayingFieldContext>>,
+    state: PlayingFieldState,
+}
+
+impl PlayingFieldStateMachine {
+    fn new(context: Rc<RefCell<PlayingFieldStateMachineContext>>, playing_field_context: Rc<RefCell<PlayingFieldContext>>) -> PlayingFieldStateMachine {
+        PlayingFieldStateMachine {
+            context: context,
+            playing_field_context: playing_field_context,
+            state: PlayingFieldState::Falling(PlayingFieldFallingState::new()),
+        }
+    }
+
+    fn is_game_over(&self) -> bool {
+        match self.state {
+            PlayingFieldState::GameOver(_) => true,
+            _ => false,
+        }
+    }
+
+    fn handle_input(&self, input: Input, elapsed_milliseconds: Duration) {
+        let mut context = self.context.borrow_mut();
+        match self.state {
+            PlayingFieldState::Falling(s) => s.handle_input(&mut context, input, elapsed_milliseconds),
+            PlayingFieldState::Clearing(s) => s.handle_input(&mut context, input, elapsed_milliseconds),
+            PlayingFieldState::GameOver(s) => s.handle_input(&mut context, input, elapsed_milliseconds),
+        }
+    }
+
+    fn update(&mut self, elapsed_milliseconds: Duration) {
+        let mut context = self.context.borrow_mut();
+        self.state = match self.state {
+            PlayingFieldState::Falling(s) => s.update(&mut context, elapsed_milliseconds),
+            PlayingFieldState::Clearing(s) => s.update(&mut context, elapsed_milliseconds),
+            PlayingFieldState::GameOver(s) => s.update(&mut context, elapsed_milliseconds),
+        };
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
 #[derive(Clone)]
 struct TitleScreenStateMachineSpec {
     transition_interval: Interval,
@@ -3142,7 +3438,7 @@ impl GameTitleScreenState {
             title_screen.transition_timer.update(elapsed_milliseconds);
             if title_screen.transition_timer.event_triggered() {
                 title_screen.blink_state.disable();
-                return GameState::Falling(GameFallingState::new());
+                return GameState::Playing(GamePlayingState::new());
             }
         }
 
@@ -3151,6 +3447,36 @@ impl GameTitleScreenState {
     }
 }
 
+#[derive(Copy, Clone)]
+struct GamePlayingState {}
+
+impl GamePlayingState {
+    fn new() -> GamePlayingState {
+        GamePlayingState {}
+    }
+
+    fn handle_input(&self, context: &mut GameContext, input: Input, elapsed_milliseconds: Duration) {
+        let playing_field_state_machine = context.playing_field_state_machine.borrow_mut();
+        playing_field_state_machine.handle_input(input, elapsed_milliseconds);
+    }
+
+    fn update(&self, context: &mut GameContext, elapsed_milliseconds: Duration) -> GameState {
+        let exiting = *context.exiting.borrow();
+        if exiting {
+            return GameState::Exiting(GameExitingState::new());
+        }
+
+        let mut playing_field_state_machine = context.playing_field_state_machine.borrow_mut();
+        playing_field_state_machine.update(elapsed_milliseconds);
+        if playing_field_state_machine.is_game_over() {
+            return GameState::GameOver(GameGameOverState::new());
+        }
+
+        GameState::Playing(self.clone())
+    }    
+}
+
+/*
 #[derive(Copy, Clone)]
 struct GameFallingState {}
 
@@ -3297,7 +3623,8 @@ impl GameFallingState {
         }
     }
 }
-
+*/
+/*
 #[derive(Copy, Clone)]
 struct GameClearingState {
     columns_cleared: usize,
@@ -3354,7 +3681,7 @@ impl GameClearingState {
         GameState::Clearing(self.clone())
     }
 }
-
+*/
 #[derive(Copy, Clone)]
 struct GameGameOverState {}
 
@@ -3366,14 +3693,16 @@ impl GameGameOverState {
     fn handle_input(&mut self, context: &mut GameContext, input: Input, elapsed_milliseconds: Duration) {
         match input.kind {
             InputKind::Exit => {
-                context.exiting = true;
+                let mut exiting = context.exiting.borrow_mut();
+                *exiting = true;
             }
             _ => {}
         }
     }
 
     fn update(&mut self, context: &mut GameContext, elapsed_milliseconds: Duration) -> GameState {
-        if context.exiting {
+        let exiting = *context.exiting.borrow();
+        if exiting {
             GameState::Exiting(GameExitingState::new())
         } else {
             let mut flashing_state_machine = context.flashing_state_machine.borrow_mut();
@@ -3383,6 +3712,7 @@ impl GameGameOverState {
         }
     }
 }
+
 
 #[derive(Copy, Clone)]
 struct GameExitingState {}
@@ -3407,8 +3737,7 @@ impl GameExitingState {
 #[derive(Copy, Clone)]
 enum GameState {
     TitleScreen(GameTitleScreenState),
-    Falling(GameFallingState),
-    Clearing(GameClearingState),
+    Playing(GamePlayingState),
     GameOver(GameGameOverState),
     Exiting(GameExitingState),
 }
@@ -3430,8 +3759,7 @@ impl GameStateMachine {
         let mut context = self.context.borrow_mut();
         match self.state {
             GameState::TitleScreen(s) => s.handle_input(&mut context, input, elapsed_milliseconds),
-            GameState::Falling(mut s) => s.handle_input(&mut context, input, elapsed_milliseconds),
-            GameState::Clearing(mut s) => s.handle_input(&mut context, input, elapsed_milliseconds),
+            GameState::Playing(s) => s.handle_input(&mut context, input, elapsed_milliseconds),
             GameState::GameOver(mut s) => s.handle_input(&mut context, input, elapsed_milliseconds),
             GameState::Exiting(mut s) => s.handle_input(&mut context, input, elapsed_milliseconds),
         }
@@ -3441,8 +3769,7 @@ impl GameStateMachine {
         let mut context = self.context.borrow_mut();
         self.state = match self.state {
             GameState::TitleScreen(s) => s.update(&mut context, elapsed_milliseconds),
-            GameState::Falling(mut s) => s.update(&mut context, elapsed_milliseconds),
-            GameState::Clearing(mut s) => s.update(&mut context, elapsed_milliseconds),
+            GameState::Playing(s) => s.update(&mut context, elapsed_milliseconds),
             GameState::GameOver(mut s) => s.update(&mut context, elapsed_milliseconds),
             GameState::Exiting(mut s) => s.update(&mut context, elapsed_milliseconds),
         };
@@ -3454,12 +3781,13 @@ struct GameContext {
     gl: Rc<RefCell<glh::GLState>>,
     timers: Rc<RefCell<PlayingFieldTimers>>,
     playing_field_state: Rc<RefCell<PlayingFieldContext>>,
+    playing_field_state_machine: Rc<RefCell<PlayingFieldStateMachine>>,
     next_block: Rc<RefCell<NextBlockCell>>,
     statistics: Rc<RefCell<Statistics>>,
     score_board: Rc<RefCell<ScoreBoard>>,
     full_rows: Rc<RefCell<FullRows>>,
     flashing_state_machine: Rc<RefCell<FlashAnimationStateMachine>>,
-    exiting: bool,
+    exiting: Rc<RefCell<bool>>,
     title_screen: Rc<RefCell<TitleScreenStateMachine>>,
 }
 
@@ -3725,6 +4053,175 @@ impl RendererTitleScreenState {
     }
 }
 
+
+
+#[derive(Copy, Clone)]
+struct RendererPlayingState {}
+
+impl RendererPlayingState {
+    #[inline]
+    fn clear_framebuffer(&self, context: &mut RendererContext) {
+        unsafe {
+            gl::ClearBufferfv(gl::COLOR, 0, &CLEAR_COLOR[0] as *const GLfloat);
+        }
+    }
+
+    #[inline]
+    fn clear_depth_buffer(&self, context: &mut RendererContext) {
+        unsafe {
+            gl::ClearBufferfv(gl::DEPTH, 0, &CLEAR_DEPTH[0] as *const GLfloat);
+        }
+    }
+
+    #[inline]
+    fn update_viewport(&self, context: &mut RendererContext) {
+        let dims = context.viewport_dimensions();
+        unsafe {
+            gl::Viewport(0, 0, dims.width, dims.height);
+        }
+    }
+
+    #[inline]
+    fn update_background(&self, context: &mut RendererContext) {
+        context.update_uniforms_background_panel();
+    }
+
+    #[inline]
+    fn update_title_background(&self, context: &mut RendererContext) {
+        context.update_uniforms_title_background_panel();
+    }
+
+    fn render_background(&self, context: &mut RendererContext) {
+        unsafe {
+            gl::UseProgram(context.background.background_handle.sp);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, context.background.background_handle.tex);
+            gl::BindVertexArray(context.background.background_handle.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6);
+        }        
+    }
+
+    fn render_title_background(&self, context: &mut RendererContext) {
+        unsafe {
+            gl::UseProgram(context.background.title_handle.sp);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, context.background.title_handle.tex);
+            gl::BindVertexArray(context.background.title_handle.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6);
+        }
+    }
+
+    fn update_ui(&self, context: &mut RendererContext) {
+        context.update_uniforms_ui_panel();
+        context.update_uniforms_next_piece_panel();
+        let game_context = context.game_context.borrow();
+        let score_board = game_context.score_board.borrow();
+        context.ui.update_score(score_board.score);
+        context.ui.update_lines(score_board.lines);
+        context.ui.update_level(score_board.level);
+        context.ui.update_tetrises(score_board.tetrises);
+        context.ui.update_statistics(&game_context.statistics.borrow());
+        context.ui.update_next_piece(game_context.next_block.borrow().current_block());
+        context.ui.update_panel();   
+    }
+
+    fn render_ui(&self, context: &mut RendererContext) {
+        // Render the game board. We turn off depth testing to do so since this is
+        // a 2D scene using 3D abstractions. Otherwise Z-Buffering would prevent us
+        // from rendering the game board.
+        unsafe {
+            gl::UseProgram(context.ui.ui_panel.sp);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::Enable(gl::BLEND);
+            gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, context.ui.ui_panel.tex);
+            gl::BindVertexArray(context.ui.ui_panel.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6);
+
+            gl::UseProgram(context.ui.text_panel.buffer.buffer.sp);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, context.ui.text_panel.buffer.buffer.tex);
+            gl::BindVertexArray(context.ui.text_panel.buffer.buffer.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 47 * 6);
+
+            gl::UseProgram(context.ui.next_piece_panel.buffer.sp);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, context.ui.next_piece_panel.buffer.tex);
+            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().current_block().piece).vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 3 * 8);
+            gl::Disable(gl::BLEND);
+        }
+    }
+
+    fn update_playing_field(&self, context: &mut RendererContext) {
+        context.update_uniforms_playing_field();
+        let game_context = context.game_context.borrow();
+        let playing_field_state = game_context.playing_field_state.borrow();
+        context.playing_field.write(&playing_field_state).unwrap();
+        context.playing_field.send_to_gpu().unwrap();
+    }
+
+    fn render_playing_field(&self, context: &mut RendererContext) {
+        unsafe {
+            gl::UseProgram(context.playing_field.handle.sp);
+            gl::Disable(gl::DEPTH_TEST);
+            gl::Enable(gl::BLEND);
+            gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, context.playing_field.handle.tex);
+            gl::BindVertexArray(context.playing_field.handle.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 2 * 6 * 20 * 10);
+            gl::Disable(gl::BLEND);
+        }        
+    }
+
+    fn update_playing_field_background(&self, context: &mut RendererContext) {
+        context.update_uniforms_playing_field_background();
+    }
+
+    fn render_playing_field_background(&self, context: &mut RendererContext) {
+        // Check which background image to use by introspecting the game context for the state of the 
+        // flashing state machine.
+        let game_context = context.game_context.borrow();
+        let flashing_state_machine = game_context.flashing_state_machine.borrow();
+        let flashing_state_handle = context.playing_field_background.handle;
+        let handle = match flashing_state_machine.state {
+            FlashAnimationState::Light => flashing_state_handle.light,
+            FlashAnimationState::Dark => flashing_state_handle.dark,
+            FlashAnimationState::Disabled => flashing_state_handle.default,
+        };
+
+        unsafe {
+            gl::UseProgram(handle.sp);
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, handle.tex);
+            gl::BindVertexArray(handle.vao);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6);
+        }
+    }
+
+    fn render(&self, context: &mut RendererContext) {
+        self.clear_framebuffer(context);
+        self.clear_depth_buffer(context);
+        self.update_viewport(context);
+        self.update_background(context);
+        self.render_background(context);
+        self.update_title_background(context);
+        self.render_title_background(context);
+        self.update_playing_field_background(context);
+        self.render_playing_field_background(context);
+        self.update_ui(context);
+        self.render_ui(context);
+        self.update_playing_field(context);
+        self.render_playing_field(context);
+    }
+}
+
+
+/*
 #[derive(Copy, Clone)]
 struct RendererFallingState {}
 
@@ -3889,7 +4386,8 @@ impl RendererFallingState {
         self.render_playing_field(context);
     }
 }
-
+*/
+/*
 #[derive(Copy, Clone)]
 struct RendererClearingState {}
 
@@ -4055,7 +4553,7 @@ impl RendererClearingState {
         self.render_playing_field(context);
     }
 }
-
+*/
 #[derive(Copy, Clone)]
 struct RendererGameOverState {}
 
@@ -4250,8 +4748,7 @@ impl RendererExitingState {
 
 enum RendererState {
     TitleScreen(RendererTitleScreenState),
-    Falling(RendererFallingState),
-    Clearing(RendererClearingState),
+    Playing(RendererPlayingState),
     GameOver(RendererGameOverState),
     Exiting(RendererExitingState),
 }
@@ -4272,8 +4769,7 @@ impl RendererStateMachine {
     fn update(&mut self, game_state: GameState) {
         self.state = match game_state {
             GameState::TitleScreen(_) => RendererState::TitleScreen(RendererTitleScreenState {}),
-            GameState::Falling(_) => RendererState::Falling(RendererFallingState {}),
-            GameState::Clearing(_) => RendererState::Clearing(RendererClearingState {}),
+            GameState::Playing(_) => RendererState::Playing(RendererPlayingState {}),
             GameState::GameOver(_) => RendererState::GameOver(RendererGameOverState {}),
             GameState::Exiting(_) => RendererState::Exiting(RendererExitingState {}),
         }
@@ -4282,8 +4778,7 @@ impl RendererStateMachine {
     fn render(&mut self) {
         match self.state {
             RendererState::TitleScreen(s) => s.render(&mut self.context),
-            RendererState::Falling(s) => s.render(&mut self.context),
-            RendererState::Clearing(s) => s.render(&mut self.context),
+            RendererState::Playing(s) => s.render(&mut self.context),
             RendererState::GameOver(s) => s.render(&mut self.context),
             RendererState::Exiting(s) => s.render(&mut self.context),
         }
@@ -4538,11 +5033,11 @@ fn init_game() -> Game {
         (GooglyBlockPiece::L, BlockPosition::new(-3, 4)),
         (GooglyBlockPiece::I, BlockPosition::new(-3, 3)),
     ].iter().map(|elem| *elem).collect();
-    let playing_field_state_spec = PlayingFieldContextSpec {
+    let playing_field_context_spec = PlayingFieldContextSpec {
         starting_block: starting_block,
         starting_positions: starting_positions,
     };
-    let playing_field_state = Rc::new(RefCell::new(PlayingFieldContext::new(playing_field_state_spec)));
+    let playing_field_context = Rc::new(RefCell::new(PlayingFieldContext::new(playing_field_context_spec)));
     let playing_field = PlayingField::new(playing_field_handle, &block_element_atlas);
     let timer_spec = PlayingFieldTimerSpec {
         fall_interval: Interval::Milliseconds(500),
@@ -4590,16 +5085,32 @@ fn init_game() -> Game {
         let mut context = gl_context.borrow_mut();
         load_title_screen(&mut context, title_screen_handle_spec)
     };
+    let exiting = Rc::new(RefCell::new(false));
+    let playing_field_state_machine_context = Rc::new(RefCell::new(PlayingFieldStateMachineContext {
+        timers: timers.clone(),
+        playing_field_state: playing_field_context.clone(),
+        next_block: next_block_cell_ref.clone(),
+        statistics: statistics.clone(),
+        score_board: score_board.clone(),
+        full_rows: full_rows.clone(),
+        flashing_state_machine: flashing_state_machine.clone(),
+        exiting: exiting.clone(),
+        columns_cleared: 0,
+    }));
+    let playing_field_state_machine = Rc::new(RefCell::new(PlayingFieldStateMachine::new(
+        playing_field_state_machine_context, playing_field_context.clone()
+    )));
     let context = Rc::new(RefCell::new(GameContext {
         gl: gl_context,
         timers: timers,
-        playing_field_state: playing_field_state,
+        playing_field_state: playing_field_context,
+        playing_field_state_machine: playing_field_state_machine,
         statistics: statistics,
         score_board: score_board,
         next_block: next_block_cell_ref,
         full_rows: full_rows,
         flashing_state_machine: flashing_state_machine,
-        exiting: false,
+        exiting: exiting,
         title_screen: title_screen,
     }));
     let initial_game_state = GameState::TitleScreen(GameTitleScreenState::new());
