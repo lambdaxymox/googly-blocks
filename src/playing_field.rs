@@ -700,21 +700,21 @@ pub enum GooglyBlockMove {
     Rotate,
 }
 
-pub struct PlayingFieldStateSpec {
+pub struct PlayingFieldContextSpec {
     pub starting_block: GooglyBlock,
     pub starting_positions: HashMap<GooglyBlockPiece, BlockPosition>,
 }
 
-pub struct PlayingFieldState {
+pub struct PlayingFieldContext {
     pub current_block: GooglyBlock,
     pub current_position: BlockPosition,
     pub landed_blocks: LandedBlocksGrid,
     starting_positions: HashMap<GooglyBlockPiece, BlockPosition>,
 }
 
-impl PlayingFieldState {
-    pub fn new(spec: PlayingFieldStateSpec) -> PlayingFieldState {
-        PlayingFieldState {
+impl PlayingFieldContext {
+    pub fn new(spec: PlayingFieldContextSpec) -> PlayingFieldContext {
+        PlayingFieldContext {
             current_block: spec.starting_block,
             current_position: spec.starting_positions[&spec.starting_block.piece],
             landed_blocks: LandedBlocksGrid::new(),
@@ -1158,12 +1158,12 @@ mod playing_field_tests {
     use super::{
         GooglyBlock, GooglyBlockPiece, GooglyBlockElement, 
         GooglyBlockRotation, LandedBlocksGrid,
-        BlockPosition, PlayingFieldState, PlayingFieldStateSpec, GooglyBlockMove,
+        BlockPosition, PlayingFieldContext, PlayingFieldStateSpec, GooglyBlockMove,
     };
     use std::collections::hash_map::HashMap;
 
     struct PlayingFieldTestCase {
-        playing_field: PlayingFieldState,
+        playing_field: PlayingFieldContext,
     }
 
     fn test_case() -> PlayingFieldTestCase {
@@ -1219,7 +1219,7 @@ mod playing_field_tests {
             starting_block: starting_block,
             starting_positions: starting_positions,
         };
-        let mut playing_field = PlayingFieldState::new(spec);
+        let mut playing_field = PlayingFieldContext::new(spec);
         playing_field.landed_blocks = landed_blocks;
 
 
@@ -1243,14 +1243,14 @@ mod playing_field_tests {
             starting_block: starting_block,
             starting_positions: starting_positions,
         };
-        let playing_field = PlayingFieldState::new(spec);
+        let playing_field = PlayingFieldContext::new(spec);
 
         PlayingFieldTestCase {
             playing_field: playing_field,
         }
     }
 
-    fn moves_collide_with_elements(playing_field: &mut PlayingFieldState, moves: &[GooglyBlockMove]) -> bool {
+    fn moves_collide_with_elements(playing_field: &mut PlayingFieldContext, moves: &[GooglyBlockMove]) -> bool {
         for mv in moves.iter() {
             let old_position = playing_field.current_position;
             playing_field.update_block_position(*mv);
@@ -1262,7 +1262,7 @@ mod playing_field_tests {
         false
     }
 
-    fn moves_collide_with_floor(playing_field: &mut PlayingFieldState, moves: &[GooglyBlockMove]) -> bool {
+    fn moves_collide_with_floor(playing_field: &mut PlayingFieldContext, moves: &[GooglyBlockMove]) -> bool {
         for mv in moves.iter() {
             playing_field.update_block_position(*mv);
             let top_left = playing_field.current_position;
@@ -1278,7 +1278,7 @@ mod playing_field_tests {
         false
     }
 
-    fn moves_collide_with_right_wall(playing_field: &mut PlayingFieldState, moves: &[GooglyBlockMove]) -> bool {
+    fn moves_collide_with_right_wall(playing_field: &mut PlayingFieldContext, moves: &[GooglyBlockMove]) -> bool {
         for mv in moves.iter() {
             playing_field.update_block_position(*mv);
             let top_left = playing_field.current_position;
@@ -1294,7 +1294,7 @@ mod playing_field_tests {
         false
     }
 
-    fn moves_collide_with_left_wall(playing_field: &mut PlayingFieldState, moves: &[GooglyBlockMove]) -> bool {
+    fn moves_collide_with_left_wall(playing_field: &mut PlayingFieldContext, moves: &[GooglyBlockMove]) -> bool {
         for mv in moves.iter() {
             playing_field.update_block_position(*mv);
             let top_left = playing_field.current_position;

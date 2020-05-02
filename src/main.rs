@@ -52,12 +52,12 @@ use tex_atlas::TextureAtlas2D;
 use playing_field::{
     BlockPosition, 
     GooglyBlock, 
-    PlayingFieldState,
+    PlayingFieldContext,
     GooglyBlockPiece, 
     GooglyBlockRotation, 
     GooglyBlockElement, 
     GooglyBlockMove,
-    PlayingFieldStateSpec,
+    PlayingFieldContextSpec,
 };
 use next_block::NextBlockCell;
 use score::{
@@ -2199,7 +2199,7 @@ impl PlayingField {
         }
     }
 
-    fn write(&mut self, playing_field: &PlayingFieldState) -> io::Result<usize> {
+    fn write(&mut self, playing_field: &PlayingFieldContext) -> io::Result<usize> {
         let rows = playing_field.landed_blocks.rows();
         let columns = playing_field.landed_blocks.columns();
         for row in 0..rows {
@@ -3453,7 +3453,7 @@ impl GameStateMachine {
 struct GameContext {
     gl: Rc<RefCell<glh::GLState>>,
     timers: Rc<RefCell<PlayingFieldTimers>>,
-    playing_field_state: Rc<RefCell<PlayingFieldState>>,
+    playing_field_state: Rc<RefCell<PlayingFieldContext>>,
     next_block: Rc<RefCell<NextBlockCell>>,
     statistics: Rc<RefCell<Statistics>>,
     score_board: Rc<RefCell<ScoreBoard>>,
@@ -4538,11 +4538,11 @@ fn init_game() -> Game {
         (GooglyBlockPiece::L, BlockPosition::new(-3, 4)),
         (GooglyBlockPiece::I, BlockPosition::new(-3, 3)),
     ].iter().map(|elem| *elem).collect();
-    let playing_field_state_spec = PlayingFieldStateSpec {
+    let playing_field_state_spec = PlayingFieldContextSpec {
         starting_block: starting_block,
         starting_positions: starting_positions,
     };
-    let playing_field_state = Rc::new(RefCell::new(PlayingFieldState::new(playing_field_state_spec)));
+    let playing_field_state = Rc::new(RefCell::new(PlayingFieldContext::new(playing_field_state_spec)));
     let playing_field = PlayingField::new(playing_field_handle, &block_element_atlas);
     let timer_spec = PlayingFieldTimerSpec {
         fall_interval: Interval::Milliseconds(500),
