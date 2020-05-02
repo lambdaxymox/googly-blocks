@@ -3107,11 +3107,6 @@ impl TitleScreenStateMachine {
     fn animation_is_on(&self) -> bool {
         self.blink_state.animation_is_on()
     }
-
-    #[inline]
-    fn is_pressed(&self) -> bool {
-        self.blink_state.is_pressed()
-    }
 }
 
 #[derive(Copy, Clone)]
