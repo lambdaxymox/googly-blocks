@@ -52,3 +52,33 @@ impl Timer {
         self.event_count = 0;
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        Interval, 
+        Timer
+    };
+    use std::time::Duration;
+
+
+    #[test]
+    fn timer_correctly_triggers_an_event_after_event_duration() {
+        let mut timer = Timer::new(Interval::Milliseconds(100));
+        let elapsed_milliseconds = Duration::from_millis(101);
+        timer.update(elapsed_milliseconds);
+
+        assert!(timer.event_triggered());
+    }
+
+    #[test]
+    fn timer_correctly_counts_events_between_resets() {
+        let mut timer = Timer::new(Interval::Milliseconds(100));
+        let elapsed_milliseconds = Duration::from_millis(1000);
+        timer.reset();
+        timer.update(elapsed_milliseconds);
+
+        assert_eq!(timer.event_count, 10);
+    }
+}
