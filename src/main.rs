@@ -3055,13 +3055,6 @@ impl PlayingFieldFallingState {
                     _ => {}
                 }
             }
-            /*
-            InputKind::Exit => {
-                // TODO: GET RID OF THIS INPUT CHECK HERE.
-                let exiting = context.exiting.borrow_mut();
-                *exiting = true;
-            }
-            */
             _ => {}
         } 
     }
@@ -3129,12 +3122,6 @@ impl PlayingFieldClearingState {
 
     fn handle_input(&self, context: &mut PlayingFieldStateMachineContext, input: Input, elapsed_milliseconds: Duration) {
         match input.kind {
-            /*
-            InputKind::Exit => {
-                let mut exiting = context.exiting.borrow_mut();
-                *exiting = true;
-            }
-            */
             _ => {}
         }
     }
@@ -3456,8 +3443,16 @@ impl GamePlayingState {
     }
 
     fn handle_input(&self, context: &mut GameContext, input: Input, elapsed_milliseconds: Duration) {
-        let playing_field_state_machine = context.playing_field_state_machine.borrow_mut();
-        playing_field_state_machine.handle_input(input, elapsed_milliseconds);
+        match input.kind {
+            InputKind::Exit => {
+                let mut exiting = context.exiting.borrow_mut();
+                *exiting = true;
+            }
+            _ => {
+                let playing_field_state_machine = context.playing_field_state_machine.borrow_mut();
+                playing_field_state_machine.handle_input(input, elapsed_milliseconds);
+            }
+        }
     }
 
     fn update(&self, context: &mut GameContext, elapsed_milliseconds: Duration) -> GameState {
