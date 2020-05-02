@@ -20,31 +20,44 @@ use playing_field::{
     GooglyBlock,
 };
 
-
+/// The score board type that tracks the player's progress during a 
+/// game of Googly Blocks.
 pub struct ScoreBoard {
+    /// The player's score.
     pub score: usize,
+    /// The player's level.
     pub level: usize,
+    /// The number of lines cleared.
     pub lines: usize,
+    /// The number of times the maximum possible number of lines
+    /// was cleared with one piece. In particular, when four lines
+    /// are cleared with an I piece.
     pub tetrises: usize,
+    /// The number of lines left before the next level.
     lines_before_next_level: usize,
+    /// The number of lines per level.
+    lines_per_level: usize,
 }
 
 impl ScoreBoard {
-    pub fn new(lines_before_next_level: usize) -> ScoreBoard {
+    /// Construct a new scoreboard.
+    pub fn new(lines_per_level: usize) -> ScoreBoard {
         ScoreBoard {
             score: 0,
             level: 0,
             lines: 0,
             tetrises: 0,
-            lines_before_next_level: lines_before_next_level,
+            lines_before_next_level: lines_per_level,
+            lines_per_level: lines_per_level,
         }
     }
 
+    /// Update the scoreboard.
     pub fn update(&mut self, new_lines_cleared: usize) {
         self.lines += new_lines_cleared;
         if new_lines_cleared >= self.lines_before_next_level {
             self.level += 1;
-            self.lines_before_next_level = 20;
+            self.lines_before_next_level = self.lines_per_level;
         } else {
             self.lines_before_next_level -= new_lines_cleared;
         }
@@ -132,5 +145,17 @@ mod tests {
         let result = score_board.level;
 
         assert_eq!(result, expected);
+    }
+
+    /// The number lines for the next level should be less than or equal to the lines per level
+    /// after a level transition.
+    #[test]
+    fn score_board_lines_before_next_level_should_not_exceed_lines_per_level() {
+        let mut score_board = ScoreBoard::new(20);
+        score_board.update(21);
+        let expected = score_board.lines_per_level;
+        let result = score_board.lines_before_next_level;
+
+        assert!(result <= expected);
     }
 }
