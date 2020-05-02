@@ -1408,18 +1408,18 @@ fn create_next_piece_panel_buffer(gl_context: &mut glh::GLState, atlas: &Texture
 }
 
 struct NextPiecePanel {
-    current_piece: GooglyBlock,
+    current_block: GooglyBlock,
     buffer: GLNextPiecePanel,
 }
 
 impl NextPiecePanel {
     fn update(&mut self, block: GooglyBlock) {
-        self.current_piece = block;
+        self.current_block = block;
     }
 }
 
 struct NextPiecePanelSpec<'a> {
-    piece: GooglyBlock,
+    block: GooglyBlock,
     atlas: &'a TextureAtlas2D,
 }
 
@@ -1429,7 +1429,7 @@ fn load_next_piece_panel(
     
     let buffer = create_next_piece_panel_buffer(game, spec.atlas, uniforms);
     NextPiecePanel {
-        current_piece: spec.piece,
+        current_block: spec.block,
         buffer: buffer,
     }
 }
@@ -4436,10 +4436,12 @@ fn init_game() -> Game {
         scale_px: 48.0,
     };
     let text_panel = load_text_panel(gl_context.clone(), &text_panel_spec, text_panel_uniforms);
-    let next_block_cell = NextBlockCell::new();
+    let mut next_block_cell = NextBlockCell::new();
+    let starting_block = next_block_cell.current_block();
+    next_block_cell.update();
     let next_block = next_block_cell.current_block();
     let next_piece_panel_spec = NextPiecePanelSpec {
-        piece: next_block,
+        block: next_block,
         atlas: &block_texture_atlas,
     };
     let next_piece_panel_uniforms = create_uniforms_next_piece_panel(next_block, 50, width, height);
@@ -4472,7 +4474,6 @@ fn init_game() -> Game {
         let mut context = gl_context.borrow_mut();
         load_playing_field(&mut *context, playing_field_spec, playing_field_uniforms)
     };
-    let starting_block = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
     let starting_positions: HashMap<GooglyBlockPiece, BlockPosition> = [
         (GooglyBlockPiece::T, BlockPosition::new(-3, 4)),
         (GooglyBlockPiece::J, BlockPosition::new(-3, 4)), 
