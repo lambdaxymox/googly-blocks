@@ -2754,49 +2754,7 @@ impl UI {
         self.next_piece_panel.update(piece);
     }
 }
-/*
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-enum Interval {
-    Milliseconds(u64),
-}
 
-struct Timer {
-    time: Duration,
-    event_interval: Duration,
-    event_count: u128,
-}
-
-impl Timer {
-    fn new(interval: Interval) -> Timer {
-        let event_interval = match interval {
-            Interval::Milliseconds(millis) => Duration::from_millis(millis)
-        };
-        
-        Timer {
-            time: Duration::from_millis(0),
-            event_interval: event_interval,
-            event_count: 0,
-        }
-    }
-
-    #[inline]
-    fn update(&mut self, elapsed: Duration) {
-        self.time += elapsed;
-        self.event_count = self.time.as_millis() / self.event_interval.as_millis();
-    }
-
-    #[inline]
-    fn event_triggered(&self) -> bool {
-        self.event_count > 0
-    }
-
-    #[inline]
-    fn reset(&mut self) {
-        self.time = Duration::from_millis(0);
-        self.event_count = 0;
-    }
-}
-*/
 #[derive(Copy, Clone)]
 struct PlayingFieldTimerSpec {
     fall_interval: Interval,
