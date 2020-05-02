@@ -63,11 +63,6 @@ use timer::{
     Interval, 
     Timer,
 };
-use rand::prelude as rng;
-use rand::distributions::{
-    Distribution, 
-    Uniform
-};
 
 use std::io;
 use std::mem;
@@ -3349,7 +3344,7 @@ impl GameFallingState {
             }
             
             statistics.update(current_block);
-            let old_next_block = next_block.block();
+            let old_next_block = next_block.current_block();
             next_block.update();
             let new_next_block = old_next_block;
             playing_field_state.update_new_block(new_next_block);
@@ -3545,73 +3540,6 @@ impl GameStateMachine {
         self.state
     }
 }
-/*
-struct NextBlockGen {
-    rng: rng::ThreadRng,
-    between: Uniform<u32>,
-    last_block: GooglyBlockPiece,
-    table: [GooglyBlockPiece; 7],
-}
-
-impl NextBlockGen {
-    fn new() -> NextBlockGen {
-        let table = [
-            GooglyBlockPiece::T,
-            GooglyBlockPiece::J,
-            GooglyBlockPiece::Z,
-            GooglyBlockPiece::O,
-            GooglyBlockPiece::S,
-            GooglyBlockPiece::L,
-            GooglyBlockPiece::I,
-        ];
-        let mut rng = rng::thread_rng();
-        let between = Uniform::new_inclusive(0, 6);
-        let random = between.sample(&mut rng) as usize;
-        let last_block = table[random];
-
-        NextBlockGen {
-            rng: rng,
-            between: between,
-            last_block: last_block,
-            table: table,
-        }
-    }
-
-    fn next(&mut self) -> GooglyBlockPiece {
-        let mut block = self.table[self.between.sample(&mut self.rng) as usize];
-        let mut gas = 0;
-        while (gas < 8) && (block == self.last_block) {
-            let random = self.between.sample(&mut self.rng) as usize;
-            block = self.table[random];
-            gas += 1;
-        }
-        self.last_block = block;
-        
-        block
-    }
-}
-
-struct NextBlockCell {
-    gen: NextBlockGen,
-    block: GooglyBlockPiece,
-}
-
-impl NextBlockCell {
-    fn new() -> NextBlockCell {
-        let mut gen = NextBlockGen::new();
-        let block = gen.next();
-        
-        NextBlockCell {
-            gen: gen,
-            block: block,
-        }
-    }
-
-    fn update(&mut self) {
-        self.block = self.gen.next();
-    }
-}
-*/
 struct GameContext {
     gl: Rc<RefCell<glh::GLState>>,
     timers: Rc<RefCell<PlayingFieldTimers>>,
@@ -3696,7 +3624,7 @@ impl RendererContext {
         let gui_scale_x = 2.0 * (scale as f32) / (viewport_width as f32);
         let gui_scale_y = 2.0 * (scale as f32) / (viewport_height as f32);
         let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 1.0);
-        let trans_mat = match self.game_context.borrow().next_block.borrow().block().piece {
+        let trans_mat = match self.game_context.borrow().next_block.borrow().current_block().piece {
             GooglyBlockPiece::T => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
             GooglyBlockPiece::J => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
             GooglyBlockPiece::Z => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
@@ -3904,7 +3832,7 @@ impl RendererFallingState {
         context.ui.update_level(score_board.level);
         context.ui.update_tetrises(score_board.tetrises);
         context.ui.update_statistics(&game_context.statistics.borrow());
-        context.ui.update_next_piece(game_context.next_block.borrow().block());
+        context.ui.update_next_piece(game_context.next_block.borrow().current_block());
         context.ui.update_panel();   
     }
 
@@ -3933,7 +3861,7 @@ impl RendererFallingState {
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, context.ui.next_piece_panel.buffer.tex);
-            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().block().piece).vao);
+            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().current_block().piece).vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 3 * 8);
             gl::Disable(gl::BLEND);
         }
@@ -4069,7 +3997,7 @@ impl RendererClearingState {
         context.ui.update_level(score_board.level);
         context.ui.update_tetrises(score_board.tetrises);
         context.ui.update_statistics(&game_context.statistics.borrow());
-        context.ui.update_next_piece(game_context.next_block.borrow().block());
+        context.ui.update_next_piece(game_context.next_block.borrow().current_block());
         context.ui.update_panel();   
     }
 
@@ -4098,7 +4026,7 @@ impl RendererClearingState {
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, context.ui.next_piece_panel.buffer.tex);
-            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().block().piece).vao);
+            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().current_block().piece).vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 3 * 8);
             gl::Disable(gl::BLEND);
         }
@@ -4235,7 +4163,7 @@ impl RendererGameOverState {
         context.ui.update_level(score_board.level);
         context.ui.update_tetrises(score_board.tetrises);
         context.ui.update_statistics(&game_context.statistics.borrow());
-        context.ui.update_next_piece(game_context.next_block.borrow().block());
+        context.ui.update_next_piece(game_context.next_block.borrow().current_block());
         context.ui.update_panel();   
     }
 
@@ -4264,7 +4192,7 @@ impl RendererGameOverState {
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, context.ui.next_piece_panel.buffer.tex);
-            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().block().piece).vao);
+            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().current_block().piece).vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 3 * 8);
             gl::Disable(gl::BLEND);
         }
@@ -4572,7 +4500,7 @@ fn init_game() -> Game {
     };
     let text_panel = load_text_panel(gl_context.clone(), &text_panel_spec, text_panel_uniforms);
     let next_block_cell = NextBlockCell::new();
-    let next_block = next_block_cell.block();
+    let next_block = next_block_cell.current_block();
     let next_piece_panel_spec = NextPiecePanelSpec {
         piece: next_block,
         atlas: &block_texture_atlas,

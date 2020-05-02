@@ -10,14 +10,22 @@ use playing_field::{
 };
 
 
+/// The generator than pseudorandomly generates the next block for the 
+/// next block panel in the game.
 struct NextBlockGen {
+    /// The inner random number generator.
     rng: rng::ThreadRng,
+    /// The probability distribution for choosing the next block.
     between: Uniform<u32>,
+    /// The last block generated.
     last_block: GooglyBlock,
+    /// The table of possible blocks that can be generated.
     table: [GooglyBlock; 7],
 }
 
 impl NextBlockGen {
+    /// Construct a new block generator. Here, we choose each block to have the default rotation 
+    /// state of R0 since that is what the panel displays.
     fn new() -> NextBlockGen {
         let table = [
             GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0),
@@ -41,9 +49,13 @@ impl NextBlockGen {
         }
     }
 
+    /// Generate the next block.
     fn next(&mut self) -> GooglyBlock {
         let mut block = self.table[self.between.sample(&mut self.rng) as usize];
         let mut gas = 0;
+        // We perform a bounded iteration over the random number generator
+        // to reduce the probability of generating long runs of the same pieces.
+        // The gas parameter exists to guarantee that the loop terminates.
         while (gas < 8) && (block == self.last_block) {
             let random = self.between.sample(&mut self.rng) as usize;
             block = self.table[random];
@@ -55,8 +67,12 @@ impl NextBlockGen {
     }
 }
 
+/// The next block cell holds the next block in the window, which is also the 
+/// next block that will be generated for the player.
 pub struct NextBlockCell {
+    /// The inner block generator.
     gen: NextBlockGen,
+    /// The current block given to the player.
     block: GooglyBlock,
 }
 
@@ -71,12 +87,14 @@ impl NextBlockCell {
         }
     }
 
+    /// Generate the next block.
     pub fn update(&mut self) {
         self.block = self.gen.next();
     }
 
+    /// Get the current block.
     #[inline]
-    pub fn block(&self) -> GooglyBlock {
+    pub fn current_block(&self) -> GooglyBlock {
         self.block
     }
 }
