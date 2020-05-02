@@ -3191,15 +3191,13 @@ enum PlayingFieldState {
 
 struct PlayingFieldStateMachine {
     context: Rc<RefCell<PlayingFieldStateMachineContext>>,
-    playing_field_context: Rc<RefCell<PlayingFieldContext>>,
     state: PlayingFieldState,
 }
 
 impl PlayingFieldStateMachine {
-    fn new(context: Rc<RefCell<PlayingFieldStateMachineContext>>, playing_field_context: Rc<RefCell<PlayingFieldContext>>) -> PlayingFieldStateMachine {
+    fn new(context: Rc<RefCell<PlayingFieldStateMachineContext>>) -> PlayingFieldStateMachine {
         PlayingFieldStateMachine {
             context: context,
-            playing_field_context: playing_field_context,
             state: PlayingFieldState::Falling(PlayingFieldFallingState::new()),
         }
     }
@@ -4547,9 +4545,9 @@ fn init_game() -> Game {
         flashing_state_machine: flashing_state_machine.clone(),
         columns_cleared: 0,
     }));
-    let playing_field_state_machine = Rc::new(RefCell::new(PlayingFieldStateMachine::new(
-        playing_field_state_machine_context, playing_field_context.clone()
-    )));
+    let playing_field_state_machine = Rc::new(RefCell::new(
+        PlayingFieldStateMachine::new(playing_field_state_machine_context)
+    ));
     let context = Rc::new(RefCell::new(GameContext {
         gl: gl_context,
         playing_field_state: playing_field_context,
