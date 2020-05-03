@@ -113,7 +113,8 @@ mod tests {
         FlashAnimationStateMachine,
         FlashAnimationStateMachineSpec,
     };
-    use timer::{Interval, Timer};
+    use timer::Interval;
+    use std::time::Duration;
 
 
     #[test]
@@ -133,6 +134,18 @@ mod tests {
         let mut state_machine = FlashAnimationStateMachine::new(flash_switch_interval, flash_stop_interval);
         state_machine.enable();
         state_machine.disable();
+
+        assert!(state_machine.is_disabled());
+    }
+
+    #[test]
+    fn state_machine_should_disable_after_stopping_time_is_reached() {
+        let flash_switch_interval = Interval::Milliseconds(50);
+        let flash_stop_interval = Interval::Milliseconds(1000);
+        let mut state_machine = FlashAnimationStateMachine::new(flash_switch_interval, flash_stop_interval);
+        let elapsed_milliseconds = Duration::from_millis(1001);
+        state_machine.enable();
+        state_machine.update(elapsed_milliseconds);
 
         assert!(state_machine.is_disabled());
     }
