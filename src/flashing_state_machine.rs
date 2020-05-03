@@ -112,7 +112,6 @@ mod tests {
     use super::{
         FlashAnimationState,
         FlashAnimationStateMachine,
-        FlashAnimationStateMachineSpec,
     };
     use timer::Interval;
     use std::time::Duration;
