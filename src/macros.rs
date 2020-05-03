@@ -40,7 +40,7 @@ macro_rules! include_asset {
 #[cfg(target_os = "mac_os")]
 macro_rules! shader_file {
     ($shader:expr) => {
-        concat!(concat_path!("..", "shaders", "330"), $shader)
+        concat!(concat_path!("..", "shaders", "460"), $shader)
     }
 }
 
