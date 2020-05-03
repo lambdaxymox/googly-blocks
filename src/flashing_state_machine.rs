@@ -110,6 +110,7 @@ impl FlashAnimationStateMachine {
 #[cfg(test)]
 mod tests {
     use super::{
+        FlashAnimationState,
         FlashAnimationStateMachine,
         FlashAnimationStateMachineSpec,
     };
@@ -148,5 +149,55 @@ mod tests {
         state_machine.update(elapsed_milliseconds);
 
         assert!(state_machine.is_disabled());
+    }
+
+    #[test]
+    fn state_machine_should_remain_enabled_before_stopping_time_is_reached() {
+        let flash_switch_interval = Interval::Milliseconds(50);
+        let flash_stop_interval = Interval::Milliseconds(1000);
+        let mut state_machine = FlashAnimationStateMachine::new(flash_switch_interval, flash_stop_interval);
+        let elapsed_milliseconds = Duration::from_millis(999);
+        state_machine.enable();
+        state_machine.update(elapsed_milliseconds);
+
+        assert!(state_machine.is_enabled());
+    }
+
+    #[test]
+    fn state_machine_should_transition_from_dark_to_light_after_switch_time_is_reached() {
+        let flash_switch_interval = Interval::Milliseconds(50);
+        let flash_stop_interval = Interval::Milliseconds(1000);
+        let mut state_machine = FlashAnimationStateMachine::new(flash_switch_interval, flash_stop_interval);
+        let elapsed_milliseconds = Duration::from_millis(50);
+        state_machine.enable();
+        state_machine.update(elapsed_milliseconds);
+
+        assert_eq!(state_machine.state, FlashAnimationState::Light);
+    }
+
+    #[test]
+    fn state_machine_should_transition_from_light_to_dark_after_switch_time_is_reached() {
+        let flash_switch_interval = Interval::Milliseconds(50);
+        let flash_stop_interval = Interval::Milliseconds(1000);
+        let mut state_machine = FlashAnimationStateMachine::new(flash_switch_interval, flash_stop_interval);
+        let elapsed_milliseconds = Duration::from_millis(50);
+        state_machine.enable();
+        state_machine.update(elapsed_milliseconds);
+        state_machine.update(elapsed_milliseconds);
+
+        assert_eq!(state_machine.state, FlashAnimationState::Dark);
+    }
+
+    #[test]
+    fn state_machine_should_remain_enabled_before_stopping_time() {
+        let flash_switch_interval = Interval::Milliseconds(50);
+        let flash_stop_interval = Interval::Milliseconds(1000);
+        let mut state_machine = FlashAnimationStateMachine::new(flash_switch_interval, flash_stop_interval);
+        let elapsed_milliseconds = Duration::from_millis(50);
+        state_machine.enable();
+        state_machine.update(elapsed_milliseconds);
+        state_machine.update(elapsed_milliseconds);
+
+        assert!(state_machine.is_enabled());
     }
 }
