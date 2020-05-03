@@ -12,6 +12,7 @@ cargo run --release
 ## Controls
 Here is the control scheme for the game.
 ```
+Enter -- Start a new game from the start screen.
 Arrow Down -- Move a piece down the playing field.
 Arrow Right -- Move a piece to the right in the playing field.
 Arrow Left -- Move a piece to the left in the playing field.
