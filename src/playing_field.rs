@@ -18,7 +18,7 @@
 use block::{
     GooglyBlock, 
     GooglyBlockPiece, 
-    GooglyBlockElement, 
+    GooglyBlockElement,
 };
 use std::fmt;
 use std::iter::Iterator;
@@ -541,9 +541,15 @@ impl PlayingFieldContext {
 
 #[cfg(test)]
 mod landed_blocks_tests {
+    use block::{
+        GooglyBlock, 
+        GooglyBlockPiece, 
+        GooglyBlockElement, 
+        GooglyBlockRotation, 
+    };
     use super::{
-        GooglyBlock, GooglyBlockPiece, GooglyBlockElement, 
-        GooglyBlockRotation, LandedBlocksGrid, LandedBlocksQuery
+        LandedBlocksGrid, 
+        LandedBlocksQuery
     };
 
     fn elements() -> [GooglyBlockElement; 8] { 
@@ -633,10 +639,15 @@ mod landed_blocks_tests {
 
 #[cfg(test)]
 mod collision_tests {
+    use block::{
+        GooglyBlock, 
+        GooglyBlockPiece, 
+        GooglyBlockElement,
+        GooglyBlockRotation, 
+    };
     use super::{
-        GooglyBlock, GooglyBlockPiece, GooglyBlockElement, 
-        GooglyBlockRotation, LandedBlocksGrid,
-        BlockPosition
+        LandedBlocksGrid,
+        BlockPosition,
     };
 
     struct CollisionDetectionTestCase {
@@ -795,10 +806,18 @@ mod collision_tests {
 
 #[cfg(test)]
 mod playing_field_tests {
+    use block:: {
+        GooglyBlockRotation,
+        GooglyBlock, 
+        GooglyBlockPiece, 
+        GooglyBlockElement, 
+    };
     use super::{
-        GooglyBlock, GooglyBlockPiece, GooglyBlockElement, 
-        GooglyBlockRotation, LandedBlocksGrid,
-        BlockPosition, PlayingFieldContext, PlayingFieldContextSpec, GooglyBlockMove,
+        LandedBlocksGrid,
+        BlockPosition, 
+        PlayingFieldContext, 
+        PlayingFieldContextSpec, 
+        GooglyBlockMove,
     };
     use std::collections::hash_map::HashMap;
 
