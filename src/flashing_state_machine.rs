@@ -109,5 +109,31 @@ impl FlashAnimationStateMachine {
 
 #[cfg(test)]
 mod tests {
+    use super::{
+        FlashAnimationStateMachine,
+        FlashAnimationStateMachineSpec,
+    };
+    use timer::{Interval, Timer};
 
+
+    #[test]
+    fn state_machine_should_correctly_report_being_enabled_after_enabling() {
+        let flash_switch_interval = Interval::Milliseconds(50);
+        let flash_stop_interval = Interval::Milliseconds(1000);
+        let mut state_machine = FlashAnimationStateMachine::new(flash_switch_interval, flash_stop_interval);
+        state_machine.enable();
+
+        assert!(state_machine.is_enabled());
+    }
+
+    #[test]
+    fn state_machine_should_correctly_report_being_disabled_after_disabling() {
+        let flash_switch_interval = Interval::Milliseconds(50);
+        let flash_stop_interval = Interval::Milliseconds(1000);
+        let mut state_machine = FlashAnimationStateMachine::new(flash_switch_interval, flash_stop_interval);
+        state_machine.enable();
+        state_machine.disable();
+
+        assert!(state_machine.is_disabled());
+    }
 }
