@@ -32,6 +32,7 @@ mod gl {
 #[macro_use]
 mod macros;
 
+mod block;
 mod mesh;
 mod gl_help;
 mod playing_field;
@@ -49,13 +50,14 @@ use log::{info};
 use math::{Array, One, Matrix4};
 use mesh::ObjMesh;
 use tex_atlas::TextureAtlas2D;
+use block::{
+    GooglyBlock, 
+    GooglyBlockPiece, 
+    GooglyBlockElement, 
+};
 use playing_field::{
     BlockPosition, 
-    GooglyBlock, 
     PlayingFieldContext,
-    GooglyBlockPiece, 
-    GooglyBlockRotation, 
-    GooglyBlockElement, 
     GooglyBlockMove,
     PlayingFieldContextSpec,
 };

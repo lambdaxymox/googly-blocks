@@ -15,12 +15,18 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+use block::{
+    GooglyBlock, 
+    GooglyBlockPiece, 
+    GooglyBlockElement, 
+};
+
 use std::fmt;
 use std::iter::Iterator;
 use std::ops;
 use std::collections::hash_map::HashMap;
 
-
+/*
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 pub enum GooglyBlockElement {
     EmptySpace,
@@ -385,7 +391,7 @@ impl fmt::Display for GooglyBlock {
         writeln!(f, "{}", self.shape())
     }   
 }
-
+*/
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum LandedBlocksQuery {
     InOfBounds(GooglyBlockElement),
@@ -642,9 +648,9 @@ impl BlockPosition {
 
 fn collides_with_element(piece: GooglyBlock, top_left: BlockPosition, landed: &LandedBlocksGrid) -> bool {
     let shape = piece.shape();
-    for (row, column) in shape.shape.iter() {
-        let element_row = *row as isize;
-        let element_column = *column as isize;
+    for (row, column) in shape.iter() {
+        let element_row = row as isize;
+        let element_column = column as isize;
         match landed.get(top_left.row + element_row, top_left.column + element_column) {
             LandedBlocksQuery::InOfBounds(GooglyBlockElement::EmptySpace) => {}
             LandedBlocksQuery::OutOfBounds(_, _) => {}
@@ -681,8 +687,8 @@ fn collides_with_right_wall(piece: GooglyBlock, top_left: BlockPosition, landed:
 
 fn collides_with_floor(piece: GooglyBlock, top_left: BlockPosition, landed: &LandedBlocksGrid) -> bool {
     let shape = piece.shape();
-    for (row, _) in shape.shape.iter() {
-        let part_row = *row as isize;
+    for (row, _) in shape.iter() {
+        let part_row = row as isize;
         if top_left.row + part_row >= landed.rows() as isize {
             return true;
         }
