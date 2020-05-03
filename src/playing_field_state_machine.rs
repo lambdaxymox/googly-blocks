@@ -368,10 +368,6 @@ impl PlayingFieldStateMachine {
         }
     }
 
-    pub fn flashing_state_machine(&self) -> Rc<RefCell<FlashAnimationStateMachine>> {
-        self.context.borrow().flashing_state_machine.clone()
-    }
-
     pub fn is_game_over(&self) -> bool {
         match self.state {
             PlayingFieldState::GameOver(_) => true,

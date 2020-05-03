@@ -4128,7 +4128,6 @@ fn init_game() -> Game {
         score_board: score_board.clone(),
     };
     let playing_field_state_machine = playing_field_state_machine::create(playing_field_state_machine_spec);
-    let flashing_state_machine = playing_field_state_machine.flashing_state_machine();
 
     let context = Rc::new(RefCell::new(GameContext {
         gl: gl_context,
