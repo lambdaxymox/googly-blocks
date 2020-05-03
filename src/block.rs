@@ -383,4 +383,24 @@ impl fmt::Display for GooglyBlock {
         writeln!(f, "{}", self.shape())
     }   
 }
- 
+
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        GooglyBlockPiece,
+        GooglyBlockRotation,
+        GooglyBlock,
+    };
+
+
+    /// Given a googly block, if we rotate it four times, it should cycle through all of its rotations. 
+    /// That is, the last rotation should be the original rotation state.
+    #[test]
+    fn googly_block_rotations_should_cycle() {
+        let expected = GooglyBlock::new(GooglyBlockPiece::T, GooglyBlockRotation::R0);
+        let result = expected.rotate().rotate().rotate().rotate();
+
+        assert_eq!(result, expected);
+    }
+}
