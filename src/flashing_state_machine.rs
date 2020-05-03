@@ -22,7 +22,8 @@ use timer::{
 use std::time::Duration;
 
 
-
+/// A factor method for creating a flash animation state machine from a 
+/// specification.
 pub fn create(spec: FlashAnimationStateMachineSpec) -> FlashAnimationStateMachine {
     FlashAnimationStateMachine::new(spec.flash_switch_interval, spec.flash_stop_interval)
 }
@@ -64,11 +65,15 @@ impl FlashAnimationStateMachine {
     #[inline]
     pub fn enable(&mut self) {
         self.state = FlashAnimationState::Dark;
+        self.flash_stop_timer.reset();
+        self.flash_switch_timer.reset();
     }
 
     #[inline]
     pub fn disable(&mut self) {
         self.state = FlashAnimationState::Disabled;
+        self.flash_stop_timer.reset();
+        self.flash_switch_timer.reset();
     }
 
     #[inline]
@@ -99,4 +104,10 @@ impl FlashAnimationStateMachine {
             }
         }
     }
+}
+
+
+#[cfg(test)]
+mod tests {
+
 }
