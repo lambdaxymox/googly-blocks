@@ -33,7 +33,7 @@ mod gl {
 mod macros;
 mod block;
 mod input;
-mod flash_state_machine;
+mod flashing_state_machine;
 mod mesh;
 mod gl_help;
 mod playing_field;
@@ -62,7 +62,7 @@ use input::{
     InputAction,
     InputKind,
 };
-use flash_state_machine::{
+use flashing_state_machine::{
     FlashAnimationState,
     FlashAnimationStateMachine,
     FlashAnimationStateMachineSpec,
@@ -4118,9 +4118,10 @@ fn init_game() -> Game {
         flash_switch_interval: Interval::Milliseconds(50),
         flash_stop_interval: Interval::Milliseconds(500),
     };
+    let flashing_state_machine = Rc::new(RefCell::new(flashing_state_machine::create(flash_timer_spec)));
     let playing_field_state_machine_spec = PlayingFieldStateMachineSpec {
         timers: timer_spec,
-        flash_timers: flash_timer_spec,
+        flashing_state_machine: flashing_state_machine.clone(),
         playing_field_context: playing_field_context.clone(),
         next_block: next_block_cell_ref.clone(),
         statistics: statistics.clone(),

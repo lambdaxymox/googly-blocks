@@ -20,9 +20,8 @@ use input::{
     InputAction,
     Input,
 };
-use flash_state_machine::{
+use flashing_state_machine::{
     FlashAnimationStateMachine,
-    FlashAnimationStateMachineSpec,
 };
 use next_block::NextBlockCell;
 use playing_field::{
@@ -46,9 +45,6 @@ use std::time::Duration;
 pub fn create(spec: PlayingFieldStateMachineSpec) -> PlayingFieldStateMachine {
     let timers = Rc::new(RefCell::new(PlayingFieldTimers::new(spec.timers)));
     let full_rows = Rc::new(RefCell::new(FullRows::new()));
-    let flashing_state_machine = Rc::new(RefCell::new(
-        FlashAnimationStateMachine::new(spec.flash_timers.flash_switch_interval, spec.flash_timers.flash_stop_interval)
-    ));
     let context = Rc::new(RefCell::new(PlayingFieldStateMachineContext {
         timers: timers,
         playing_field_state: spec.playing_field_context,
@@ -56,7 +52,7 @@ pub fn create(spec: PlayingFieldStateMachineSpec) -> PlayingFieldStateMachine {
         statistics: spec.statistics,
         score_board: spec.score_board,
         full_rows: full_rows,
-        flashing_state_machine: flashing_state_machine,
+        flashing_state_machine: spec.flashing_state_machine,
         columns_cleared: 0,
     }));
 
@@ -78,7 +74,7 @@ pub struct PlayingFieldTimerSpec {
 #[derive(Clone)]
 pub struct PlayingFieldStateMachineSpec {
     pub timers: PlayingFieldTimerSpec,
-    pub flash_timers: FlashAnimationStateMachineSpec,
+    pub flashing_state_machine: Rc<RefCell<FlashAnimationStateMachine>>,
     pub playing_field_context: Rc<RefCell<PlayingFieldContext>>,
     pub next_block: Rc<RefCell<NextBlockCell>>,
     pub statistics: Rc<RefCell<Statistics>>,

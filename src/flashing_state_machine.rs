@@ -23,6 +23,11 @@ use std::time::Duration;
 
 
 
+pub fn create(spec: FlashAnimationStateMachineSpec) -> FlashAnimationStateMachine {
+    FlashAnimationStateMachine::new(spec.flash_switch_interval, spec.flash_stop_interval)
+}
+
+
 #[derive(Copy, Clone)]
 pub struct FlashAnimationStateMachineSpec {
     pub flash_switch_interval: Interval,
