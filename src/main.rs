@@ -31,9 +31,9 @@ mod gl {
 
 #[macro_use]
 mod macros;
-
 mod block;
 mod input;
+mod flash_state_machine;
 mod mesh;
 mod gl_help;
 mod playing_field;
@@ -62,6 +62,10 @@ use input::{
     InputAction,
     InputKind,
 };
+use flash_state_machine::{
+    FlashAnimationState,
+    FlashAnimationStateMachine,
+};
 use playing_field::{
     BlockPosition, 
     PlayingFieldContext,
@@ -72,8 +76,6 @@ use playing_field_state_machine::{
     PlayingFieldStateMachineSpec,
     PlayingFieldStateMachine,
     FlashAnimationStateMachineSpec,
-    FlashAnimationState,
-    FlashAnimationStateMachine,
 };
 use next_block::NextBlockCell;
 use score::{

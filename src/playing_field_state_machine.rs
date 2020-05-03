@@ -20,6 +20,9 @@ use input::{
     InputAction,
     Input,
 };
+use flash_state_machine::{
+    FlashAnimationStateMachine,
+};
 use next_block::NextBlockCell;
 use playing_field::{
     GooglyBlockMove,
@@ -131,7 +134,7 @@ impl FullRows {
         self.count = 0;
     }
 }
-
+/*
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum FlashAnimationState {
     Light,
@@ -198,7 +201,7 @@ impl FlashAnimationStateMachine {
         }
     }
 }
-
+*/
 
 struct PlayingFieldStateMachineContext {
     timers: Rc<RefCell<PlayingFieldTimers>>,
