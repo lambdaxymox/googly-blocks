@@ -71,7 +71,7 @@ use playing_field_state_machine::{
     PlayingFieldTimerSpec,
     PlayingFieldStateMachineSpec,
     PlayingFieldStateMachine,
-    FlashAnimationTimerSpec,
+    FlashAnimationStateMachineSpec,
     FlashAnimationState,
     FlashAnimationStateMachine,
 };
@@ -4112,7 +4112,7 @@ fn init_game() -> Game {
         rotate_interval: Interval::Milliseconds(100),
         clearing_interval: Interval::Milliseconds(60),
     };
-    let flash_timer_spec = FlashAnimationTimerSpec {
+    let flash_timer_spec = FlashAnimationStateMachineSpec {
         flash_switch_interval: Interval::Milliseconds(50),
         flash_stop_interval: Interval::Milliseconds(500),
     };

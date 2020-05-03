@@ -72,7 +72,7 @@ pub struct PlayingFieldTimerSpec {
 }
 
 #[derive(Copy, Clone)]
-pub struct FlashAnimationTimerSpec {
+pub struct FlashAnimationStateMachineSpec {
     pub flash_switch_interval: Interval,
     pub flash_stop_interval: Interval,
 }
@@ -80,7 +80,7 @@ pub struct FlashAnimationTimerSpec {
 #[derive(Clone)]
 pub struct PlayingFieldStateMachineSpec {
     pub timers: PlayingFieldTimerSpec,
-    pub flash_timers: FlashAnimationTimerSpec,
+    pub flash_timers: FlashAnimationStateMachineSpec,
     pub playing_field_context: Rc<RefCell<PlayingFieldContext>>,
     pub next_block: Rc<RefCell<NextBlockCell>>,
     pub statistics: Rc<RefCell<Statistics>>,
