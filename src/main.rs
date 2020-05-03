@@ -4212,7 +4212,7 @@ fn main() {
             }
             _ => {}
         }
-        match game.get_key(Key::R) {
+        match game.get_key(Key::Up) {
             Action::Press => {
                 let input = Input::new(InputKind::Rotate, InputAction::Press);
                 game.handle_input(input, elapsed_milliseconds);
