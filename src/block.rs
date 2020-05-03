@@ -18,25 +18,38 @@
 use std::fmt;
 use std::iter::Iterator;
  
- 
+
+/// The element making up a googly block. This is the set of elements
+/// composing a googly block for display on the screen.
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 pub enum GooglyBlockElement {
+    /// Empty space.
     EmptySpace,
+    /// The element of a T piece.
     T,
+    /// The element of a J piece.
     J,
+    /// The element of a Z piece.
     Z,
+    /// The element of a O piece.
     O,
+    /// The element of a S piece.
     S,
+    /// The element of a L piece.
     L,
+    /// The element of a I piece.
     I,
 }
  
 impl GooglyBlockElement {
+    /// Determine whether a googly block element is empty space.
     #[inline]
     pub fn is_empty(self) -> bool {
         self == GooglyBlockElement::EmptySpace
     }
  
+    /// Determine whether an element is the element of a googly
+    /// block piece, and not empty space.
     #[inline]
     pub fn is_not_empty(self) -> bool {
         self != GooglyBlockElement::EmptySpace
@@ -60,12 +73,21 @@ impl fmt::Display for GooglyBlockElement {
         write!(f, "{}", disp)
     }
 }
- 
+
+/// The data needed for moving a googly block around in the playing field.
 pub struct GooglyBlockShape {
+    /// The element that composes the occupied (non-empty space) googly block
+    /// cells.
     pub element: GooglyBlockElement,
+    /// The wall kick distance is the distance a particular shape
+    /// will move away from the left wall or the right wall of the playing field
+    /// when we rotate the block.
     pub wall_kick_distance: isize,
+    /// The height of shape in playing field cells.
     rows: usize,
+    /// The width of the shape in playing field cells.
     columns: usize,
+    /// The placement of the non-empty cells of the shape.
     shape: [(usize, usize); 4],
 }
  
@@ -117,6 +139,9 @@ impl fmt::Display for GooglyBlockShape {
     }
 }
  
+/// The set of possible rotations for a googly block. Each 
+/// rotation corresponds to a different way to place the piece in
+/// the playing field.
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 pub enum GooglyBlockRotation {
     R0,
@@ -124,24 +149,34 @@ pub enum GooglyBlockRotation {
     R2,
     R3,
 }
- 
+
+/// This sum type represents the kind of block a particular googly block is.
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 pub enum GooglyBlockPiece {
+    /// T block.
     T,
+    /// J block.
     J,
+    /// Z block.
     Z,
+    /// O block.
     O,
+    /// S block.
     S,
+    /// L block.
     L,
+    /// I block.
     I,
 }
- 
+
+/// A googly block consists of two parts: A piece, the kind of block that it is,
+/// and a rotation, which is the orientation of the piece in the playing field.
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 pub struct GooglyBlock {
     pub piece: GooglyBlockPiece,
     rotation: GooglyBlockRotation,
 }
- 
+
 impl GooglyBlock {
     #[inline]
     pub fn new(piece: GooglyBlockPiece, rotation: GooglyBlockRotation) -> GooglyBlock {
@@ -151,6 +186,7 @@ impl GooglyBlock {
         }
     }
  
+    /// Get the shape data for a particular googly block.
     pub fn shape(&self) -> GooglyBlockShape {
         use self::GooglyBlockPiece::*;
         use self::GooglyBlockRotation::*;
@@ -368,6 +404,8 @@ impl GooglyBlock {
         }
     }
 
+    /// Generate the a googly block corresponding to the same piece rotated counter-clockwise
+    /// in the playing field.
     pub fn rotate(&self) -> GooglyBlock {
         match self.rotation {
             GooglyBlockRotation::R0 => GooglyBlock::new(self.piece, GooglyBlockRotation::R1),
