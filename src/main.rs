@@ -33,9 +33,11 @@ mod gl {
 mod macros;
 
 mod block;
+mod input;
 mod mesh;
 mod gl_help;
 mod playing_field;
+mod playing_field_state_machine;
 mod timer;
 mod next_block;
 mod score;
@@ -55,11 +57,23 @@ use block::{
     GooglyBlockPiece, 
     GooglyBlockElement, 
 };
+use input::{
+    Input,
+    InputAction,
+    InputKind,
+};
 use playing_field::{
     BlockPosition, 
     PlayingFieldContext,
-    GooglyBlockMove,
     PlayingFieldContextSpec,
+};
+use playing_field_state_machine::{
+    PlayingFieldTimerSpec,
+    PlayingFieldStateMachineSpec,
+    PlayingFieldStateMachine,
+    FlashAnimationTimerSpec,
+    FlashAnimationState,
+    FlashAnimationStateMachine,
 };
 use next_block::NextBlockCell;
 use score::{
@@ -2798,8 +2812,11 @@ impl UI {
 
 
 
-
-
+struct ViewportDimensions {
+    width: i32,
+    height: i32,
+}
+/*
 #[derive(Copy, Clone)]
 struct PlayingFieldTimerSpec {
     fall_interval: Interval,
@@ -3229,7 +3246,7 @@ impl PlayingFieldStateMachine {
         };
     }
 }
-
+*/
 
 
 
@@ -4491,6 +4508,8 @@ fn init_game() -> Game {
     };
     let playing_field_context = Rc::new(RefCell::new(PlayingFieldContext::new(playing_field_context_spec)));
     let playing_field = PlayingField::new(playing_field_handle, &block_element_atlas);
+    
+    /*
     let timer_spec = PlayingFieldTimerSpec {
         fall_interval: Interval::Milliseconds(500),
         collision_interval: Interval::Milliseconds(500),
@@ -4500,11 +4519,12 @@ fn init_game() -> Game {
         rotate_interval: Interval::Milliseconds(100),
         clearing_interval: Interval::Milliseconds(60),
     };
+    */
     let next_block_cell_ref = Rc::new(RefCell::new(next_block_cell));
-    let timers = Rc::new(RefCell::new(PlayingFieldTimers::new(timer_spec)));
+    // let timers = Rc::new(RefCell::new(PlayingFieldTimers::new(timer_spec)));
     let statistics = Rc::new(RefCell::new(Statistics::new()));
     let score_board = Rc::new(RefCell::new(ScoreBoard::new(20)));
-    let full_rows = Rc::new(RefCell::new(FullRows::new()));
+    // let full_rows = Rc::new(RefCell::new(FullRows::new()));
     let game_over_panel_spec = GameOverPanelSpec {
         width: 300,
         height: 178,
@@ -4514,9 +4534,11 @@ fn init_game() -> Game {
         let mut context = gl_context.borrow_mut();
         load_game_over_panel(&mut context, game_over_panel_spec)
     };
+    /*
     let flashing_state_machine = Rc::new(RefCell::new(FlashAnimationStateMachine::new(
         Interval::Milliseconds(50),  Interval::Milliseconds(500)
     )));
+    */
     let title_screen_state_machine_spec = TitleScreenStateMachineSpec {
         transition_interval: Interval::Milliseconds(2000),
         pressed_interval: Interval::Milliseconds(100),
@@ -4538,6 +4560,9 @@ fn init_game() -> Game {
         load_title_screen(&mut context, title_screen_handle_spec)
     };
     let exiting = Rc::new(RefCell::new(false));
+    
+    
+    /*
     let playing_field_state_machine_context = Rc::new(RefCell::new(PlayingFieldStateMachineContext {
         timers: timers.clone(),
         playing_field_state: playing_field_context.clone(),
@@ -4551,10 +4576,37 @@ fn init_game() -> Game {
     let playing_field_state_machine = Rc::new(RefCell::new(
         PlayingFieldStateMachine::new(playing_field_state_machine_context)
     ));
+    */
+    let timer_spec = PlayingFieldTimerSpec {
+        fall_interval: Interval::Milliseconds(500),
+        collision_interval: Interval::Milliseconds(500),
+        left_hold_interval: Interval::Milliseconds(70),
+        right_hold_interval: Interval::Milliseconds(70),
+        down_hold_interval: Interval::Milliseconds(35),
+        rotate_interval: Interval::Milliseconds(100),
+        clearing_interval: Interval::Milliseconds(60),
+    };
+    let flash_timer_spec = FlashAnimationTimerSpec {
+        flash_switch_interval: Interval::Milliseconds(50),
+        flash_stop_interval: Interval::Milliseconds(500),
+    };
+    let playing_field_state_machine_spec = PlayingFieldStateMachineSpec {
+        timers: timer_spec,
+        flash_timers: flash_timer_spec,
+        playing_field_context: playing_field_context.clone(),
+        next_block: next_block_cell_ref.clone(),
+        statistics: statistics.clone(),
+        score_board: score_board.clone(),
+    };
+    let playing_field_state_machine = playing_field_state_machine::create(playing_field_state_machine_spec);
+    let flashing_state_machine = playing_field_state_machine.flashing_state_machine();
+
+
+
     let context = Rc::new(RefCell::new(GameContext {
         gl: gl_context,
         playing_field_state: playing_field_context,
-        playing_field_state_machine: playing_field_state_machine,
+        playing_field_state_machine: Rc::new(RefCell::new(playing_field_state_machine)),
         statistics: statistics,
         score_board: score_board,
         next_block: next_block_cell_ref,
