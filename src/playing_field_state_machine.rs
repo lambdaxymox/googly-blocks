@@ -22,6 +22,7 @@ use input::{
 };
 use flash_state_machine::{
     FlashAnimationStateMachine,
+    FlashAnimationStateMachineSpec,
 };
 use next_block::NextBlockCell;
 use playing_field::{
@@ -72,12 +73,6 @@ pub struct PlayingFieldTimerSpec {
     pub down_hold_interval: Interval,
     pub rotate_interval: Interval,
     pub clearing_interval: Interval,
-}
-
-#[derive(Copy, Clone)]
-pub struct FlashAnimationStateMachineSpec {
-    pub flash_switch_interval: Interval,
-    pub flash_stop_interval: Interval,
 }
 
 #[derive(Clone)]

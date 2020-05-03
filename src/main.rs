@@ -65,6 +65,7 @@ use input::{
 use flash_state_machine::{
     FlashAnimationState,
     FlashAnimationStateMachine,
+    FlashAnimationStateMachineSpec,
 };
 use playing_field::{
     BlockPosition, 
@@ -75,7 +76,6 @@ use playing_field_state_machine::{
     PlayingFieldTimerSpec,
     PlayingFieldStateMachineSpec,
     PlayingFieldStateMachine,
-    FlashAnimationStateMachineSpec,
 };
 use next_block::NextBlockCell;
 use score::{

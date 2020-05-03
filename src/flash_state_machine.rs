@@ -22,6 +22,13 @@ use timer::{
 use std::time::Duration;
 
 
+
+#[derive(Copy, Clone)]
+pub struct FlashAnimationStateMachineSpec {
+    pub flash_switch_interval: Interval,
+    pub flash_stop_interval: Interval,
+}
+
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum FlashAnimationState {
     Light,
