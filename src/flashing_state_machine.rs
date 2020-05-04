@@ -37,16 +37,25 @@ pub fn create(spec: FlashAnimationStateMachineSpec) -> FlashAnimationStateMachin
     FlashAnimationStateMachine::new(spec.flash_switch_interval, spec.flash_stop_interval)
 }
 
+/// The internal state of the animation state machine.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum FlashAnimationState {
+    /// Display the light color.
     Light,
+    /// Display the dark color.
     Dark,
+    /// Do not run the animation.
     Disabled,
 }
 
+/// The flash animation state machine that coordinates the execution of the 
+/// background flash animation when the player gets a tetris during gameplay.
 pub struct FlashAnimationStateMachine {
+    /// The current state of the animation.
     pub state: FlashAnimationState,
+    /// The timer that controls the duration for switching between animation states.
     flash_switch_timer: Timer,
+    /// The timer that controls the duration of the entire background flash animation.
     flash_stop_timer: Timer,
 }
 
@@ -59,11 +68,13 @@ impl FlashAnimationStateMachine {
         }
     }
 
+    /// Determine whether the flash animation is enabled.
     #[inline]
     fn is_enabled(&self) -> bool {
         self.state != FlashAnimationState::Disabled
     }
 
+    /// Enable the flash animation.
     #[inline]
     pub fn enable(&mut self) {
         self.state = FlashAnimationState::Dark;
@@ -71,6 +82,7 @@ impl FlashAnimationStateMachine {
         self.flash_switch_timer.reset();
     }
 
+    /// Disable the flash animation.
     #[inline]
     pub fn disable(&mut self) {
         self.state = FlashAnimationState::Disabled;
@@ -78,11 +90,13 @@ impl FlashAnimationStateMachine {
         self.flash_switch_timer.reset();
     }
 
+    /// Determine whether the flash animation is disabled.
     #[inline]
     pub fn is_disabled(&self) -> bool {
         self.state == FlashAnimationState::Disabled
     }
 
+    /// Update the internal state of the state machine.
     #[inline]
     fn update_state(&mut self) {
         self.state = match self.state {
@@ -92,6 +106,8 @@ impl FlashAnimationStateMachine {
         };
     }
 
+    /// Update the state machine with the change in the time elapsed in between
+    /// state updates.
     pub fn update(&mut self, elapsed_milliseconds: Duration) {
         if self.is_enabled() {
             self.flash_switch_timer.update(elapsed_milliseconds);
@@ -118,7 +134,7 @@ mod tests {
     use timer::Interval;
     use std::time::Duration;
 
-
+    /// The flash animation state machine should correctly enable itself after calling the enable function.
     #[test]
     fn state_machine_should_correctly_report_being_enabled_after_enabling() {
         let flash_switch_interval = Interval::Milliseconds(50);
@@ -129,6 +145,7 @@ mod tests {
         assert!(state_machine.is_enabled());
     }
 
+    /// Calling disable on the flash animation state machine should disable the flashing animation.
     #[test]
     fn state_machine_should_correctly_report_being_disabled_after_disabling() {
         let flash_switch_interval = Interval::Milliseconds(50);
@@ -140,6 +157,8 @@ mod tests {
         assert!(state_machine.is_disabled());
     }
 
+    /// The flashing animation should proceed up to the stopping time of the animations. Afterwards,
+    /// it should be disabled.
     #[test]
     fn state_machine_should_disable_after_stopping_time_is_reached() {
         let flash_switch_interval = Interval::Milliseconds(50);
@@ -152,6 +171,8 @@ mod tests {
         assert!(state_machine.is_disabled());
     }
 
+    /// When the elapsed time during the flashing animation is less than the stopping time, the animation
+    /// should remain enabled unless someone explicitly disables it beforehand.
     #[test]
     fn state_machine_should_remain_enabled_before_stopping_time_is_reached() {
         let flash_switch_interval = Interval::Milliseconds(50);
@@ -164,6 +185,8 @@ mod tests {
         assert!(state_machine.is_enabled());
     }
 
+    /// The flashing animation should correctly switch between frames of the animation 
+    /// after each switching period.
     #[test]
     fn state_machine_should_transition_from_dark_to_light_after_switch_time_is_reached() {
         let flash_switch_interval = Interval::Milliseconds(50);
@@ -176,6 +199,8 @@ mod tests {
         assert_eq!(state_machine.state, FlashAnimationState::Light);
     }
 
+    /// The flashing animation should correctly switch between frames of the animation 
+    /// after each switching period.
     #[test]
     fn state_machine_should_transition_from_light_to_dark_after_switch_time_is_reached() {
         let flash_switch_interval = Interval::Milliseconds(50);
@@ -189,6 +214,8 @@ mod tests {
         assert_eq!(state_machine.state, FlashAnimationState::Dark);
     }
 
+    /// Subsequent updates to the flash animation state machine should not disable the animation until
+    /// the total elapsed time has passed the stopping time.
     #[test]
     fn state_machine_should_remain_enabled_before_stopping_time() {
         let flash_switch_interval = Interval::Milliseconds(50);
