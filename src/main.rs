@@ -2012,7 +2012,7 @@ fn create_buffers_geometry_playing_field() -> PlayingFieldBuffers {
 
     let mut vao = 0;
     unsafe {
-        gl::CreateVertexArrays(1, &mut vao);
+        gl::GenVertexArrays(1, &mut vao);
     }
     debug_assert!(vao > 0);
 
