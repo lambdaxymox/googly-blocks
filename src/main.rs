@@ -2044,7 +2044,7 @@ fn send_to_gpu_geometry_playing_field(handle: PlayingFieldBuffers, mesh: &ObjMes
             mesh.points.as_ptr() as *const GLvoid,
             gl::DYNAMIC_DRAW
         );
-        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_tex_vbo);
         gl::BufferData(
             gl::ARRAY_BUFFER,
             mesh.tex_coords.len_bytes() as GLsizeiptr,
@@ -2178,11 +2178,12 @@ struct PlayingFieldHandle {
 impl PlayingFieldHandle {
     fn write(&mut self, tex_coords: &[[TextureQuad; 10]; 20]) -> io::Result<usize> {
         unsafe {
-            gl::NamedBufferSubData(
-                self.v_tex_vbo, 
-                0,
+            gl::BindBuffer(gl::ARRAY_BUFFER, self.v_tex_vbo);
+            gl::BufferData(
+                gl::ARRAY_BUFFER,
                 (mem::size_of::<TextureQuad>() * tex_coords[0].len() * tex_coords.len()) as GLsizeiptr,
                 tex_coords.as_ptr() as *const GLvoid,
+                gl::DYNAMIC_DRAW
             );
         }
         let bytes_written = mem::size_of::<GLfloat>() * tex_coords.len();
