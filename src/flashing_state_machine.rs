@@ -22,17 +22,19 @@ use timer::{
 use std::time::Duration;
 
 
-/// A factor method for creating a flash animation state machine from a 
-/// specification.
-pub fn create(spec: FlashAnimationStateMachineSpec) -> FlashAnimationStateMachine {
-    FlashAnimationStateMachine::new(spec.flash_switch_interval, spec.flash_stop_interval)
-}
 
-
+/// A specification type describing the parameters for constructing a 
+/// flashing animation state machine.
 #[derive(Copy, Clone)]
 pub struct FlashAnimationStateMachineSpec {
     pub flash_switch_interval: Interval,
     pub flash_stop_interval: Interval,
+}
+
+/// A factory method for creating a flash animation state machine from a 
+/// specification.
+pub fn create(spec: FlashAnimationStateMachineSpec) -> FlashAnimationStateMachine {
+    FlashAnimationStateMachine::new(spec.flash_switch_interval, spec.flash_stop_interval)
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
