@@ -208,9 +208,18 @@ struct BackgroundPanelHandle {
     v_tex_loc: GLuint,
 }
 
-fn create_buffers_geometry_background() -> BackgroundPanelHandle {
-    let v_pos_loc = 0;
-    let v_tex_loc = 1;
+fn create_buffers_geometry_background(sp: GLuint) -> BackgroundPanelHandle {
+    let v_pos_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+    };
+    debug_assert!(v_pos_loc > -1);
+    let v_pos_loc = v_pos_loc as GLuint;
+
+    let v_tex_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+    };
+    debug_assert!(v_tex_loc > -1);
+    let v_tex_loc = v_tex_loc as GLuint;
 
     let mut v_pos_vbo = 0;
     unsafe {
@@ -330,7 +339,7 @@ fn load_background_panel(game: &mut glh::GLState, spec: BackgroundPanelSpec) -> 
     let shader_source = create_shaders_background();
     let mesh = create_geometry_background();
     let sp = send_to_gpu_shaders_background(game, shader_source);
-    let background_buffer = create_buffers_geometry_background();
+    let background_buffer = create_buffers_geometry_background(sp);
     send_to_gpu_geometry_background(background_buffer, &mesh);
     let background_tex = send_to_gpu_textures_background(&spec.background_atlas);
     let background_handle = GLBackgroundPanel {
@@ -340,7 +349,7 @@ fn load_background_panel(game: &mut glh::GLState, spec: BackgroundPanelSpec) -> 
         vao: background_buffer.vao,
         tex: background_tex,
     };
-    let title_buffer = create_buffers_geometry_background();
+    let title_buffer = create_buffers_geometry_background(sp);
     send_to_gpu_geometry_background(title_buffer, &mesh);
     let title_tex = send_to_gpu_textures_background(&spec.title_atlas);
     let title_handle = GLBackgroundPanel {
@@ -449,9 +458,18 @@ fn send_to_gpu_shaders_title_screen_background(game: &mut glh::GLState, source: 
     send_to_gpu_shaders(game, source)
 }
 
-fn create_buffers_geometry_title_screen_background() -> TitleScreenBackgroundBuffers {
-    let v_pos_loc = 0;
-    let v_tex_loc = 1;
+fn create_buffers_geometry_title_screen_background(sp: GLuint) -> TitleScreenBackgroundBuffers {
+    let v_pos_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+    };
+    debug_assert!(v_pos_loc > -1);
+    let v_pos_loc = v_pos_loc as GLuint;
+    
+    let v_tex_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+    };
+    debug_assert!(v_tex_loc > -1);
+    let v_tex_loc = v_tex_loc as GLuint;
 
     let mut v_pos_vbo = 0;
     unsafe {
@@ -605,9 +623,18 @@ fn send_to_gpu_shaders_title_screen_flashing(game: &mut glh::GLState, source: Sh
     send_to_gpu_shaders(game, source)
 }
 
-fn create_buffers_geometry_title_screen_flashing() -> TitleScreenFlashingBuffers {
-    let v_pos_loc = 0;
-    let v_tex_loc = 1;
+fn create_buffers_geometry_title_screen_flashing(sp: GLuint) -> TitleScreenFlashingBuffers {
+    let v_pos_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+    };
+    debug_assert!(v_pos_loc > -1);
+    let v_pos_loc = v_pos_loc as GLuint;
+    
+    let v_tex_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+    };
+    debug_assert!(v_tex_loc > -1);
+    let v_tex_loc = v_tex_loc as GLuint;
 
     let mut v_pos_vbo = 0;
     unsafe {
@@ -714,10 +741,10 @@ fn load_title_screen(game: &mut glh::GLState, spec: TitleScreenSpec) -> TitleScr
     let background_mesh = create_geometry_title_screen_background(&spec.background_atlas);
     let flashing_source = create_shaders_title_screen_flashing();
     let flashing_mesh = create_geometry_title_screen_flashing(&spec.flashing_atlas);
-    let background_buffers = create_buffers_geometry_title_screen_background();
-    let flashing_buffers = create_buffers_geometry_title_screen_flashing();
     let background_sp = send_to_gpu_shaders_title_screen_background(game, background_source);
     let flashing_sp = send_to_gpu_shaders_title_screen_flashing(game, flashing_source);
+    let background_buffers = create_buffers_geometry_title_screen_background(background_sp);
+    let flashing_buffers = create_buffers_geometry_title_screen_flashing(flashing_sp);
     send_to_gpu_geometry_title_screen_background(background_buffers, &background_mesh);
     send_to_gpu_geometry_title_screen_flashing(flashing_buffers, &flashing_mesh);
     let background_tex = send_to_gpu_textures_title_screen_background(&spec.background_atlas);
@@ -830,9 +857,18 @@ struct UIPanelHandle {
     v_tex_loc: GLuint,
 }
 
-fn create_buffers_geometry_ui_panel() -> UIPanelHandle {
-    let v_pos_loc = 0;
-    let v_tex_loc = 1;
+fn create_buffers_geometry_ui_panel(sp: GLuint) -> UIPanelHandle {
+    let v_pos_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+    };
+    debug_assert!(v_pos_loc > -1);
+    let v_pos_loc = v_pos_loc as GLuint;
+    
+    let v_tex_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+    };
+    debug_assert!(v_tex_loc > -1);
+    let v_tex_loc = v_tex_loc as GLuint;
 
     let mut v_pos_vbo = 0;
     unsafe {
@@ -994,7 +1030,7 @@ fn load_ui_panel(game: &mut glh::GLState, spec: UIPanelSpec, uniforms: UIPanelUn
     let shader_source = create_shaders_ui_panel();
     let sp = send_to_gpu_shaders_ui_panel(game, shader_source);
     let mesh = create_geometry_ui_panel(&spec.atlas);
-    let handle = create_buffers_geometry_ui_panel();
+    let handle = create_buffers_geometry_ui_panel(sp);
     send_to_gpu_geometry_ui_panel(handle, &mesh);
     let tex = send_to_gpu_textures_ui_panel(&spec.atlas);
     send_to_gpu_uniforms_ui_panel(sp, uniforms);
@@ -1224,9 +1260,18 @@ struct NextPiecePanelHandle {
     v_tex_loc: GLuint,
 }
 
-fn create_buffers_geometry_piece_mesh() -> NextPiecePanelHandle {
-    let v_pos_loc = 0;
-    let v_tex_loc = 1;
+fn create_buffers_geometry_piece_mesh(sp: GLuint) -> NextPiecePanelHandle {
+    let v_pos_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+    };
+    debug_assert!(v_pos_loc > -1);
+    let v_pos_loc = v_pos_loc as GLuint;
+    
+    let v_tex_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+    };
+    debug_assert!(v_tex_loc > -1);
+    let v_tex_loc = v_tex_loc as GLuint;
 
     let mut v_pos_vbo = 0;
     unsafe {
@@ -1298,20 +1343,20 @@ struct NextPanelHandles {
     i: NextPiecePanelHandle,
 }
 
-fn send_to_gpu_geometry_next_panel(meshes: &PieceMeshes) -> NextPanelHandles {
-    let t_handle = create_buffers_geometry_piece_mesh();
+fn send_to_gpu_geometry_next_panel(sp: GLuint, meshes: &PieceMeshes) -> NextPanelHandles {
+    let t_handle = create_buffers_geometry_piece_mesh(sp);
     send_to_gpu_geometry_piece_mesh(t_handle, &meshes.t);
-    let j_handle = create_buffers_geometry_piece_mesh();
+    let j_handle = create_buffers_geometry_piece_mesh(sp);
     send_to_gpu_geometry_piece_mesh(j_handle, &meshes.j);
-    let z_handle = create_buffers_geometry_piece_mesh();
+    let z_handle = create_buffers_geometry_piece_mesh(sp);
     send_to_gpu_geometry_piece_mesh(z_handle, &meshes.z);
-    let o_handle = create_buffers_geometry_piece_mesh();
+    let o_handle = create_buffers_geometry_piece_mesh(sp);
     send_to_gpu_geometry_piece_mesh(o_handle, &meshes.o);
-    let s_handle = create_buffers_geometry_piece_mesh();
+    let s_handle = create_buffers_geometry_piece_mesh(sp);
     send_to_gpu_geometry_piece_mesh(s_handle, &meshes.s);
-    let l_handle = create_buffers_geometry_piece_mesh();
+    let l_handle = create_buffers_geometry_piece_mesh(sp);
     send_to_gpu_geometry_piece_mesh(l_handle, &meshes.l);
-    let i_handle = create_buffers_geometry_piece_mesh();
+    let i_handle = create_buffers_geometry_piece_mesh(sp);
     send_to_gpu_geometry_piece_mesh(i_handle, &meshes.i);
 
     NextPanelHandles {
@@ -1409,7 +1454,7 @@ fn create_next_piece_panel_buffer(gl_context: &mut glh::GLState, atlas: &Texture
     let sp = send_to_gpu_shaders_next_piece_panel(gl_context, shader_source);
     let tex = send_to_gpu_textures_next_piece_panel(atlas);
     let meshes = create_geometry_next_piece_panel(atlas);
-    let handles = send_to_gpu_geometry_next_panel(&meshes);
+    let handles = send_to_gpu_geometry_next_panel(sp, &meshes);
     send_to_gpu_uniforms_next_piece_panel(sp, uniforms);
 
     GLNextPiecePanel {
@@ -1550,9 +1595,18 @@ fn send_to_gpu_shaders_playing_field_background(game: &mut glh::GLState, source:
     send_to_gpu_shaders(game, source)
 }
 
-fn create_buffers_geometry_playing_field_background() -> PlayingFieldBackgroundBuffers {
-    let v_pos_loc = 0;
-    let v_tex_loc = 1;
+fn create_buffers_geometry_playing_field_background(sp: GLuint) -> PlayingFieldBackgroundBuffers {
+    let v_pos_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+    };
+    debug_assert!(v_pos_loc > -1);
+    let v_pos_loc = v_pos_loc as GLuint;
+    
+    let v_tex_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+    };
+    debug_assert!(v_tex_loc > -1);
+    let v_tex_loc = v_tex_loc as GLuint;
 
     let mut v_pos_vbo = 0;
     unsafe {
@@ -1641,9 +1695,9 @@ fn load_playing_field_background(game: &mut glh::GLState, spec: PlayingFieldBack
         "PlayingFieldFlashingBackgroundLight", &spec.atlas
     );
     let sp = send_to_gpu_shaders_playing_field_background(game, shader_source);
-    let default_buffer = create_buffers_geometry_playing_field_background();
-    let dark_buffer = create_buffers_geometry_playing_field_background();
-    let light_buffer = create_buffers_geometry_playing_field_background();
+    let default_buffer = create_buffers_geometry_playing_field_background(sp);
+    let dark_buffer = create_buffers_geometry_playing_field_background(sp);
+    let light_buffer = create_buffers_geometry_playing_field_background(sp);
     send_to_gpu_geometry_playing_field_background(default_buffer, &default_mesh);
     send_to_gpu_geometry_playing_field_background(dark_buffer, &dark_mesh);
     send_to_gpu_geometry_playing_field_background(light_buffer, &light_mesh);
@@ -1793,9 +1847,18 @@ fn send_to_gpu_shaders_game_over(game: &mut glh::GLState, source: ShaderSource) 
     send_to_gpu_shaders(game, source)
 }
 
-fn create_buffers_geometry_game_over() -> GameOverPanelBuffers {
-    let v_pos_loc = 0;
-    let v_tex_loc = 1;
+fn create_buffers_geometry_game_over(sp: GLuint) -> GameOverPanelBuffers {
+    let v_pos_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+    };
+    debug_assert!(v_pos_loc > -1);
+    let v_pos_loc = v_pos_loc as GLuint;
+    
+    let v_tex_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+    };
+    debug_assert!(v_tex_loc > -1);
+    let v_tex_loc = v_tex_loc as GLuint;
 
     let mut v_pos_vbo = 0;
     unsafe {
@@ -1876,7 +1939,7 @@ fn load_game_over_panel(game: &mut glh::GLState, spec: GameOverPanelSpec) -> Gam
     let shader_source = create_shaders_game_over();
     let mesh = create_geometry_game_over(&spec.atlas);
     let sp = send_to_gpu_shaders_game_over(game, shader_source);
-    let handle = create_buffers_geometry_game_over();
+    let handle = create_buffers_geometry_game_over(sp);
     send_to_gpu_geometry_game_over(handle, &mesh);
     let tex = send_to_gpu_textures_game_over(&spec.atlas);
     let buffer = GameOverPanelHandle {
@@ -1994,9 +2057,18 @@ struct PlayingFieldBuffers {
     v_tex_loc: GLuint,
 }
 
-fn create_buffers_geometry_playing_field() -> PlayingFieldBuffers {
-    let v_pos_loc = 0;
-    let v_tex_loc = 1;
+fn create_buffers_geometry_playing_field(sp: GLuint) -> PlayingFieldBuffers {
+    let v_pos_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+    };
+    debug_assert!(v_pos_loc > -1);
+    let v_pos_loc = v_pos_loc as GLuint;
+    
+    let v_tex_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+    };
+    debug_assert!(v_tex_loc > -1);
+    let v_tex_loc = v_tex_loc as GLuint;
 
     let mut v_pos_vbo = 0;
     unsafe {
@@ -2262,7 +2334,7 @@ fn load_playing_field(game: &mut glh::GLState, spec: PlayingFieldHandleSpec, uni
     let shader_source = create_shaders_playing_field();
     let mesh = create_geometry_playing_field(spec.rows, spec.columns);
     let sp = send_to_gpu_shaders_playing_field(game, shader_source);
-    let handle = create_buffers_geometry_playing_field();
+    let handle = create_buffers_geometry_playing_field(sp);
     send_to_gpu_geometry_playing_field(handle, &mesh);
     let tex = send_to_gpu_textures_playing_field(&spec.atlas);
     send_to_gpu_uniforms_playing_field(sp, uniforms);
@@ -2579,9 +2651,18 @@ struct TextBufferHandle {
 }
 
 /// Set up the geometry for rendering title screen text.
-fn create_buffers_text_buffer() -> TextBufferHandle {
-    let v_pos_loc = 0;
-    let v_tex_loc = 1;
+fn create_buffers_text_buffer(sp: GLuint) -> TextBufferHandle {
+    let v_pos_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+    };
+    debug_assert!(v_pos_loc > -1);
+    let v_pos_loc = v_pos_loc as GLuint;
+    
+    let v_tex_loc = unsafe {
+        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+    };
+    debug_assert!(v_tex_loc > -1);
+    let v_tex_loc = v_tex_loc as GLuint;
 
     let mut v_pos_vbo = 0;
     unsafe {
@@ -2660,7 +2741,7 @@ fn create_text_buffer(
         let mut context = gl_state.borrow_mut();
         send_to_gpu_shaders_text_buffer(&mut *context, shader_source)
     };
-    let handle = create_buffers_text_buffer();
+    let handle = create_buffers_text_buffer(sp);
     send_to_gpu_uniforms_text_buffer(sp, uniforms);
 
     let buffer = GLTextBuffer {
