@@ -455,13 +455,13 @@ fn create_buffers_geometry_title_screen_background() -> TitleScreenBackgroundBuf
 
     let mut v_pos_vbo = 0;
     unsafe {
-        gl::CreateBuffers(1, &mut v_pos_vbo);
+        gl::GenBuffers(1, &mut v_pos_vbo);
     }
     debug_assert!(v_pos_vbo > 0);
 
     let mut v_tex_vbo = 0;
     unsafe {
-        gl::CreateBuffers(1, &mut v_tex_vbo);
+        gl::GenBuffers(1, &mut v_tex_vbo);
     }
     debug_assert!(v_tex_vbo > 0);
 
@@ -611,13 +611,13 @@ fn create_buffers_geometry_title_screen_flashing() -> TitleScreenFlashingBuffers
 
     let mut v_pos_vbo = 0;
     unsafe {
-        gl::CreateBuffers(1, &mut v_pos_vbo);
+        gl::GenBuffers(1, &mut v_pos_vbo);
     }
     debug_assert!(v_pos_vbo > 0);
 
     let mut v_tex_vbo = 0;
     unsafe {
-        gl::CreateBuffers(1, &mut v_tex_vbo);
+        gl::GenBuffers(1, &mut v_tex_vbo);
     }
     debug_assert!(v_tex_vbo > 0);
 
@@ -1230,13 +1230,13 @@ fn create_buffers_geometry_piece_mesh() -> NextPiecePanelHandle {
 
     let mut v_pos_vbo = 0;
     unsafe {
-        gl::CreateBuffers(1, &mut v_pos_vbo);
+        gl::GenBuffers(1, &mut v_pos_vbo);
     }
     debug_assert!(v_pos_vbo > 0);
 
     let mut v_tex_vbo = 0;
     unsafe {
-        gl::CreateBuffers(1, &mut v_tex_vbo);
+        gl::GenBuffers(1, &mut v_tex_vbo);
     }
     debug_assert!(v_tex_vbo > 0);
 
@@ -1556,13 +1556,13 @@ fn create_buffers_geometry_playing_field_background() -> PlayingFieldBackgroundB
 
     let mut v_pos_vbo = 0;
     unsafe {
-        gl::CreateBuffers(1, &mut v_pos_vbo);
+        gl::GenBuffers(1, &mut v_pos_vbo);
     }
     debug_assert!(v_pos_vbo > 0);
 
     let mut v_tex_vbo = 0;
     unsafe {
-        gl::CreateBuffers(1, &mut v_tex_vbo);
+        gl::GenBuffers(1, &mut v_tex_vbo);
     }
     debug_assert!(v_tex_vbo > 0);
 
@@ -1799,13 +1799,13 @@ fn create_buffers_geometry_game_over() -> GameOverPanelBuffers {
 
     let mut v_pos_vbo = 0;
     unsafe {
-        gl::CreateBuffers(1, &mut v_pos_vbo);
+        gl::GenBuffers(1, &mut v_pos_vbo);
     }
     debug_assert!(v_pos_vbo > 0);
 
     let mut v_tex_vbo = 0;
     unsafe {
-        gl::CreateBuffers(1, &mut v_tex_vbo);
+        gl::GenBuffers(1, &mut v_tex_vbo);
     }
     debug_assert!(v_tex_vbo > 0);
 
@@ -2000,13 +2000,13 @@ fn create_buffers_geometry_playing_field() -> PlayingFieldBuffers {
 
     let mut v_pos_vbo = 0;
     unsafe {
-        gl::CreateBuffers(1, &mut v_pos_vbo);
+        gl::GenBuffers(1, &mut v_pos_vbo);
     }
     debug_assert!(v_pos_vbo > 0);
 
     let mut v_tex_vbo = 0;
     unsafe {
-        gl::CreateBuffers(1, &mut v_tex_vbo);
+        gl::GenBuffers(1, &mut v_tex_vbo);
     }
     debug_assert!(v_tex_vbo > 0);
 
