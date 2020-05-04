@@ -2037,15 +2037,19 @@ fn create_buffers_geometry_playing_field() -> PlayingFieldBuffers {
 
 fn send_to_gpu_geometry_playing_field(handle: PlayingFieldBuffers, mesh: &ObjMesh) {
     unsafe {
-        gl::NamedBufferData(
-            handle.v_pos_vbo, 
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
             mesh.points.len_bytes() as GLsizeiptr,
-            mesh.points.as_ptr() as *const GLvoid, gl::DYNAMIC_DRAW,
+            mesh.points.as_ptr() as *const GLvoid,
+            gl::DYNAMIC_DRAW
         );
-        gl::NamedBufferData(
-            handle.v_tex_vbo,
+        gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
             mesh.tex_coords.len_bytes() as GLsizeiptr,
-            mesh.tex_coords.as_ptr() as *const GLvoid, gl::DYNAMIC_DRAW
+            mesh.tex_coords.as_ptr() as *const GLvoid, 
+            gl::DYNAMIC_DRAW
         );
         gl::BindVertexArray(handle.vao);
         gl::BindBuffer(gl::ARRAY_BUFFER, handle.v_pos_vbo);
