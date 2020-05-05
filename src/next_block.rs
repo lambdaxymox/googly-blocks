@@ -27,7 +27,7 @@ use block::{
 };
 
 
-/// The generator than pseudorandomly generates the next block for the 
+/// The block generator that pseudorandomly generates the next block for the 
 /// next block panel in the game.
 struct NextBlockGen {
     /// The inner random number generator.
