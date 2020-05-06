@@ -3512,7 +3512,7 @@ impl RendererPlayingState {
     #[inline]
     fn clear_framebuffer(&self, context: &mut RendererContext) {
         unsafe {
-            gl::ClearBufferfv(gl::COLOR, 0, &CLEAR_COLOR[0] as *const GLfloat);
+            gl::ClearBufferfv(gl::COLOR, 0, &CLEAR_COLOR[0] as *const GLfloat); 
         }
     }
 
