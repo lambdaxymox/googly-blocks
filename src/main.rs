@@ -373,28 +373,6 @@ fn load_background_panel(game: &mut glb::GLState, spec: BackgroundPanelSpec) -> 
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #[derive(Copy, Clone)]
 struct TitleScreenBackgroundBuffers {
     vao: GLuint,
@@ -790,32 +768,6 @@ fn load_title_screen(game: &mut glb::GLState, spec: TitleScreenSpec) -> TitleScr
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 fn create_shaders_ui_panel() -> ShaderSource {
     let vert_source = include_shader!("ui_panel.vert.glsl");
     let frag_source = include_shader!("ui_panel.frag.glsl");
@@ -1049,33 +1001,6 @@ fn load_ui_panel(game: &mut glb::GLState, spec: UIPanelSpec, uniforms: UIPanelUn
         width: spec.width,
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 /// Create the shaders for the next panel in the game's user interface.
@@ -1502,30 +1427,6 @@ fn load_next_piece_panel(
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #[derive(Copy, Clone)]
 struct PlayingFieldBackgroundBuffers {
     vao: GLuint,
@@ -1766,25 +1667,6 @@ fn send_to_gpu_uniforms_playing_field_background(sp: GLuint, uniforms: PlayingFi
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #[derive(Copy, Clone)]
 struct GameOverPanelBuffers {
     vao: GLuint,
@@ -1978,24 +1860,6 @@ fn send_to_gpu_uniforms_game_over_panel(sp: GLuint, uniforms: GameOverPanelUnifo
         gl::UniformMatrix4fv(m_trans_loc, 1, gl::FALSE, uniforms.trans_mat.as_ptr());
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 fn create_shaders_playing_field() -> ShaderSource {
@@ -2867,47 +2731,6 @@ impl UI {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-struct ViewportDimensions {
-    width: i32,
-    height: i32,
-}
 #[derive(Copy, Clone)]
 struct GameTitleScreenState {}
 
@@ -3082,6 +2905,8 @@ impl GameStateMachine {
         self.state
     }
 }
+
+
 struct GameContext {
     gl: Rc<RefCell<glb::GLState>>,
     playing_field_state: Rc<RefCell<PlayingFieldContext>>,
@@ -3093,55 +2918,6 @@ struct GameContext {
     exiting: Rc<RefCell<bool>>,
     title_screen: Rc<RefCell<TitleScreenStateMachine>>,
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 struct RendererContext {
     game_context: Rc<RefCell<GameContext>>,
@@ -3355,7 +3131,6 @@ impl RendererTitleScreenState {
         self.render_start_prompt(context);
     }
 }
-
 
 
 #[derive(Copy, Clone)]
@@ -3754,38 +3529,10 @@ impl RendererStateMachine {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+struct ViewportDimensions {
+    width: i32,
+    height: i32,
+}
 
 struct Game {
     context: Rc<RefCell<GameContext>>,
