@@ -35,14 +35,14 @@ mod block;
 mod input;
 mod flashing_state_machine;
 mod mesh;
-mod gl_help;
+mod gl_backend;
 mod playing_field;
 mod playing_field_state_machine;
 mod timer;
 mod next_block;
 mod score;
 
-use gl_help as glh;
+use gl_backend as glb;
 use cgmath as math; 
 
 use bmfa::BitmapFontAtlas;
@@ -149,10 +149,10 @@ struct ShaderSource {
     frag_source: &'static str,
 }
 
-fn send_to_gpu_shaders(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+fn send_to_gpu_shaders(game: &mut glb::GLState, source: ShaderSource) -> GLuint {
     let mut vert_reader = io::Cursor::new(source.vert_source);
     let mut frag_reader = io::Cursor::new(source.frag_source);
-    let sp = glh::create_program_from_reader(
+    let sp = glb::create_program_from_reader(
         game,
         &mut vert_reader, source.vert_name,
         &mut frag_reader, source.frag_name
@@ -175,7 +175,7 @@ fn create_shaders_background() -> ShaderSource {
 }
 
 #[inline]
-fn send_to_gpu_shaders_background(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+fn send_to_gpu_shaders_background(game: &mut glb::GLState, source: ShaderSource) -> GLuint {
     send_to_gpu_shaders(game, source)
 }
 
@@ -210,13 +210,13 @@ struct BackgroundPanelHandle {
 
 fn create_buffers_geometry_background(sp: GLuint) -> BackgroundPanelHandle {
     let v_pos_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+        gl::GetAttribLocation(sp, glb::gl_str("v_pos").as_ptr())
     };
     debug_assert!(v_pos_loc > -1);
     let v_pos_loc = v_pos_loc as GLuint;
 
     let v_tex_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+        gl::GetAttribLocation(sp, glb::gl_str("v_tex").as_ptr())
     };
     debug_assert!(v_tex_loc > -1);
     let v_tex_loc = v_tex_loc as GLuint;
@@ -301,7 +301,7 @@ struct BackgroundPanelUniforms {
 
 fn send_to_gpu_uniforms_background_panel(sp: GLuint, uniforms: BackgroundPanelUniforms) {
     let m_gui_scale_loc = unsafe {
-        gl::GetUniformLocation(sp, glh::gl_str("m_gui_scale").as_ptr())
+        gl::GetUniformLocation(sp, glb::gl_str("m_gui_scale").as_ptr())
     };
     debug_assert!(m_gui_scale_loc > -1);
     unsafe {
@@ -335,7 +335,7 @@ struct BackgroundPanel {
     title_handle: GLBackgroundPanel,
 }
 
-fn load_background_panel(game: &mut glh::GLState, spec: BackgroundPanelSpec) -> BackgroundPanel {
+fn load_background_panel(game: &mut glb::GLState, spec: BackgroundPanelSpec) -> BackgroundPanel {
     let shader_source = create_shaders_background();
     let mesh = create_geometry_background();
     let sp = send_to_gpu_shaders_background(game, shader_source);
@@ -454,19 +454,19 @@ fn create_geometry_title_screen_background(atlas: &TextureAtlas2D) -> ObjMesh {
     ObjMesh::new(points, tex_coords)
 }
 
-fn send_to_gpu_shaders_title_screen_background(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+fn send_to_gpu_shaders_title_screen_background(game: &mut glb::GLState, source: ShaderSource) -> GLuint {
     send_to_gpu_shaders(game, source)
 }
 
 fn create_buffers_geometry_title_screen_background(sp: GLuint) -> TitleScreenBackgroundBuffers {
     let v_pos_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+        gl::GetAttribLocation(sp, glb::gl_str("v_pos").as_ptr())
     };
     debug_assert!(v_pos_loc > -1);
     let v_pos_loc = v_pos_loc as GLuint;
     
     let v_tex_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+        gl::GetAttribLocation(sp, glb::gl_str("v_tex").as_ptr())
     };
     debug_assert!(v_tex_loc > -1);
     let v_tex_loc = v_tex_loc as GLuint;
@@ -542,11 +542,11 @@ fn send_to_gpu_textures_title_screen_background(atlas: &TextureAtlas2D) -> GLuin
 
 fn send_to_gpu_uniforms_title_screen_background(sp: GLuint, uniforms: TitleScreenBackgroundUniforms) {
     let m_gui_scale_loc = unsafe {
-        gl::GetUniformLocation(sp, glh::gl_str("m_gui_scale").as_ptr())
+        gl::GetUniformLocation(sp, glb::gl_str("m_gui_scale").as_ptr())
     };
     debug_assert!(m_gui_scale_loc > -1);
     let m_trans_loc = unsafe {
-        gl::GetUniformLocation(sp, glh::gl_str("m_trans").as_ptr())
+        gl::GetUniformLocation(sp, glb::gl_str("m_trans").as_ptr())
     };
     debug_assert!(m_trans_loc > -1);
     unsafe {
@@ -619,19 +619,19 @@ fn create_geometry_title_screen_flashing(atlas: &TextureAtlas2D) -> ObjMesh {
     ObjMesh::new(points, tex_coords)
 }
 
-fn send_to_gpu_shaders_title_screen_flashing(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+fn send_to_gpu_shaders_title_screen_flashing(game: &mut glb::GLState, source: ShaderSource) -> GLuint {
     send_to_gpu_shaders(game, source)
 }
 
 fn create_buffers_geometry_title_screen_flashing(sp: GLuint) -> TitleScreenFlashingBuffers {
     let v_pos_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+        gl::GetAttribLocation(sp, glb::gl_str("v_pos").as_ptr())
     };
     debug_assert!(v_pos_loc > -1);
     let v_pos_loc = v_pos_loc as GLuint;
     
     let v_tex_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+        gl::GetAttribLocation(sp, glb::gl_str("v_tex").as_ptr())
     };
     debug_assert!(v_tex_loc > -1);
     let v_tex_loc = v_tex_loc as GLuint;
@@ -722,11 +722,11 @@ struct TitleScreenHandle {
 
 fn send_to_gpu_uniforms_title_screen_flashing(sp: GLuint, uniforms: TitleScreenFlashingUniforms) {
     let m_gui_scale_loc = unsafe {
-        gl::GetUniformLocation(sp, glh::gl_str("m_gui_scale").as_ptr())
+        gl::GetUniformLocation(sp, glb::gl_str("m_gui_scale").as_ptr())
     };
     debug_assert!(m_gui_scale_loc > -1);
     let m_trans_loc = unsafe {
-        gl::GetUniformLocation(sp, glh::gl_str("m_trans").as_ptr())
+        gl::GetUniformLocation(sp, glb::gl_str("m_trans").as_ptr())
     };
     debug_assert!(m_trans_loc > -1);
     unsafe {
@@ -736,7 +736,7 @@ fn send_to_gpu_uniforms_title_screen_flashing(sp: GLuint, uniforms: TitleScreenF
     }
 }
 
-fn load_title_screen(game: &mut glh::GLState, spec: TitleScreenSpec) -> TitleScreenHandle {
+fn load_title_screen(game: &mut glb::GLState, spec: TitleScreenSpec) -> TitleScreenHandle {
     let background_source = create_shaders_title_screen_background();
     let background_mesh = create_geometry_title_screen_background(&spec.background_atlas);
     let flashing_source = create_shaders_title_screen_flashing();
@@ -824,7 +824,7 @@ fn create_shaders_ui_panel() -> ShaderSource {
     }
 }
 
-fn send_to_gpu_shaders_ui_panel(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+fn send_to_gpu_shaders_ui_panel(game: &mut glb::GLState, source: ShaderSource) -> GLuint {
     send_to_gpu_shaders(game, source)
 }
 
@@ -859,13 +859,13 @@ struct UIPanelHandle {
 
 fn create_buffers_geometry_ui_panel(sp: GLuint) -> UIPanelHandle {
     let v_pos_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+        gl::GetAttribLocation(sp, glb::gl_str("v_pos").as_ptr())
     };
     debug_assert!(v_pos_loc > -1);
     let v_pos_loc = v_pos_loc as GLuint;
     
     let v_tex_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+        gl::GetAttribLocation(sp, glb::gl_str("v_tex").as_ptr())
     };
     debug_assert!(v_tex_loc > -1);
     let v_tex_loc = v_tex_loc as GLuint;
@@ -969,7 +969,7 @@ struct UIPanelUniforms {
 
 fn send_to_gpu_uniforms_ui_panel(sp: GLuint, uniforms: UIPanelUniforms) {
     let ubo_index = unsafe {
-        gl::GetUniformBlockIndex(sp, glh::gl_str("Matrices").as_ptr())
+        gl::GetUniformBlockIndex(sp, glb::gl_str("Matrices").as_ptr())
     };
     debug_assert!(ubo_index != gl::INVALID_INDEX);
 
@@ -1026,7 +1026,7 @@ fn send_to_gpu_uniforms_ui_panel(sp: GLuint, uniforms: UIPanelUniforms) {
     }
 }
 
-fn load_ui_panel(game: &mut glh::GLState, spec: UIPanelSpec, uniforms: UIPanelUniforms) -> UIPanel {
+fn load_ui_panel(game: &mut glb::GLState, spec: UIPanelSpec, uniforms: UIPanelUniforms) -> UIPanel {
     let shader_source = create_shaders_ui_panel();
     let sp = send_to_gpu_shaders_ui_panel(game, shader_source);
     let mesh = create_geometry_ui_panel(&spec.atlas);
@@ -1247,7 +1247,7 @@ fn create_geometry_next_piece_panel(atlas: &TextureAtlas2D) -> PieceMeshes {
 }
 
 /// Send the shaders for a textbox buffer to the GPU.
-fn send_to_gpu_shaders_next_piece_panel(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+fn send_to_gpu_shaders_next_piece_panel(game: &mut glb::GLState, source: ShaderSource) -> GLuint {
     send_to_gpu_shaders(game, source)
 }
 
@@ -1262,13 +1262,13 @@ struct NextPiecePanelHandle {
 
 fn create_buffers_geometry_piece_mesh(sp: GLuint) -> NextPiecePanelHandle {
     let v_pos_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+        gl::GetAttribLocation(sp, glb::gl_str("v_pos").as_ptr())
     };
     debug_assert!(v_pos_loc > -1);
     let v_pos_loc = v_pos_loc as GLuint;
     
     let v_tex_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+        gl::GetAttribLocation(sp, glb::gl_str("v_tex").as_ptr())
     };
     debug_assert!(v_tex_loc > -1);
     let v_tex_loc = v_tex_loc as GLuint;
@@ -1400,11 +1400,11 @@ fn create_uniforms_next_piece_panel(
 
 fn send_to_gpu_piece_uniforms(sp: GLuint, uniforms: &PieceUniformsData) {
     let gui_scale_mat_loc = unsafe {
-        gl::GetUniformLocation(sp, glh::gl_str("m_gui_scale").as_ptr())
+        gl::GetUniformLocation(sp, glb::gl_str("m_gui_scale").as_ptr())
     };
     debug_assert!(gui_scale_mat_loc > -1);
     let trans_mat_loc = unsafe {
-        gl::GetUniformLocation(sp, glh::gl_str("m_trans").as_ptr())
+        gl::GetUniformLocation(sp, glb::gl_str("m_trans").as_ptr())
     };
     debug_assert!(trans_mat_loc > -1);
     unsafe {
@@ -1449,7 +1449,7 @@ impl GLNextPiecePanel {
     }
 }
 
-fn create_next_piece_panel_buffer(gl_context: &mut glh::GLState, atlas: &TextureAtlas2D, uniforms: &PieceUniformsData) -> GLNextPiecePanel {
+fn create_next_piece_panel_buffer(gl_context: &mut glb::GLState, atlas: &TextureAtlas2D, uniforms: &PieceUniformsData) -> GLNextPiecePanel {
     let shader_source = create_shaders_next_piece_panel();
     let sp = send_to_gpu_shaders_next_piece_panel(gl_context, shader_source);
     let tex = send_to_gpu_textures_next_piece_panel(atlas);
@@ -1487,7 +1487,7 @@ struct NextPiecePanelSpec<'a> {
 }
 
 fn load_next_piece_panel(
-    game: &mut glh::GLState,
+    game: &mut glb::GLState,
     spec: NextPiecePanelSpec, uniforms: &PieceUniformsData) -> NextPiecePanel {
     
     let buffer = create_next_piece_panel_buffer(game, spec.atlas, uniforms);
@@ -1591,19 +1591,19 @@ fn create_geometry_playing_field_background(elem: &str, atlas: &TextureAtlas2D) 
     ObjMesh::new(points, tex_coords)
 }
 
-fn send_to_gpu_shaders_playing_field_background(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+fn send_to_gpu_shaders_playing_field_background(game: &mut glb::GLState, source: ShaderSource) -> GLuint {
     send_to_gpu_shaders(game, source)
 }
 
 fn create_buffers_geometry_playing_field_background(sp: GLuint) -> PlayingFieldBackgroundBuffers {
     let v_pos_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+        gl::GetAttribLocation(sp, glb::gl_str("v_pos").as_ptr())
     };
     debug_assert!(v_pos_loc > -1);
     let v_pos_loc = v_pos_loc as GLuint;
     
     let v_tex_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+        gl::GetAttribLocation(sp, glb::gl_str("v_tex").as_ptr())
     };
     debug_assert!(v_tex_loc > -1);
     let v_tex_loc = v_tex_loc as GLuint;
@@ -1683,7 +1683,7 @@ struct PlayingFieldBackgroundSpec<'a> {
     atlas: &'a TextureAtlas2D,
 }
 
-fn load_playing_field_background(game: &mut glh::GLState, spec: PlayingFieldBackgroundSpec) -> PlayingFieldBackgroundPanel {
+fn load_playing_field_background(game: &mut glb::GLState, spec: PlayingFieldBackgroundSpec) -> PlayingFieldBackgroundPanel {
     let shader_source = create_shaders_playing_field_background();
     let default_mesh = create_geometry_playing_field_background(
         "PlayingFieldDefaultBackground", &spec.atlas
@@ -1747,11 +1747,11 @@ fn load_playing_field_background(game: &mut glh::GLState, spec: PlayingFieldBack
 
 fn send_to_gpu_uniforms_playing_field_background(sp: GLuint, uniforms: PlayingFieldBackgroundUniforms) {
     let m_gui_scale_loc = unsafe {
-        gl::GetUniformLocation(sp, glh::gl_str("m_gui_scale").as_ptr())
+        gl::GetUniformLocation(sp, glb::gl_str("m_gui_scale").as_ptr())
     };
     debug_assert!(m_gui_scale_loc > -1);
     let m_trans_loc = unsafe {
-        gl::GetUniformLocation(sp, glh::gl_str("m_trans").as_ptr())
+        gl::GetUniformLocation(sp, glb::gl_str("m_trans").as_ptr())
     };
     debug_assert!(m_trans_loc > -1);
     unsafe {
@@ -1843,19 +1843,19 @@ fn create_geometry_game_over(atlas: &TextureAtlas2D) -> ObjMesh {
     ObjMesh::new(points, tex_coords)
 }
 
-fn send_to_gpu_shaders_game_over(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+fn send_to_gpu_shaders_game_over(game: &mut glb::GLState, source: ShaderSource) -> GLuint {
     send_to_gpu_shaders(game, source)
 }
 
 fn create_buffers_geometry_game_over(sp: GLuint) -> GameOverPanelBuffers {
     let v_pos_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+        gl::GetAttribLocation(sp, glb::gl_str("v_pos").as_ptr())
     };
     debug_assert!(v_pos_loc > -1);
     let v_pos_loc = v_pos_loc as GLuint;
     
     let v_tex_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+        gl::GetAttribLocation(sp, glb::gl_str("v_tex").as_ptr())
     };
     debug_assert!(v_tex_loc > -1);
     let v_tex_loc = v_tex_loc as GLuint;
@@ -1935,7 +1935,7 @@ struct GameOverPanelSpec<'a> {
     atlas: &'a TextureAtlas2D,
 }
 
-fn load_game_over_panel(game: &mut glh::GLState, spec: GameOverPanelSpec) -> GameOverPanel {
+fn load_game_over_panel(game: &mut glb::GLState, spec: GameOverPanelSpec) -> GameOverPanel {
     let shader_source = create_shaders_game_over();
     let mesh = create_geometry_game_over(&spec.atlas);
     let sp = send_to_gpu_shaders_game_over(game, shader_source);
@@ -1961,11 +1961,11 @@ fn load_game_over_panel(game: &mut glh::GLState, spec: GameOverPanelSpec) -> Gam
 
 fn send_to_gpu_uniforms_game_over_panel(sp: GLuint, uniforms: GameOverPanelUniforms) {
     let m_gui_scale_loc = unsafe {
-        gl::GetUniformLocation(sp, glh::gl_str("m_gui_scale").as_ptr())
+        gl::GetUniformLocation(sp, glb::gl_str("m_gui_scale").as_ptr())
     };
     debug_assert!(m_gui_scale_loc > -1);
     let m_trans_loc = unsafe {
-        gl::GetUniformLocation(sp, glh::gl_str("m_trans").as_ptr())
+        gl::GetUniformLocation(sp, glb::gl_str("m_trans").as_ptr())
     };
     debug_assert!(m_trans_loc > -1);
     unsafe {
@@ -2006,7 +2006,7 @@ fn create_shaders_playing_field() -> ShaderSource {
     }
 }
 
-fn send_to_gpu_shaders_playing_field(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+fn send_to_gpu_shaders_playing_field(game: &mut glb::GLState, source: ShaderSource) -> GLuint {
     send_to_gpu_shaders(game, source)
 }
 
@@ -2059,13 +2059,13 @@ struct PlayingFieldBuffers {
 
 fn create_buffers_geometry_playing_field(sp: GLuint) -> PlayingFieldBuffers {
     let v_pos_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+        gl::GetAttribLocation(sp, glb::gl_str("v_pos").as_ptr())
     };
     debug_assert!(v_pos_loc > -1);
     let v_pos_loc = v_pos_loc as GLuint;
     
     let v_tex_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+        gl::GetAttribLocation(sp, glb::gl_str("v_tex").as_ptr())
     };
     debug_assert!(v_tex_loc > -1);
     let v_tex_loc = v_tex_loc as GLuint;
@@ -2217,11 +2217,11 @@ fn create_uniforms_playing_field(scale: u32, viewport_width: u32, viewport_heigh
 
 fn send_to_gpu_uniforms_playing_field(sp: GLuint, uniforms: PlayingFieldUniforms) {
     let m_gui_scale_loc = unsafe {
-        gl::GetUniformLocation(sp, glh::gl_str("m_gui_scale").as_ptr())
+        gl::GetUniformLocation(sp, glb::gl_str("m_gui_scale").as_ptr())
     };
     debug_assert!(m_gui_scale_loc > -1);
     let m_trans_loc = unsafe {
-        gl::GetUniformLocation(sp, glh::gl_str("m_trans").as_ptr())
+        gl::GetUniformLocation(sp, glb::gl_str("m_trans").as_ptr())
     };
     debug_assert!(m_trans_loc > -1);
     unsafe {
@@ -2330,7 +2330,7 @@ impl PlayingField {
     }
 }
 
-fn load_playing_field(game: &mut glh::GLState, spec: PlayingFieldHandleSpec, uniforms: PlayingFieldUniforms) -> PlayingFieldHandle {
+fn load_playing_field(game: &mut glb::GLState, spec: PlayingFieldHandleSpec, uniforms: PlayingFieldUniforms) -> PlayingFieldHandle {
     let shader_source = create_shaders_playing_field();
     let mesh = create_geometry_playing_field(spec.rows, spec.columns);
     let sp = send_to_gpu_shaders_playing_field(game, shader_source);
@@ -2385,7 +2385,7 @@ impl GLTextBuffer {
 struct TextBuffer {
     points: Vec<f32>,
     tex_coords: Vec<f32>,
-    gl_state: Rc<RefCell<glh::GLState>>,
+    gl_state: Rc<RefCell<glb::GLState>>,
     atlas: Rc<BitmapFontAtlas>,
     buffer: GLTextBuffer,
     scale_px: f32,
@@ -2393,7 +2393,7 @@ struct TextBuffer {
 
 impl TextBuffer {
     fn new(
-        gl_state: Rc<RefCell<glh::GLState>>, 
+        gl_state: Rc<RefCell<glb::GLState>>, 
         atlas: Rc<BitmapFontAtlas>, 
         buffer: GLTextBuffer, scale_px: f32) -> TextBuffer {
 
@@ -2653,13 +2653,13 @@ struct TextBufferHandle {
 /// Set up the geometry for rendering title screen text.
 fn create_buffers_text_buffer(sp: GLuint) -> TextBufferHandle {
     let v_pos_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_pos").as_ptr())
+        gl::GetAttribLocation(sp, glb::gl_str("v_pos").as_ptr())
     };
     debug_assert!(v_pos_loc > -1);
     let v_pos_loc = v_pos_loc as GLuint;
     
     let v_tex_loc = unsafe {
-        gl::GetAttribLocation(sp, glh::gl_str("v_tex").as_ptr())
+        gl::GetAttribLocation(sp, glb::gl_str("v_tex").as_ptr())
     };
     debug_assert!(v_tex_loc > -1);
     let v_tex_loc = v_tex_loc as GLuint;
@@ -2712,13 +2712,13 @@ fn create_shaders_text_buffer() -> ShaderSource {
 }
 
 /// Send the shaders for a textbox buffer to the GPU.
-fn send_to_gpu_shaders_text_buffer(game: &mut glh::GLState, source: ShaderSource) -> GLuint {
+fn send_to_gpu_shaders_text_buffer(game: &mut glb::GLState, source: ShaderSource) -> GLuint {
     send_to_gpu_shaders(game, source)
 }
 
 fn send_to_gpu_uniforms_text_buffer(sp: GLuint, uniforms: TextPanelUniforms) {
     let text_color_loc = unsafe {
-        gl::GetUniformLocation(sp, glh::gl_str("text_color").as_ptr())
+        gl::GetUniformLocation(sp, glb::gl_str("text_color").as_ptr())
     };
     debug_assert!(text_color_loc > -1);
     unsafe {
@@ -2732,7 +2732,7 @@ fn send_to_gpu_uniforms_text_buffer(sp: GLuint, uniforms: TextPanelUniforms) {
 }
 
 fn create_text_buffer(
-    gl_state: Rc<RefCell<glh::GLState>>, 
+    gl_state: Rc<RefCell<glb::GLState>>, 
     atlas: Rc<BitmapFontAtlas>, scale_px: f32, uniforms: TextPanelUniforms) -> TextBuffer {
     
     let atlas_tex = send_to_gpu_font_texture(&atlas, gl::CLAMP_TO_EDGE).unwrap();
@@ -2755,7 +2755,7 @@ fn create_text_buffer(
     TextBuffer::new(gl_state, atlas, buffer, scale_px)
 }
 
-fn load_text_panel(gl_state: Rc<RefCell<glh::GLState>>, spec: &TextPanelSpec, uniforms: TextPanelUniforms) -> TextPanel {
+fn load_text_panel(gl_state: Rc<RefCell<glb::GLState>>, spec: &TextPanelSpec, uniforms: TextPanelUniforms) -> TextPanel {
     let buffer = create_text_buffer(gl_state, spec.atlas.clone(), spec.scale_px, uniforms);
     let score = TextElement7 { content: [0; 7], placement: spec.score_placement };
     let lines =  TextElement4 { content: [0; 4], placement: spec.lines_placement };
@@ -3230,7 +3230,7 @@ impl GameStateMachine {
     }
 }
 struct GameContext {
-    gl: Rc<RefCell<glh::GLState>>,
+    gl: Rc<RefCell<glb::GLState>>,
     playing_field_state: Rc<RefCell<PlayingFieldContext>>,
     playing_field_state_machine: Rc<RefCell<PlayingFieldStateMachine>>,
     next_block: Rc<RefCell<NextBlockCell>>,
@@ -3950,14 +3950,14 @@ impl Game {
     fn update_fps_counter(&mut self) {
         let game_context = self.context.borrow_mut();
         let mut gpu_context = game_context.gl.borrow_mut();
-        glh::update_fps_counter(&mut gpu_context);
+        glb::update_fps_counter(&mut gpu_context);
     }
 
     #[inline]
     fn update_timers(&mut self) -> Duration {
         let game_context = self.context.borrow_mut();
         let mut gpu_context = game_context.gl.borrow_mut();
-        let elapsed_seconds = glh::update_timers(&mut gpu_context);
+        let elapsed_seconds = glb::update_timers(&mut gpu_context);
 
         Duration::from_millis((elapsed_seconds * 1000_f64) as u64)
     }
@@ -4027,8 +4027,8 @@ fn init_logger(log_file: &str) {
 }
 
 /// Create and OpenGL context.
-fn init_gl(width: u32, height: u32) -> glh::GLState {
-    let gl_state = match glh::start_gl(width, height) {
+fn init_gl(width: u32, height: u32) -> glb::GLState {
+    let gl_state = match glb::start_gl(width, height) {
         Ok(val) => val,
         Err(e) => {
             panic!("Failed to Initialize OpenGL context. Got error: {}", e);
