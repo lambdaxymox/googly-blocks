@@ -41,6 +41,7 @@ mod playing_field_state_machine;
 mod timer;
 mod next_block;
 mod score;
+mod title_screen_state_machine;
 
 use gl_backend as glb;
 use cgmath as math; 
@@ -83,8 +84,11 @@ use score::{
     Statistics,
 };
 use timer::{
-    Interval, 
-    Timer,
+    Interval,
+};
+use title_screen_state_machine::{
+    TitleScreenStateMachine,
+    TitleScreenStateMachineSpec,
 };
 
 use std::io;
@@ -2904,7 +2908,7 @@ struct ViewportDimensions {
     width: i32,
     height: i32,
 }
-
+/*
 #[derive(Clone)]
 struct TitleScreenStateMachineSpec {
     transition_interval: Interval,
@@ -3054,7 +3058,7 @@ impl TitleScreenStateMachine {
         self.blink_state.animation_is_on()
     }
 }
-
+*/
 #[derive(Copy, Clone)]
 struct GameTitleScreenState {}
 
