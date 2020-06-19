@@ -17,7 +17,7 @@
  */
 extern crate glfw;
 extern crate bmfa;
-extern crate cgmath;
+extern crate gdmath;
 extern crate toml;
 extern crate log;
 extern crate rand;
@@ -44,13 +44,13 @@ mod score;
 mod title_screen_state_machine;
 
 use gl_backend as glb;
-use cgmath as math; 
+use gdmath as math;
 
 use bmfa::BitmapFontAtlas;
 use glfw::{Action, Context, Key};
 use gl::types::{GLfloat, GLint, GLuint, GLvoid, GLsizeiptr};
 use log::{info};
-use math::{Array, One, Matrix4};
+use math::{Storage, One, Matrix4};
 use mesh::ObjMesh;
 use tex_atlas::TextureAtlas2D;
 use block::{
@@ -300,7 +300,7 @@ fn send_to_gpu_textures_background(atlas: &TextureAtlas2D) -> GLuint {
 
 #[derive(Copy, Clone)]
 struct BackgroundPanelUniforms { 
-    gui_scale_mat: Matrix4,
+    gui_scale_mat: Matrix4<f32>,
 }
 
 fn send_to_gpu_uniforms_background_panel(sp: GLuint, uniforms: BackgroundPanelUniforms) {
@@ -402,8 +402,8 @@ struct TitleScreenBackgroundHandle {
 
 #[derive(Copy, Clone)]
 struct TitleScreenBackgroundUniforms {
-    gui_scale_mat: Matrix4,
-    trans_mat: Matrix4,
+    gui_scale_mat: Matrix4<f32>,
+    trans_mat: Matrix4<f32>,
 }
 
 fn create_shaders_title_screen_background() -> ShaderSource {
@@ -567,8 +567,8 @@ struct TitleScreenFlashingHandle {
 }
 
 struct TitleScreenFlashingUniforms {
-    gui_scale_mat: Matrix4,
-    trans_mat: Matrix4,
+    gui_scale_mat: Matrix4<f32>,
+    trans_mat: Matrix4<f32>,
 }
 
 fn create_shaders_title_screen_flashing() -> ShaderSource {
@@ -919,8 +919,8 @@ struct UIPanel {
 
 #[derive(Copy, Clone)]
 struct UIPanelUniforms {
-    trans_mat: Matrix4,
-    gui_scale_mat: Matrix4,
+    trans_mat: Matrix4<f32>,
+    gui_scale_mat: Matrix4<f32>,
 }
 
 fn send_to_gpu_uniforms_ui_panel(sp: GLuint, uniforms: UIPanelUniforms) {
@@ -1300,8 +1300,8 @@ fn send_to_gpu_geometry_next_panel(sp: GLuint, meshes: &PieceMeshes) -> NextPane
 }
 
 struct PieceUniformsData {
-    gui_scale_mat: Matrix4,
-    trans_mat: Matrix4,
+    gui_scale_mat: Matrix4<f32>,
+    trans_mat: Matrix4<f32>,
 }
 
 fn create_uniforms_next_piece_panel(
@@ -1312,13 +1312,13 @@ fn create_uniforms_next_piece_panel(
     let block_height = 2.0 * (scale as f32 / viewport_height as f32);
     let gui_scale_mat = Matrix4::from_nonuniform_scale(block_width, block_height, 1.0);
     let trans_mat = match block.piece {
-        GooglyBlockPiece::T => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-        GooglyBlockPiece::J => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-        GooglyBlockPiece::Z => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-        GooglyBlockPiece::O => Matrix4::from_translation(cgmath::vec3((0.50, 0.43, 0.0))),
-        GooglyBlockPiece::S => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-        GooglyBlockPiece::L => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-        GooglyBlockPiece::I => Matrix4::from_translation(cgmath::vec3((0.555, 0.48, 0.0))),
+        GooglyBlockPiece::T => Matrix4::from_translation(math::vec3((0.525, 0.43, 0.0))),
+        GooglyBlockPiece::J => Matrix4::from_translation(math::vec3((0.525, 0.43, 0.0))),
+        GooglyBlockPiece::Z => Matrix4::from_translation(math::vec3((0.525, 0.43, 0.0))),
+        GooglyBlockPiece::O => Matrix4::from_translation(math::vec3((0.50, 0.43, 0.0))),
+        GooglyBlockPiece::S => Matrix4::from_translation(math::vec3((0.525, 0.43, 0.0))),
+        GooglyBlockPiece::L => Matrix4::from_translation(math::vec3((0.525, 0.43, 0.0))),
+        GooglyBlockPiece::I => Matrix4::from_translation(math::vec3((0.555, 0.48, 0.0))),
     };
 
     PieceUniformsData {
@@ -1462,8 +1462,8 @@ struct PlayingFieldBackgroundPanel {
 }
 
 struct PlayingFieldBackgroundUniforms {
-    gui_scale_mat: Matrix4,
-    trans_mat: Matrix4,
+    gui_scale_mat: Matrix4<f32>,
+    trans_mat: Matrix4<f32>,
 }
 
 fn create_shaders_playing_field_background() -> ShaderSource {
@@ -1695,8 +1695,8 @@ struct GameOverPanel {
 }
 
 struct GameOverPanelUniforms {
-    gui_scale_mat: Matrix4,
-    trans_mat: Matrix4,
+    gui_scale_mat: Matrix4<f32>,
+    trans_mat: Matrix4<f32>,
 }
 
 fn create_shaders_game_over() -> ShaderSource {
@@ -2069,15 +2069,15 @@ fn send_to_gpu_textures_playing_field(atlas: &GooglyBlockElementTextureAtlas) ->
 }
 
 struct PlayingFieldUniforms {
-    gui_scale_mat: Matrix4,
-    trans_mat: Matrix4,
+    gui_scale_mat: Matrix4<f32>,
+    trans_mat: Matrix4<f32>,
 }
 
 fn create_uniforms_playing_field(scale: u32, viewport_width: u32, viewport_height: u32) -> PlayingFieldUniforms {
     let gui_scale_x = (scale as f32) / (viewport_width as f32);
     let gui_scale_y = (scale as f32) / (viewport_height as f32);
     let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 1.0);
-    let trans_mat = Matrix4::from_translation(cgmath::vec3((0.085, 0.0, 0.0)));
+    let trans_mat = Matrix4::from_translation(math::vec3((0.085, 0.0, 0.0)));
     
     PlayingFieldUniforms { gui_scale_mat: gui_scale_mat, trans_mat: trans_mat }
 }
@@ -2991,13 +2991,13 @@ impl RendererContext {
         let gui_scale_y = 2.0 * (scale as f32) / (viewport_height as f32);
         let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 1.0);
         let trans_mat = match self.game_context.borrow().next_block.borrow().current_block().piece {
-            GooglyBlockPiece::T => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-            GooglyBlockPiece::J => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-            GooglyBlockPiece::Z => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-            GooglyBlockPiece::O => Matrix4::from_translation(cgmath::vec3((0.50, 0.43, 0.0))),
-            GooglyBlockPiece::S => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-            GooglyBlockPiece::L => Matrix4::from_translation(cgmath::vec3((0.525, 0.43, 0.0))),
-            GooglyBlockPiece::I => Matrix4::from_translation(cgmath::vec3((0.555, 0.48, 0.0))),
+            GooglyBlockPiece::T => Matrix4::from_translation(math::vec3((0.525, 0.43, 0.0))),
+            GooglyBlockPiece::J => Matrix4::from_translation(math::vec3((0.525, 0.43, 0.0))),
+            GooglyBlockPiece::Z => Matrix4::from_translation(math::vec3((0.525, 0.43, 0.0))),
+            GooglyBlockPiece::O => Matrix4::from_translation(math::vec3((0.50, 0.43, 0.0))),
+            GooglyBlockPiece::S => Matrix4::from_translation(math::vec3((0.525, 0.43, 0.0))),
+            GooglyBlockPiece::L => Matrix4::from_translation(math::vec3((0.525, 0.43, 0.0))),
+            GooglyBlockPiece::I => Matrix4::from_translation(math::vec3((0.555, 0.48, 0.0))),
         };
         let uniforms = PieceUniformsData { gui_scale_mat: gui_scale_mat, trans_mat: trans_mat };
         send_to_gpu_uniforms_next_piece_panel(self.ui.next_piece_panel.buffer.sp, &uniforms);
@@ -3009,7 +3009,7 @@ impl RendererContext {
         let gui_scale_x = (scale as f32) / (viewport.width as f32);
         let gui_scale_y = (scale as f32) / (viewport.height as f32);
         let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 1.0);
-        let trans_mat = Matrix4::from_translation(cgmath::vec3((0.085, 0.0, 0.0)));
+        let trans_mat = Matrix4::from_translation(math::vec3((0.085, 0.0, 0.0)));
         let uniforms = PlayingFieldUniforms { gui_scale_mat: gui_scale_mat, trans_mat: trans_mat };
         send_to_gpu_uniforms_playing_field(self.ui.next_piece_panel.buffer.sp, uniforms);
     }
@@ -3021,7 +3021,7 @@ impl RendererContext {
         let gui_scale_x = panel_width / (viewport_width as f32);
         let gui_scale_y = panel_height / (viewport_height as f32);
         let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0.0);
-        let trans_mat = Matrix4::from_translation(cgmath::vec3((0.08, 0.0, 0.0)));
+        let trans_mat = Matrix4::from_translation(math::vec3((0.08, 0.0, 0.0)));
         let uniforms = GameOverPanelUniforms { 
             gui_scale_mat: gui_scale_mat,
             trans_mat: trans_mat,
@@ -3036,7 +3036,7 @@ impl RendererContext {
         let gui_scale_x = panel_width / (viewport_width as f32);
         let gui_scale_y = panel_height / (viewport_height as f32);
         let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0.0);
-        let trans_mat = Matrix4::from_translation(cgmath::vec3((0.08, 0.0, 0.0)));
+        let trans_mat = Matrix4::from_translation(math::vec3((0.08, 0.0, 0.0)));
         let uniforms = PlayingFieldBackgroundUniforms { 
             gui_scale_mat: gui_scale_mat,
             trans_mat: trans_mat,
@@ -3052,7 +3052,7 @@ impl RendererContext {
         let gui_scale_x = panel_width / (viewport_width as f32);
         let gui_scale_y = panel_height / (viewport_height as f32);
         let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0.0);
-        let trans_mat = Matrix4::from_translation(cgmath::vec3((0.0, 0.0, 0.0)));
+        let trans_mat = Matrix4::from_translation(math::vec3((0.0, 0.0, 0.0)));
         let uniforms = TitleScreenBackgroundUniforms { 
             gui_scale_mat: gui_scale_mat,
             trans_mat: trans_mat,
@@ -3069,7 +3069,7 @@ impl RendererContext {
         let gui_scale_y = panel_height / (viewport_height as f32);
         let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0.0);
         let placement = self.title_screen.flashing_handle.placement;
-        let trans_mat = Matrix4::from_translation(cgmath::vec3((placement.x, placement.y, 0.0)));
+        let trans_mat = Matrix4::from_translation(math::vec3((placement.x, placement.y, 0.0)));
         let uniforms = TitleScreenFlashingUniforms { 
             gui_scale_mat: gui_scale_mat,
             trans_mat: trans_mat,
