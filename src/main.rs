@@ -185,7 +185,8 @@ fn send_to_gpu_shaders_background(game: &mut glb::GLState, source: ShaderSource)
 
 fn create_background_panel_atlas() -> TextureAtlas2D {
     let asset = include_asset!("background.atlas");
-    let atlas = tex_atlas::load_from_memory(asset).unwrap().atlas;
+    let multi_atlas = tex_atlas::load_from_memory(asset).unwrap().multi_atlas;
+    let atlas = multi_atlas.by_page_index(0).unwrap().clone();
 
     atlas
 }
@@ -291,7 +292,10 @@ fn send_to_gpu_geometry_background(handle: BackgroundPanelHandle, mesh: &ObjMesh
 
 fn create_title_texture_atlas() -> TextureAtlas2D {
     let asset = include_asset!("title.atlas");
-    tex_atlas::load_from_memory(asset).unwrap().atlas
+    let multi_atlas = tex_atlas::load_from_memory(asset).unwrap().multi_atlas;
+    let atlas = multi_atlas.by_page_index(0).unwrap().clone();
+
+    atlas
 }
 
 fn send_to_gpu_textures_background(atlas: &TextureAtlas2D) -> GLuint {
@@ -423,7 +427,7 @@ fn create_geometry_title_screen_background(atlas: &TextureAtlas2D) -> ObjMesh {
         [1_f32, 1_f32], [-1_f32, -1_f32], [ 1_f32, -1_f32],
         [1_f32, 1_f32], [-1_f32,  1_f32], [-1_f32, -1_f32],
     ];
-    let corners = atlas.get_name_corners_uv("title").unwrap();
+    let corners = atlas.by_texture_name_corners_uv("title").unwrap();
     let top_left = [corners.top_left.u, corners.top_left.v];
     let bottom_left = [corners.bottom_left.u, corners.bottom_left.v];
     let top_right = [corners.top_right.u, corners.top_right.v];
@@ -588,7 +592,7 @@ fn create_geometry_title_screen_flashing(atlas: &TextureAtlas2D) -> ObjMesh {
         [1_f32, 1_f32], [-1_f32, -1_f32], [ 1_f32, -1_f32],
         [1_f32, 1_f32], [-1_f32,  1_f32], [-1_f32, -1_f32],
     ];
-    let corners = atlas.get_name_corners_uv("PressEnter").unwrap();
+    let corners = atlas.by_texture_name_corners_uv("PressEnter").unwrap();
     let top_left = [corners.top_left.u, corners.top_left.v];
     let bottom_left = [corners.bottom_left.u, corners.bottom_left.v];
     let top_right = [corners.top_right.u, corners.top_right.v];
@@ -789,7 +793,7 @@ fn create_geometry_ui_panel(atlas: &TextureAtlas2D) -> ObjMesh {
         [1.0, 1.0], [-1.0, -1.0], [ 1.0, -1.0],
         [1.0, 1.0], [-1.0,  1.0], [-1.0, -1.0]
     ];
-    let corners: tex_atlas::BoundingBoxCornersTexCoords = atlas.get_name_corners_uv("Panel").unwrap();
+    let corners: tex_atlas::BoundingBoxCornersTexCoords = atlas.by_texture_name_corners_uv("Panel").unwrap();
     let top_left = [corners.top_left.u, corners.top_left.v];
     let bottom_left = [corners.bottom_left.u, corners.bottom_left.v];
     let top_right = [corners.top_right.u, corners.top_right.v];
@@ -890,7 +894,8 @@ fn send_to_gpu_geometry_ui_panel(handle: UIPanelHandle, mesh: &ObjMesh) {
 
 fn create_atlas_ui_panel() -> TextureAtlas2D {
     let asset = include_asset!("ui_panel.atlas");
-    let atlas = tex_atlas::load_from_memory(asset).unwrap().atlas;
+    let multi_atlas = tex_atlas::load_from_memory(asset).unwrap().multi_atlas;
+    let atlas = multi_atlas.by_page_index(0).unwrap().clone();
 
     atlas
 }
@@ -1027,7 +1032,7 @@ struct PieceMeshes {
 }
 
 fn generate_texture_coords_block(atlas: &TextureAtlas2D, name: &str) -> Vec<[f32; 2]> {
-    let corners: tex_atlas::BoundingBoxCornersTexCoords = atlas.get_name_corners_uv(name).unwrap();
+    let corners: tex_atlas::BoundingBoxCornersTexCoords = atlas.by_texture_name_corners_uv(name).unwrap();
     let top_left = [corners.top_left.u, corners.top_left.v];
     let bottom_left = [corners.bottom_left.u, corners.bottom_left.v];
     let top_right = [corners.top_right.u, corners.top_right.v];
@@ -1156,7 +1161,8 @@ fn create_geometry_i_piece(atlas: &TextureAtlas2D) -> ObjMesh {
 
 fn create_block_texture_atlas() -> TextureAtlas2D {
     let source = include_asset!("block_textures.atlas");
-    let atlas = tex_atlas::load_from_memory(source).unwrap().atlas;
+    let multi_atlas = tex_atlas::load_from_memory(source).unwrap().multi_atlas;
+    let atlas = multi_atlas.by_page_index(0).unwrap().clone();
 
     atlas
 }
@@ -1483,7 +1489,7 @@ fn create_geometry_playing_field_background(elem: &str, atlas: &TextureAtlas2D) 
         [1_f32, 1_f32], [-1_f32, -1_f32], [1_f32, -1_f32],
         [1_f32, 1_f32], [-1_f32,  1_f32], [-1_f32, -1_f32],
     ];
-    let corners = atlas.get_name_corners_uv(elem).unwrap();
+    let corners = atlas.by_texture_name_corners_uv(elem).unwrap();
     let top_left = [corners.top_left.u, corners.top_left.v];
     let bottom_left = [corners.bottom_left.u, corners.bottom_left.v];
     let top_right = [corners.top_right.u, corners.top_right.v];
@@ -1716,7 +1722,7 @@ fn create_geometry_game_over(atlas: &TextureAtlas2D) -> ObjMesh {
         [1_f32, 1_f32], [-1_f32, -1_f32], [1_f32, -1_f32],
         [1_f32, 1_f32], [-1_f32,  1_f32], [-1_f32, -1_f32],
     ];
-    let corners = atlas.get_name_corners_uv("GameOver").unwrap();
+    let corners = atlas.by_texture_name_corners_uv("GameOver").unwrap();
     let top_left = [corners.top_left.u, corners.top_left.v];
     let bottom_left = [corners.bottom_left.u, corners.bottom_left.v];
     let top_right = [corners.top_right.u, corners.top_right.v];
@@ -2016,7 +2022,7 @@ impl GooglyBlockElementTextureAtlas {
 }
 
 fn generate_quad(atlas: &TextureAtlas2D, name: &str) -> TextureQuad {
-    let corners = atlas.get_name_corners_uv(name).unwrap();
+    let corners = atlas.by_texture_name_corners_uv(name).unwrap();
     let top_left = [corners.top_left.u, corners.top_left.v];
     let bottom_left = [corners.bottom_left.u, corners.bottom_left.v];
     let bottom_right = [corners.bottom_right.u, corners.bottom_right.v];
