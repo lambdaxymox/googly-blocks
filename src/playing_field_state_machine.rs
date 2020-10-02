@@ -15,24 +15,26 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-use input::{
+use crate::input::{
     InputKind,
     InputAction,
     Input,
 };
-use flashing_state_machine::{
+use crate::flashing_state_machine::{
     FlashAnimationStateMachine,
 };
-use next_block::NextBlockCell;
-use playing_field::{
+use crate::next_block::{
+    NextBlockCell
+};
+use crate::playing_field::{
     GooglyBlockMove,
     PlayingFieldContext,
 };
-use score::{
+use crate::score::{
     ScoreBoard,
     Statistics,
 };
-use timer::{
+use crate::timer::{
     Interval,
     Timer,
 };

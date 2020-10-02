@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-use block::{
+use crate::block::{
     GooglyBlock, 
     GooglyBlockPiece, 
     GooglyBlockElement,
@@ -541,7 +541,7 @@ impl PlayingFieldContext {
 
 #[cfg(test)]
 mod landed_blocks_tests {
-    use block::{
+    use crate::block::{
         GooglyBlock, 
         GooglyBlockPiece, 
         GooglyBlockElement, 
@@ -639,7 +639,7 @@ mod landed_blocks_tests {
 
 #[cfg(test)]
 mod collision_tests {
-    use block::{
+    use crate::block::{
         GooglyBlock, 
         GooglyBlockPiece, 
         GooglyBlockElement,
@@ -806,7 +806,7 @@ mod collision_tests {
 
 #[cfg(test)]
 mod playing_field_tests {
-    use block:: {
+    use crate::block:: {
         GooglyBlockRotation,
         GooglyBlock, 
         GooglyBlockPiece, 

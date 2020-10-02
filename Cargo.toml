@@ -1,8 +1,9 @@
 [package]
 name = "googly-blocks"
-version = "0.3.89"
+version = "0.3.90"
 authors = ["LambdaXymox <lambda.xymox@gmail.com>"]
 build = "build.rs"
+edition = "2018"
 
 [dependencies]
 glfw = "0.39.1"
@@ -11,7 +12,7 @@ toml = "0.5.6"
 rand = "0.7.3"
 bmfa = { git = "https://github.com/lambdaxymox/bmfa" }
 file_logger = { git = "https://github.com/lambdaxymox/file-logger" }
-gdmath = { git = "https://github.com/lambdaxymox/gdmath" }
+cglinalg = { git = "https://github.com/lambdaxymox/cglinalg" }
 tex_atlas = { git = "https://github.com/lambdaxymox/tex_atlas" }
 
 [build-dependencies]

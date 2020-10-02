@@ -17,7 +17,7 @@
  */
 extern crate glfw;
 extern crate bmfa;
-extern crate gdmath;
+extern crate cglinalg;
 extern crate toml;
 extern crate log;
 extern crate rand;
@@ -44,15 +44,35 @@ mod score;
 mod title_screen_state_machine;
 
 use gl_backend as glb;
-use gdmath as math;
 
 use bmfa::BitmapFontAtlas;
-use glfw::{Action, Context, Key};
-use gl::types::{GLfloat, GLint, GLuint, GLvoid, GLsizeiptr};
-use log::{info};
-use math::{Storage, One, Matrix4};
-use mesh::ObjMesh;
-use tex_atlas::TextureAtlas2D;
+use glfw::{
+    Action, 
+    Context, 
+    Key
+};
+use gl::types::{
+    GLfloat, 
+    GLint, 
+    GLuint, 
+    GLvoid, 
+    GLsizeiptr
+};
+use log::{
+    info
+};
+use cglinalg::{
+    Array, 
+    Identity, 
+    Matrix4,
+    Vector3,
+};
+use mesh::{
+    ObjMesh
+};
+use tex_atlas::{
+    TextureAtlas2D
+};
 use block::{
     GooglyBlock, 
     GooglyBlockPiece, 
@@ -78,7 +98,9 @@ use playing_field_state_machine::{
     PlayingFieldStateMachineSpec,
     PlayingFieldStateMachine,
 };
-use next_block::NextBlockCell;
+use next_block::{
+    NextBlockCell
+};
 use score::{
     ScoreBoard,
     Statistics,
@@ -1316,15 +1338,17 @@ fn create_uniforms_next_piece_panel(
     // FIXME: MAGIC NUMBERS IN USE HERE.
     let block_width = 2.0 * (scale as f32 / viewport_width as f32);
     let block_height = 2.0 * (scale as f32 / viewport_height as f32);
-    let gui_scale_mat = Matrix4::from_nonuniform_scale(block_width, block_height, 1.0);
+    let gui_scale_mat = Matrix4::from_affine_nonuniform_scale(
+        block_width, block_height, 1.0
+    );
     let trans_mat = match block.piece {
-        GooglyBlockPiece::T => Matrix4::from_translation(math::vec3((0.525, 0.43, 0.0))),
-        GooglyBlockPiece::J => Matrix4::from_translation(math::vec3((0.525, 0.43, 0.0))),
-        GooglyBlockPiece::Z => Matrix4::from_translation(math::vec3((0.525, 0.43, 0.0))),
-        GooglyBlockPiece::O => Matrix4::from_translation(math::vec3((0.50, 0.43, 0.0))),
-        GooglyBlockPiece::S => Matrix4::from_translation(math::vec3((0.525, 0.43, 0.0))),
-        GooglyBlockPiece::L => Matrix4::from_translation(math::vec3((0.525, 0.43, 0.0))),
-        GooglyBlockPiece::I => Matrix4::from_translation(math::vec3((0.555, 0.48, 0.0))),
+        GooglyBlockPiece::T => Matrix4::from_affine_translation(&Vector3::new(0.525, 0.43, 0.0)),
+        GooglyBlockPiece::J => Matrix4::from_affine_translation(&Vector3::new(0.525, 0.43, 0.0)),
+        GooglyBlockPiece::Z => Matrix4::from_affine_translation(&Vector3::new(0.525, 0.43, 0.0)),
+        GooglyBlockPiece::O => Matrix4::from_affine_translation(&Vector3::new(0.50,  0.43, 0.0)),
+        GooglyBlockPiece::S => Matrix4::from_affine_translation(&Vector3::new(0.525, 0.43, 0.0)),
+        GooglyBlockPiece::L => Matrix4::from_affine_translation(&Vector3::new(0.525, 0.43, 0.0)),
+        GooglyBlockPiece::I => Matrix4::from_affine_translation(&Vector3::new(0.555, 0.48, 0.0)),
     };
 
     PieceUniformsData {
@@ -2082,8 +2106,12 @@ struct PlayingFieldUniforms {
 fn create_uniforms_playing_field(scale: u32, viewport_width: u32, viewport_height: u32) -> PlayingFieldUniforms {
     let gui_scale_x = (scale as f32) / (viewport_width as f32);
     let gui_scale_y = (scale as f32) / (viewport_height as f32);
-    let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 1.0);
-    let trans_mat = Matrix4::from_translation(math::vec3((0.085, 0.0, 0.0)));
+    let gui_scale_mat = Matrix4::from_affine_nonuniform_scale(
+        gui_scale_x, 
+        gui_scale_y, 
+        1.0
+    );
+    let trans_mat = Matrix4::from_affine_translation(&Vector3::new(0.085, 0.0, 0.0));
     
     PlayingFieldUniforms { gui_scale_mat: gui_scale_mat, trans_mat: trans_mat }
 }
@@ -2961,8 +2989,14 @@ impl RendererContext {
         let (viewport_width, viewport_height) = self.get_framebuffer_size();
         let gui_scale_x = panel_width / (viewport_width as f32);
         let gui_scale_y = panel_height / (viewport_height as f32);
-        let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0_f32);
-        let uniforms = BackgroundPanelUniforms { gui_scale_mat: gui_scale_mat };
+        let gui_scale_mat = Matrix4::from_affine_nonuniform_scale(
+            gui_scale_x, 
+            gui_scale_y, 
+            0_f32
+        );
+        let uniforms = BackgroundPanelUniforms { 
+            gui_scale_mat: gui_scale_mat 
+        };
         send_to_gpu_uniforms_background_panel(self.background.background_handle.sp, uniforms);
     }
 
@@ -2972,8 +3006,14 @@ impl RendererContext {
         let (viewport_width, viewport_height) = self.get_framebuffer_size();
         let gui_scale_x = panel_width / (viewport_width as f32);
         let gui_scale_y = panel_height / (viewport_height as f32);
-        let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0_f32);
-        let uniforms = BackgroundPanelUniforms { gui_scale_mat: gui_scale_mat };
+        let gui_scale_mat = Matrix4::from_affine_nonuniform_scale(
+            gui_scale_x, 
+            gui_scale_y, 
+            0_f32
+        );
+        let uniforms = BackgroundPanelUniforms { 
+            gui_scale_mat: gui_scale_mat 
+        };
         send_to_gpu_uniforms_background_panel(self.background.background_handle.sp, uniforms);        
     }
 
@@ -2983,9 +3023,16 @@ impl RendererContext {
         let (viewport_width, viewport_height) = self.get_framebuffer_size();
         let gui_scale_x = panel_width / (viewport_width as f32);
         let gui_scale_y = panel_height / (viewport_height as f32);
-        let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0_f32);
-        let trans_mat = Matrix4::one();
-        let uniforms = UIPanelUniforms { gui_scale_mat: gui_scale_mat, trans_mat: trans_mat };
+        let gui_scale_mat = Matrix4::from_affine_nonuniform_scale(
+            gui_scale_x, 
+            gui_scale_y, 
+            0_f32
+        );
+        let trans_mat = Matrix4::identity();
+        let uniforms = UIPanelUniforms { 
+            gui_scale_mat: gui_scale_mat, 
+            trans_mat: trans_mat 
+        };
         send_to_gpu_uniforms_ui_panel(self.ui.ui_panel.sp, uniforms);
     }
 
@@ -2995,17 +3042,38 @@ impl RendererContext {
         // FIXME: MAGIC NUMBERS IN USE.
         let gui_scale_x = 2.0 * (scale as f32) / (viewport_width as f32);
         let gui_scale_y = 2.0 * (scale as f32) / (viewport_height as f32);
-        let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 1.0);
+        let gui_scale_mat = Matrix4::from_affine_nonuniform_scale(
+            gui_scale_x, 
+            gui_scale_y, 
+            1.0
+        );
         let trans_mat = match self.game_context.borrow().next_block.borrow().current_block().piece {
-            GooglyBlockPiece::T => Matrix4::from_translation(math::vec3((0.525, 0.43, 0.0))),
-            GooglyBlockPiece::J => Matrix4::from_translation(math::vec3((0.525, 0.43, 0.0))),
-            GooglyBlockPiece::Z => Matrix4::from_translation(math::vec3((0.525, 0.43, 0.0))),
-            GooglyBlockPiece::O => Matrix4::from_translation(math::vec3((0.50, 0.43, 0.0))),
-            GooglyBlockPiece::S => Matrix4::from_translation(math::vec3((0.525, 0.43, 0.0))),
-            GooglyBlockPiece::L => Matrix4::from_translation(math::vec3((0.525, 0.43, 0.0))),
-            GooglyBlockPiece::I => Matrix4::from_translation(math::vec3((0.555, 0.48, 0.0))),
+            GooglyBlockPiece::T => Matrix4::from_affine_translation(
+                &Vector3::new(0.525, 0.43, 0.0)
+            ),
+            GooglyBlockPiece::J => Matrix4::from_affine_translation(
+                &Vector3::new(0.525, 0.43, 0.0)
+            ),
+            GooglyBlockPiece::Z => Matrix4::from_affine_translation(
+                &Vector3::new(0.525, 0.43, 0.0)
+            ),
+            GooglyBlockPiece::O => Matrix4::from_affine_translation(
+                &Vector3::new(0.50,  0.43, 0.0)
+            ),
+            GooglyBlockPiece::S => Matrix4::from_affine_translation(
+                &Vector3::new(0.525, 0.43, 0.0)
+            ),
+            GooglyBlockPiece::L => Matrix4::from_affine_translation(
+                &Vector3::new(0.525, 0.43, 0.0)
+            ),
+            GooglyBlockPiece::I => Matrix4::from_affine_translation(
+                &Vector3::new(0.555, 0.48, 0.0)
+            ),
         };
-        let uniforms = PieceUniformsData { gui_scale_mat: gui_scale_mat, trans_mat: trans_mat };
+        let uniforms = PieceUniformsData { 
+            gui_scale_mat: gui_scale_mat, 
+            trans_mat: trans_mat 
+        };
         send_to_gpu_uniforms_next_piece_panel(self.ui.next_piece_panel.buffer.sp, &uniforms);
     }
 
@@ -3014,9 +3082,18 @@ impl RendererContext {
         let scale = 488;
         let gui_scale_x = (scale as f32) / (viewport.width as f32);
         let gui_scale_y = (scale as f32) / (viewport.height as f32);
-        let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 1.0);
-        let trans_mat = Matrix4::from_translation(math::vec3((0.085, 0.0, 0.0)));
-        let uniforms = PlayingFieldUniforms { gui_scale_mat: gui_scale_mat, trans_mat: trans_mat };
+        let gui_scale_mat = Matrix4::from_affine_nonuniform_scale(
+            gui_scale_x, 
+            gui_scale_y, 
+            1.0
+        );
+        let trans_mat = Matrix4::from_affine_translation(
+            &Vector3::new(0.085, 0.0, 0.0)
+        );
+        let uniforms = PlayingFieldUniforms { 
+            gui_scale_mat: gui_scale_mat, 
+            trans_mat: trans_mat 
+        };
         send_to_gpu_uniforms_playing_field(self.ui.next_piece_panel.buffer.sp, uniforms);
     }
 
@@ -3026,8 +3103,14 @@ impl RendererContext {
         let (viewport_width, viewport_height) = self.get_framebuffer_size();
         let gui_scale_x = panel_width / (viewport_width as f32);
         let gui_scale_y = panel_height / (viewport_height as f32);
-        let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0.0);
-        let trans_mat = Matrix4::from_translation(math::vec3((0.08, 0.0, 0.0)));
+        let gui_scale_mat = Matrix4::from_affine_nonuniform_scale(
+            gui_scale_x, 
+            gui_scale_y, 
+            0.0
+        );
+        let trans_mat = Matrix4::from_affine_translation(
+            &Vector3::new(0.08, 0.0, 0.0)
+        );
         let uniforms = GameOverPanelUniforms { 
             gui_scale_mat: gui_scale_mat,
             trans_mat: trans_mat,
@@ -3041,8 +3124,14 @@ impl RendererContext {
         let (viewport_width, viewport_height) = self.get_framebuffer_size();
         let gui_scale_x = panel_width / (viewport_width as f32);
         let gui_scale_y = panel_height / (viewport_height as f32);
-        let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0.0);
-        let trans_mat = Matrix4::from_translation(math::vec3((0.08, 0.0, 0.0)));
+        let gui_scale_mat = Matrix4::from_affine_nonuniform_scale(
+            gui_scale_x, 
+            gui_scale_y, 
+            0.0
+        );
+        let trans_mat = Matrix4::from_affine_translation(
+            &Vector3::new(0.08, 0.0, 0.0)
+        );
         let uniforms = PlayingFieldBackgroundUniforms { 
             gui_scale_mat: gui_scale_mat,
             trans_mat: trans_mat,
@@ -3057,8 +3146,14 @@ impl RendererContext {
         let (viewport_width, viewport_height) = self.get_framebuffer_size();
         let gui_scale_x = panel_width / (viewport_width as f32);
         let gui_scale_y = panel_height / (viewport_height as f32);
-        let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0.0);
-        let trans_mat = Matrix4::from_translation(math::vec3((0.0, 0.0, 0.0)));
+        let gui_scale_mat = Matrix4::from_affine_nonuniform_scale(
+            gui_scale_x, 
+            gui_scale_y, 
+            0.0
+        );
+        let trans_mat = Matrix4::from_affine_translation(
+            &Vector3::new(0.0, 0.0, 0.0)
+        );
         let uniforms = TitleScreenBackgroundUniforms { 
             gui_scale_mat: gui_scale_mat,
             trans_mat: trans_mat,
@@ -3073,9 +3168,15 @@ impl RendererContext {
         let (viewport_width, viewport_height) = self.get_framebuffer_size();
         let gui_scale_x = panel_width / (viewport_width as f32);
         let gui_scale_y = panel_height / (viewport_height as f32);
-        let gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0.0);
+        let gui_scale_mat = Matrix4::from_affine_nonuniform_scale(
+            gui_scale_x, 
+            gui_scale_y, 
+            0.0
+        );
         let placement = self.title_screen.flashing_handle.placement;
-        let trans_mat = Matrix4::from_translation(math::vec3((placement.x, placement.y, 0.0)));
+        let trans_mat = Matrix4::from_affine_translation(
+            &Vector3::new(placement.x, placement.y, 0.0)
+        );
         let uniforms = TitleScreenFlashingUniforms { 
             gui_scale_mat: gui_scale_mat,
             trans_mat: trans_mat,
@@ -3234,7 +3335,11 @@ impl RendererPlayingState {
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, context.ui.next_piece_panel.buffer.tex);
-            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().current_block().piece).vao);
+            gl::BindVertexArray(
+                context.ui.next_piece_panel.buffer.handle(
+                    context.game_context.borrow().next_block.borrow().current_block().piece
+                ).vao
+            );
             gl::DrawArrays(gl::TRIANGLES, 0, 3 * 8);
             gl::Disable(gl::BLEND);
         }
@@ -3398,7 +3503,11 @@ impl RendererGameOverState {
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, context.ui.next_piece_panel.buffer.tex);
-            gl::BindVertexArray(context.ui.next_piece_panel.buffer.handle(context.game_context.borrow().next_block.borrow().current_block().piece).vao);
+            gl::BindVertexArray(
+                context.ui.next_piece_panel.buffer.handle(
+                    context.game_context.borrow().next_block.borrow().current_block().piece
+                ).vao
+            );
             gl::DrawArrays(gl::TRIANGLES, 0, 3 * 8);
             gl::Disable(gl::BLEND);
         }
@@ -3677,8 +3786,8 @@ fn init_game() -> Game {
     let panel_height = 504;
     let gui_scale_x = (panel_width as f32) / viewport_width;
     let gui_scale_y = (panel_height as f32) / viewport_height;
-    let ui_gui_scale_mat = Matrix4::from_nonuniform_scale(gui_scale_x, gui_scale_y, 0_f32);
-    let ui_trans_mat = Matrix4::one();
+    let ui_gui_scale_mat = Matrix4::from_affine_nonuniform_scale(gui_scale_x, gui_scale_y, 0_f32);
+    let ui_trans_mat = Matrix4::identity();
     let ui_panel_atlas = create_atlas_ui_panel();
     let ui_panel_spec = UIPanelSpec { 
         height: panel_height, 
@@ -3759,7 +3868,9 @@ fn init_game() -> Game {
         starting_block: starting_block,
         starting_positions: starting_positions,
     };
-    let playing_field_context = Rc::new(RefCell::new(PlayingFieldContext::new(playing_field_context_spec)));
+    let playing_field_context = Rc::new(RefCell::new(
+        PlayingFieldContext::new(playing_field_context_spec)
+    ));
     let playing_field = PlayingField::new(playing_field_handle, &block_element_atlas);
     
     let next_block_cell_ref = Rc::new(RefCell::new(next_block_cell));
@@ -3780,8 +3891,13 @@ fn init_game() -> Game {
         pressed_interval: Interval::Milliseconds(100),
         unpressed_interval: Interval::Milliseconds(500),
     };
-    let title_screen = Rc::new(RefCell::new(TitleScreenStateMachine::new(title_screen_state_machine_spec)));
-    let flashing_placement = AbsolutePlacement { x: 0.0, y: -0.7 };
+    let title_screen = Rc::new(RefCell::new(
+        TitleScreenStateMachine::new(title_screen_state_machine_spec)
+    ));
+    let flashing_placement = AbsolutePlacement { 
+        x: 0.0, 
+        y: -0.7 
+    };
     let title_screen_handle_spec = TitleScreenSpec {
         background_width: width as usize,
         background_height: height as usize,
@@ -3810,7 +3926,9 @@ fn init_game() -> Game {
         flash_switch_interval: Interval::Milliseconds(50),
         flash_stop_interval: Interval::Milliseconds(500),
     };
-    let flashing_state_machine = Rc::new(RefCell::new(flashing_state_machine::create(flash_timer_spec)));
+    let flashing_state_machine = Rc::new(RefCell::new(
+        flashing_state_machine::create(flash_timer_spec)
+    ));
     let playing_field_state_machine_spec = PlayingFieldStateMachineSpec {
         timers: timer_spec,
         flashing_state_machine: flashing_state_machine.clone(),
@@ -3844,7 +3962,10 @@ fn init_game() -> Game {
         title_screen: title_screen_handle,
     };
     let initial_renderer_state = RendererState::TitleScreen(RendererTitleScreenState {});
-    let renderer_state_machine = RendererStateMachine::new(renderer_context, initial_renderer_state); 
+    let renderer_state_machine = RendererStateMachine::new(
+        renderer_context, 
+        initial_renderer_state
+    );
 
     let mut game = Game {
         context: context,

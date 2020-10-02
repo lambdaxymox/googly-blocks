@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-use block::{
+use crate::block::{
     GooglyBlockPiece,
     GooglyBlock,
 };
@@ -131,7 +131,9 @@ impl Statistics {
 
 #[cfg(test)]
 mod tests {
-    use super::ScoreBoard;
+    use super::{
+        ScoreBoard
+    };
 
 
     /// The score board should increment the game level after the number of lines

@@ -20,7 +20,7 @@ use rand::distributions::{
     Distribution, 
     Uniform
 };
-use block::{
+use crate::block::{
     GooglyBlockPiece,
     GooglyBlockRotation,
     GooglyBlock,   

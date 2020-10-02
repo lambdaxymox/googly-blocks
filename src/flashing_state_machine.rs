@@ -15,12 +15,13 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-use timer::{
+use crate::timer::{
     Interval,
     Timer,
 };
-use std::time::Duration;
-
+use std::time::{
+    Duration
+};
 
 
 /// A specification type describing the parameters for constructing a 
@@ -131,8 +132,12 @@ mod tests {
         FlashAnimationState,
         FlashAnimationStateMachine,
     };
-    use timer::Interval;
-    use std::time::Duration;
+    use crate::timer::{
+        Interval
+    };
+    use std::time::{
+        Duration
+    };
 
     /// The flash animation state machine should correctly enable itself after calling the enable function.
     #[test]
