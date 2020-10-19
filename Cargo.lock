@@ -86,8 +86,8 @@ checksum = "4785bdd1c96b2a846b2bd7cc02e86b6b3dbf14e7e53446c4f54c92a361040822"
 
 [[package]]
 name = "cglinalg"
-version = "0.11.7"
-source = "git+https://github.com/lambdaxymox/cglinalg#c9be69629ffb226bee9adf3476215c8969ba89dc"
+version = "0.11.9"
+source = "git+https://github.com/lambdaxymox/cglinalg#e2f337c6eb83993f2e9a2c93d87d70d8c54c6dd1"
 dependencies = [
  "approx",
  "num-traits",
@@ -273,7 +273,7 @@ dependencies = [
 
 [[package]]
 name = "googly-blocks"
-version = "0.3.90"
+version = "0.3.91"
 dependencies = [
  "bmfa",
  "cglinalg",

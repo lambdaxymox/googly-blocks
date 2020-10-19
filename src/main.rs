@@ -62,8 +62,6 @@ use log::{
     info
 };
 use cglinalg::{
-    Array, 
-    Identity, 
     Matrix4,
     Vector3,
 };
