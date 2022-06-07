@@ -4,3 +4,4 @@
 *.iml
 .idea
 *.in
+.DS_Store
