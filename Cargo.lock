@@ -280,7 +280,7 @@ dependencies = [
 
 [[package]]
 name = "googly-blocks"
-version = "0.3.93"
+version = "0.3.94"
 dependencies = [
  "bmfa",
  "cglinalg",
